@@ -7,6 +7,17 @@ import { InlineAction } from "./inline-action";
 import { iniciais } from "@/lib/format";
 import { formatDate } from "@/lib/utils";
 
+/** Destaca menções @Nome no texto do comentário. */
+function renderTexto(texto: string) {
+  return texto.split(/(@[\p{L}]+)/u).map((p, i) =>
+    /^@[\p{L}]+$/u.test(p) ? (
+      <span key={i} className="rounded bg-brand-yellow/25 px-0.5 font-medium text-foreground">{p}</span>
+    ) : (
+      <span key={i}>{p}</span>
+    ),
+  );
+}
+
 export async function CommentsPanel({
   entidadeTipo,
   entidadeId,
@@ -14,20 +25,21 @@ export async function CommentsPanel({
   entidadeTipo: string;
   entidadeId: string;
 }) {
-  const [user, comentarios] = await Promise.all([
+  const [user, comentarios, usuarios] = await Promise.all([
     getSessionUser(),
     db.comentario.findMany({
       where: { entidadeTipo, entidadeId },
       orderBy: { criadoEm: "desc" },
       include: { autor: { select: { nome: true } } },
     }),
+    db.usuario.findMany({ where: { ativo: true }, orderBy: { nome: "asc" }, select: { id: true, nome: true } }),
   ]);
 
   const add = adicionarComentario.bind(null, entidadeTipo, entidadeId);
 
   return (
     <div className="space-y-4">
-      <CommentsAddForm action={add} />
+      <CommentsAddForm action={add} usuarios={usuarios} />
 
       {comentarios.length === 0 ? (
         <p className="text-sm text-muted-foreground">Nenhum comentário ainda.</p>
@@ -59,7 +71,7 @@ export async function CommentsPanel({
                       )}
                     </div>
                   </div>
-                  <p className="whitespace-pre-wrap text-sm text-foreground">{c.texto}</p>
+                  <p className="whitespace-pre-wrap text-sm text-foreground">{renderTexto(c.texto)}</p>
                 </div>
               </li>
             );

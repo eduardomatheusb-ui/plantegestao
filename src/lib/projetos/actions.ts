@@ -236,18 +236,25 @@ export async function adicionarComentario(
   const texto = formData.get("texto")?.toString().trim();
   if (!texto) return;
   await db.comentario.create({ data: { entidadeTipo, entidadeId, autorId: user.id, texto } });
-  const destinatarios = await destinatariosDaEntidade(entidadeTipo, entidadeId);
-  await notificarMuitos(destinatarios, {
-    atorId: user.id,
-    tipo: "comentario",
-    titulo: `${user.name ?? "Alguém"} comentou`,
-    descricao: texto.length > 90 ? `${texto.slice(0, 90)}…` : texto,
-    entidadeTipo,
-    entidadeId,
-    url: caminhoEntidade(entidadeTipo, entidadeId),
+  const url = caminhoEntidade(entidadeTipo, entidadeId);
+  const resumo = texto.length > 90 ? `${texto.slice(0, 90)}…` : texto;
+
+  // Menções @: aviso específico para as pessoas marcadas.
+  const mencoes = (formData.get("mencoes")?.toString() || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const mencaoSet = new Set(mencoes);
+  await notificarMuitos([...mencaoSet], {
+    atorId: user.id, tipo: "mencao", titulo: `${user.name ?? "Alguém"} mencionou você`,
+    descricao: resumo, entidadeTipo, entidadeId, url,
   });
-  const path = caminhoEntidade(entidadeTipo, entidadeId);
-  if (path) revalidatePath(path);
+
+  // Demais interessados (responsável/envolvidos) que não foram mencionados.
+  const destinatarios = (await destinatariosDaEntidade(entidadeTipo, entidadeId)).filter((d) => !mencaoSet.has(d));
+  await notificarMuitos(destinatarios, {
+    atorId: user.id, tipo: "comentario", titulo: `${user.name ?? "Alguém"} comentou`,
+    descricao: resumo, entidadeTipo, entidadeId, url,
+  });
+
+  if (url) revalidatePath(url);
 }
 
 export async function removerComentario(id: string) {
