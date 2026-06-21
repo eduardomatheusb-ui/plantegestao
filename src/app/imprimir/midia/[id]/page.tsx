@@ -50,7 +50,7 @@ export default async function ImprimirMidiaPage({ params }: { params: Promise<{ 
         {/* Cabeçalho */}
         <header className="flex items-start justify-between gap-6 border-b-4 border-[#f7ff19] pb-5">
           <div className="flex items-start gap-3">
-            <LogoMark className="h-11 w-auto shrink-0" />
+            <LogoMark tom="badge" className="h-11 w-auto shrink-0" />
             <div className="space-y-0.5">
               <p className="font-display text-xl font-bold leading-none">{empresa.marca}</p>
               <p className="text-xs text-neutral-500">{empresa.razaoSocial} · CNPJ {empresa.cnpj}</p>

@@ -28,7 +28,7 @@ export function MobileNav() {
       </DialogTrigger>
       <DialogContent className="left-0 top-0 h-full max-w-[17rem] translate-x-0 translate-y-0 rounded-none bg-chrome p-0 text-chrome-foreground sm:rounded-none">
         <DialogTitle className="flex h-16 items-center border-b border-white-a10 px-5">
-          <Logo />
+          <Logo sub="Gestão" />
         </DialogTitle>
         <nav className="space-y-6 overflow-y-auto px-3 py-4">
           {NAV.map((grupo, i) => (

@@ -5,7 +5,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <main className="grid min-h-screen lg:grid-cols-2">
       {/* Painel de marca (chrome escuro) */}
       <section className="relative hidden flex-col justify-between bg-chrome p-10 text-chrome-foreground lg:flex">
-        <Logo />
+        <Logo sub="Gestão" />
         <div className="space-y-4">
           <h1 className="font-display text-4xl font-bold leading-tight">
             Gestão da agência,
@@ -26,7 +26,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <section className="flex items-center justify-center bg-background p-6">
         <div className="w-full max-w-sm">
           <div className="mb-8 lg:hidden">
-            <Logo tom="claro" />
+            <Logo tom="claro" sub="Gestão" />
           </div>
           {children}
         </div>

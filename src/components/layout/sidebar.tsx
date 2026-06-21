@@ -13,7 +13,7 @@ export function Sidebar() {
     <aside className="hidden w-64 shrink-0 flex-col bg-chrome text-chrome-foreground lg:flex">
       <div className="flex h-16 items-center border-b border-white-a10 px-5">
         <Link href="/dashboard" aria-label="Início">
-          <Logo />
+          <Logo sub="Gestão" />
         </Link>
       </div>
 
