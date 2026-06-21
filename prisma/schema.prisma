@@ -258,15 +258,18 @@ model Cliente {
 }
 
 model Colaborador {
-  id           String   @id @default(cuid())
-  nome         String
-  email        String?
-  telefone     String?
-  funcao       String?
-  usuarioId    String?  @unique
-  ativo        Boolean  @default(true)
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  id             String    @id @default(cuid())
+  nome           String
+  email          String?
+  telefone       String?
+  funcao         String?
+  documento      String? // CPF/CNPJ
+  dataNascimento DateTime? // aniversário
+  dataAdmissao   DateTime?
+  usuarioId      String?   @unique
+  ativo          Boolean   @default(true)
+  criadoEm       DateTime  @default(now())
+  atualizadoEm   DateTime  @updatedAt
 
   usuario      Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 

@@ -124,7 +124,9 @@ export function CrudForm({
                   defaultValue={
                     valorInicial === null || valorInicial === undefined
                       ? ""
-                      : String(valorInicial)
+                      : campo.type === "date"
+                        ? new Date(valorInicial as string | Date).toISOString().slice(0, 10)
+                        : String(valorInicial)
                   }
                   placeholder={campo.placeholder}
                   aria-invalid={!!erro}

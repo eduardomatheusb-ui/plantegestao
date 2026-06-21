@@ -12,6 +12,7 @@ export type FieldType =
   | "tel"
   | "number"
   | "currency"
+  | "date"
   | "select"
   | "checkbox";
 
@@ -84,6 +85,13 @@ const textoOpcional = z
 
 const nomeObrigatorio = z.string().trim().min(1, "Informe o nome.");
 
+const dataOpcional = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => (v ? new Date(`${v}T12:00:00`) : null))
+  .refine((v) => v === null || !Number.isNaN(v.getTime()), { message: "Data inválida." });
+
 const emailOpcional = z
   .string()
   .trim()
@@ -94,6 +102,12 @@ const emailOpcional = z
   });
 
 // ─────────────────────── Configs por entidade ───────────────────────
+
+function fmtDia(v: unknown): string {
+  if (!v) return "—";
+  const d = new Date(v as string | Date);
+  return Number.isNaN(d.getTime()) ? "—" : new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" }).format(d);
+}
 
 function statusBadge(arquivado: boolean) {
   return arquivado ? (
@@ -160,24 +174,31 @@ export const ENTIDADES: Record<string, EntityConfig> = {
     rotuloPlural: "Colaboradores",
     descricao: "Equipe interna — recebem jobs e apontam horas.",
     softDelete: { field: "ativo", arquivadoValue: false },
-    buscaFields: ["nome", "email", "funcao"],
+    buscaFields: ["nome", "email", "funcao", "documento"],
     ordenarPor: "nome",
     campos: [
       { name: "nome", label: "Nome", type: "text", required: true, colSpan: 2 },
       { name: "funcao", label: "Função", type: "text" },
+      { name: "documento", label: "CPF / CNPJ", type: "text" },
       { name: "email", label: "E-mail", type: "email" },
       { name: "telefone", label: "Telefone", type: "tel" },
+      { name: "dataNascimento", label: "Aniversário", type: "date" },
+      { name: "dataAdmissao", label: "Admissão", type: "date" },
     ],
     schema: z.object({
       nome: nomeObrigatorio,
       funcao: textoOpcional,
+      documento: textoOpcional,
       email: emailOpcional,
       telefone: textoOpcional,
+      dataNascimento: dataOpcional,
+      dataAdmissao: dataOpcional,
     }),
     colunas: [
       { header: "Nome", render: (r) => <span className="font-medium">{String(r.nome)}</span> },
       { header: "Função", render: (r) => (r.funcao as string) ?? "—" },
       { header: "E-mail", render: (r) => (r.email as string) ?? "—" },
+      { header: "Aniversário", render: (r) => fmtDia(r.dataNascimento) },
       { header: "Status", render: (r) => statusBadge(!(r.ativo as boolean)) },
     ],
   },
