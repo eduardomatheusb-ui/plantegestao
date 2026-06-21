@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Trash2, FileDown, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { Pencil, Trash2, FileDown, CheckCircle2, Eye, EyeOff, FolderPlus } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { obterProposta, listarProdutosAtivos } from "@/lib/propostas/queries";
-import { concluirProposta, excluirProposta } from "@/lib/propostas/actions";
+import { concluirProposta, excluirProposta, gerarProjetoDaProposta } from "@/lib/propostas/actions";
 import { STATUS_LABEL, STATUS_BADGE } from "@/lib/propostas/status";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/shared/page-header";
@@ -72,6 +72,14 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
                 <Button type="submit" size="sm">
                   <CheckCircle2 className="size-4" />
                   Concluir
+                </Button>
+              </form>
+            )}
+            {podeEditar && !proposta.projetoId && (
+              <form action={gerarProjetoDaProposta.bind(null, proposta.id)}>
+                <Button type="submit" size="sm" variant={proposta.status === "APROVADA" ? "default" : "outline"}>
+                  <FolderPlus className="size-4" />
+                  Gerar projeto
                 </Button>
               </form>
             )}

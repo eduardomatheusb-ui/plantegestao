@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
@@ -34,7 +35,10 @@ const SUBPAGINA: Record<string, string> = {
   contas: "Contas bancárias",
 };
 
-/** Barra de navegação: botão "Voltar" + trilha (seção › subpágina). */
+// Seções sem página índice própria (não viram link).
+const SEM_INDICE = new Set(["cadastros"]);
+
+/** Barra de navegação: botão "Voltar" + trilha (seção › subpágina › …). */
 export function Breadcrumbs() {
   const pathname = usePathname();
   const router = useRouter();
@@ -42,14 +46,15 @@ export function Breadcrumbs() {
   if (pathname === "/dashboard" || pathname === "/") return null;
 
   const segs = pathname.split("/").filter(Boolean);
-  const raiz = segs[0];
-  const secaoLabel = SECAO[raiz] ?? raiz;
-  const secaoTemIndice = !["cadastros", "configuracoes"].includes(raiz);
-  // Segunda "âncora": para cadastros/configuracoes é a subseção (lista); senão, "Detalhe".
-  const segundo = segs[1];
-  const segundoLabel = segundo ? (SUBPAGINA[segundo] ?? "Detalhe") : null;
-  const segundoHref = segundo ? `/${raiz}/${segundo}` : null;
-  const profundo = segs.length > (secaoTemIndice ? 1 : 2);
+
+  const crumbs = segs.map((seg, i) => {
+    const ultimo = i === segs.length - 1;
+    const label = i === 0 ? (SECAO[seg] ?? seg) : (SUBPAGINA[seg] ?? "Detalhe");
+    // Link só em crumbs intermediários e que apontem para uma página real.
+    const semIndice = i === 0 && SEM_INDICE.has(seg);
+    const href = ultimo || semIndice ? null : `/${segs.slice(0, i + 1).join("/")}`;
+    return { label, href };
+  });
 
   return (
     <div className="flex items-center gap-2 border-b border-border bg-background px-4 py-2 text-sm lg:px-8">
@@ -64,28 +69,17 @@ export function Breadcrumbs() {
 
       <span className="text-border" aria-hidden="true">|</span>
 
-      <nav aria-label="Trilha de navegação" className="flex items-center gap-1.5 text-muted-foreground">
-        {secaoTemIndice ? (
-          <Link href={`/${raiz}`} className="hover:text-foreground">{secaoLabel}</Link>
-        ) : (
-          <span>{secaoLabel}</span>
-        )}
-        {segundoLabel && (
-          <>
-            <ChevronRight className="size-3.5" aria-hidden="true" />
-            {profundo && segundoHref ? (
-              <Link href={segundoHref} className="hover:text-foreground">{segundoLabel}</Link>
+      <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+        {crumbs.map((c, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <ChevronRight className="size-3.5" aria-hidden="true" />}
+            {c.href ? (
+              <Link href={c.href} className="hover:text-foreground">{c.label}</Link>
             ) : (
-              <span className="text-foreground">{segundoLabel}</span>
+              <span className={i === crumbs.length - 1 ? "text-foreground" : undefined}>{c.label}</span>
             )}
-          </>
-        )}
-        {profundo && (
-          <>
-            <ChevronRight className="size-3.5" aria-hidden="true" />
-            <span className="text-foreground">Detalhe</span>
-          </>
-        )}
+          </React.Fragment>
+        ))}
       </nav>
     </div>
   );

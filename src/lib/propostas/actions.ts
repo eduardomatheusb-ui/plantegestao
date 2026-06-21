@@ -142,6 +142,35 @@ export async function excluirProposta(id: string) {
   redirect("/propostas");
 }
 
+/**
+ * Cria um Projeto a partir da proposta (cliente, título → nome, introdução → briefing)
+ * e vincula a proposta ao projeto criado. Se já houver projeto, só redireciona pra ele.
+ */
+export async function gerarProjetoDaProposta(propostaId: string) {
+  const user = await assertPapel(EDITAR);
+  const proposta = await db.proposta.findUnique({ where: { id: propostaId } });
+  if (!proposta) throw new Error("Proposta não encontrada.");
+  if (proposta.projetoId) redirect(`/projetos/${proposta.projetoId}`);
+
+  const numero = await proximoNumero("PROJETO");
+  const projeto = await db.projeto.create({
+    data: {
+      numero,
+      nome: proposta.titulo,
+      clienteId: proposta.clienteId,
+      responsavelId: proposta.responsavelId ?? user.id,
+      criadoPorId: user.id,
+      briefing: proposta.introducao ?? null,
+    },
+  });
+  await db.proposta.update({ where: { id: propostaId }, data: { projetoId: projeto.id } });
+  await registrarLog({ entidadeTipo: "projeto", entidadeId: projeto.id, usuarioId: user.id, acao: `gerou a partir da proposta #${proposta.numero}` });
+  await registrarLog({ entidadeTipo: "proposta", entidadeId: propostaId, usuarioId: user.id, acao: `vinculou ao projeto #${numero}` });
+  revalidatePath("/projetos");
+  revalidatePath(`/propostas/${propostaId}`);
+  redirect(`/projetos/${projeto.id}`);
+}
+
 // ── Itens ─────────────────────────────────────────────────────────────
 
 const itemSchema = z.object({
