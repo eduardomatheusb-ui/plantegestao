@@ -37,7 +37,7 @@ export function Sidebar({ caps, chatNaoLidas = 0 }: { caps: Capacidades; chatNao
     >
       <div className={cn("flex h-16 items-center border-b border-white-a10", colapsada ? "justify-center px-2" : "px-5")}>
         <Link href="/dashboard" aria-label="Início">
-          {colapsada ? <LogoMark tom="escuro" className="h-8" /> : <Logo sub="Gestão" />}
+          {colapsada ? <LogoMark tom="escuro" className="h-8" /> : <Logo />}
         </Link>
       </div>
 

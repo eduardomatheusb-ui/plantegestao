@@ -5,7 +5,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <main className="grid min-h-screen lg:grid-cols-2">
       {/* Painel de marca (chrome escuro) */}
       <section className="relative hidden flex-col justify-between bg-chrome p-10 text-chrome-foreground lg:flex">
-        <Logo sub="Gestão" />
+        <Logo />
         <div className="space-y-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -34,7 +34,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <section className="flex items-center justify-center bg-background p-6">
         <div className="w-full max-w-sm">
           <div className="mb-8 lg:hidden">
-            <Logo tom="claro" sub="Gestão" />
+            <Logo tom="claro" />
           </div>
           {children}
         </div>
