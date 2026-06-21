@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
+import { notificar } from "@/lib/notificacoes";
 import { assertPapel } from "@/lib/rbac";
 import { calcularSubtotal, calcularTotal } from "./calculo";
 import { STATUS_LABEL } from "./status";
@@ -83,13 +84,19 @@ export async function salvarProposta(
       prazo: d.prazo,
     };
     if (id) {
+      const anterior = await db.proposta.findUnique({ where: { id }, select: { responsavelId: true } });
       await db.proposta.update({ where: { id }, data });
       await registrarLog({ entidadeTipo: "proposta", entidadeId: id, usuarioId: user.id, acao: "editou a proposta" });
+      if (d.responsavelId && d.responsavelId !== anterior?.responsavelId) {
+        await notificar({ usuarioId: d.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pela proposta "${d.titulo}"`, entidadeTipo: "proposta", entidadeId: id, url: `/propostas/${id}` });
+      }
       destino = `/propostas/${id}`;
     } else {
       const numero = await proximoNumero("PROPOSTA");
-      const criada = await db.proposta.create({ data: { ...data, numero, responsavelId: d.responsavelId ?? user.id, criadoPorId: user.id } });
+      const responsavelId = d.responsavelId ?? user.id;
+      const criada = await db.proposta.create({ data: { ...data, numero, responsavelId, criadoPorId: user.id } });
       await registrarLog({ entidadeTipo: "proposta", entidadeId: criada.id, usuarioId: user.id, acao: `criou a proposta #${numero}` });
+      await notificar({ usuarioId: responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pela proposta "${d.titulo}"`, entidadeTipo: "proposta", entidadeId: criada.id, url: `/propostas/${criada.id}` });
       destino = `/propostas/${criada.id}`;
     }
   } catch (e) {
@@ -102,7 +109,7 @@ export async function salvarProposta(
 export async function alterarStatusProposta(id: string, status: PropostaStatus) {
   const user = await assertPapel(EDITAR);
   if (!STATUS_VALUES.includes(status)) throw new Error("Status inválido.");
-  const atual = await db.proposta.findUnique({ where: { id }, select: { status: true } });
+  const atual = await db.proposta.findUnique({ where: { id }, select: { status: true, titulo: true, responsavelId: true } });
   await db.proposta.update({ where: { id }, data: { status } });
   await registrarLog({
     entidadeTipo: "proposta",
@@ -112,6 +119,18 @@ export async function alterarStatusProposta(id: string, status: PropostaStatus) 
     de: atual ? STATUS_LABEL[atual.status] : null,
     para: STATUS_LABEL[status],
   });
+  if (atual?.responsavelId) {
+    await notificar({
+      usuarioId: atual.responsavelId,
+      atorId: user.id,
+      tipo: "status",
+      titulo: `Status da proposta "${atual.titulo}" mudou`,
+      descricao: `${STATUS_LABEL[atual.status]} → ${STATUS_LABEL[status]}`,
+      entidadeTipo: "proposta",
+      entidadeId: id,
+      url: `/propostas/${id}`,
+    });
+  }
   revalidatePath(`/propostas/${id}`);
   revalidatePath("/propostas");
 }

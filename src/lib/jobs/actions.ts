@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
+import { notificar } from "@/lib/notificacoes";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
 
 // Qualquer usuário autenticado trabalha em jobs (rotina diária da equipe).
@@ -78,13 +79,18 @@ export async function salvarJob(
     };
 
     if (id) {
+      const anterior = await db.job.findUnique({ where: { id }, select: { responsavelId: true } });
       await db.job.update({ where: { id }, data });
       await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: "editou o job" });
+      if (data.responsavelId && data.responsavelId !== anterior?.responsavelId) {
+        await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pelo job "${d.titulo}"`, entidadeTipo: "job", entidadeId: id, url: `/jobs/${id}` });
+      }
       destino = `/jobs/${id}`;
     } else {
       const numero = await proximoNumero("JOB");
       const criado = await db.job.create({ data: { ...data, numero, concluidoEm, criadoPorId: user.id } });
       await registrarLog({ entidadeTipo: "job", entidadeId: criado.id, usuarioId: user.id, acao: `criou o job #${numero}` });
+      await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pelo job "${d.titulo}"`, entidadeTipo: "job", entidadeId: criado.id, url: `/jobs/${criado.id}` });
       destino = `/jobs/${criado.id}`;
     }
   } catch (e) {
@@ -97,7 +103,7 @@ export async function salvarJob(
 export async function moverJobStatus(id: string, statusId: string) {
   const user = await assertPapel(TRABALHAR);
   const [job, status] = await Promise.all([
-    db.job.findUnique({ where: { id }, select: { statusId: true, concluidoEm: true, status: { select: { nome: true } } } }),
+    db.job.findUnique({ where: { id }, select: { statusId: true, concluidoEm: true, responsavelId: true, titulo: true, status: { select: { nome: true } } } }),
     db.jobStatus.findUnique({ where: { id: statusId } }),
   ]);
   if (!status) throw new Error("Status inválido.");
@@ -113,6 +119,18 @@ export async function moverJobStatus(id: string, statusId: string) {
     de: job?.status?.nome ?? null,
     para: status.nome,
   });
+  if (job?.responsavelId) {
+    await notificar({
+      usuarioId: job.responsavelId,
+      atorId: user.id,
+      tipo: "status",
+      titulo: `Status do job "${job.titulo}" mudou`,
+      descricao: `${job.status?.nome ?? ""} → ${status.nome}`,
+      entidadeTipo: "job",
+      entidadeId: id,
+      url: `/jobs/${id}`,
+    });
+  }
   revalidatePath("/jobs");
   revalidatePath(`/jobs/${id}`);
 }
@@ -136,7 +154,7 @@ export async function excluirJob(id: string) {
 // ── Subtarefas ────────────────────────────────────────────────────────
 
 export async function adicionarTarefa(jobId: string, formData: FormData) {
-  await userOrThrow();
+  const user = await userOrThrow();
   const descricao = formData.get("descricao")?.toString().trim();
   const responsavelId = formData.get("responsavelId")?.toString() || null;
   if (!descricao) return;
@@ -144,6 +162,9 @@ export async function adicionarTarefa(jobId: string, formData: FormData) {
   await db.jobTarefa.create({
     data: { jobId, descricao, responsavelId, ordem: (ultima?.ordem ?? 0) + 1 },
   });
+  if (responsavelId) {
+    await notificar({ usuarioId: responsavelId, atorId: user.id, tipo: "atribuicao", titulo: "Nova subtarefa atribuída a você", descricao, entidadeTipo: "job", entidadeId: jobId, url: `/jobs/${jobId}` });
+  }
   revalidatePath(`/jobs/${jobId}`);
 }
 

@@ -15,6 +15,7 @@ const SECAO: Record<string, string> = {
   relatorios: "Relatórios",
   cadastros: "Cadastros",
   configuracoes: "Administração",
+  notificacoes: "Notificações",
 };
 
 const SUBPAGINA: Record<string, string> = {

@@ -92,8 +92,31 @@ model Usuario {
   midiaResponsavel    MidiaPlano[]       @relation("MidiaResponsavel")
   midiaCriados        MidiaPlano[]       @relation("MidiaCriadoPor")
   producaoCriadas     ProducaoOrdem[]    @relation("ProducaoCriadoPor")
+  notificacoes        Notificacao[]      @relation("NotificacaoDestino")
+  notificacoesGeradas Notificacao[]      @relation("NotificacaoAtor")
 
   @@index([papel])
+}
+
+/// Notificações pessoais: tudo que envolve o usuário (atribuições, comentários, status…).
+model Notificacao {
+  id           String   @id @default(cuid())
+  usuarioId    String
+  atorId       String?
+  tipo         String
+  titulo       String
+  descricao    String?
+  entidadeTipo String?
+  entidadeId   String?
+  url          String?
+  lida         Boolean  @default(false)
+  criadoEm     DateTime @default(now())
+
+  usuario Usuario  @relation("NotificacaoDestino", fields: [usuarioId], references: [id], onDelete: Cascade)
+  ator    Usuario? @relation("NotificacaoAtor", fields: [atorId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId, lida])
+  @@index([criadoEm])
 }
 
 /// Numeração sequencial por tipo de entidade (PROJETO, JOB, PROPOSTA, MIDIA, LANCAMENTO).

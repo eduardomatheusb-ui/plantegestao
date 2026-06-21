@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
+import { notificar, notificarMuitos, destinatariosDaEntidade } from "@/lib/notificacoes";
 import { assertPapel, getSessionUser, podePapel } from "@/lib/rbac";
 import { STATUS_LABEL } from "./situacao";
 import type { ProjetoStatus } from "@prisma/client";
@@ -105,8 +106,12 @@ export async function salvarProjeto(
     };
 
     if (id) {
+      const anterior = await db.projeto.findUnique({ where: { id }, select: { responsavelId: true } });
       await db.projeto.update({ where: { id }, data });
       await registrarLog({ entidadeTipo: "projeto", entidadeId: id, usuarioId: user.id, acao: "editou o projeto" });
+      if (d.responsavelId && d.responsavelId !== anterior?.responsavelId) {
+        await notificar({ usuarioId: d.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pelo projeto "${d.nome}"`, entidadeTipo: "projeto", entidadeId: id, url: `/projetos/${id}` });
+      }
       destino = `/projetos/${id}`;
     } else {
       const numero = await proximoNumero("PROJETO");
@@ -114,6 +119,9 @@ export async function salvarProjeto(
         data: { ...data, numero, projetoPaiId: d.projetoPaiId, criadoPorId: user.id },
       });
       await registrarLog({ entidadeTipo: "projeto", entidadeId: criado.id, usuarioId: user.id, acao: `criou o projeto #${numero}` });
+      if (d.responsavelId) {
+        await notificar({ usuarioId: d.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pelo projeto "${d.nome}"`, entidadeTipo: "projeto", entidadeId: criado.id, url: `/projetos/${criado.id}` });
+      }
       destino = `/projetos/${criado.id}`;
     }
   } catch (e) {
@@ -127,7 +135,7 @@ export async function salvarProjeto(
 export async function alterarStatusProjeto(id: string, status: ProjetoStatus) {
   const user = await assertPapel(EDITAR);
   if (!STATUS_VALUES.includes(status)) throw new Error("Status inválido.");
-  const atual = await db.projeto.findUnique({ where: { id }, select: { status: true } });
+  const atual = await db.projeto.findUnique({ where: { id }, select: { status: true, nome: true, responsavelId: true } });
   await db.projeto.update({ where: { id }, data: { status } });
   await registrarLog({
     entidadeTipo: "projeto",
@@ -137,6 +145,18 @@ export async function alterarStatusProjeto(id: string, status: ProjetoStatus) {
     de: atual ? STATUS_LABEL[atual.status] : null,
     para: STATUS_LABEL[status],
   });
+  if (atual?.responsavelId) {
+    await notificar({
+      usuarioId: atual.responsavelId,
+      atorId: user.id,
+      tipo: "status",
+      titulo: `Status do projeto "${atual.nome}" mudou`,
+      descricao: `${STATUS_LABEL[atual.status]} → ${STATUS_LABEL[status]}`,
+      entidadeTipo: "projeto",
+      entidadeId: id,
+      url: `/projetos/${id}`,
+    });
+  }
   revalidatePath(`/projetos/${id}`);
   revalidatePath("/projetos");
 }
@@ -202,6 +222,8 @@ function caminhoEntidade(entidadeTipo: string, entidadeId: string): string | nul
   if (entidadeTipo === "projeto") return `/projetos/${entidadeId}`;
   if (entidadeTipo === "job") return `/jobs/${entidadeId}`;
   if (entidadeTipo === "proposta") return `/propostas/${entidadeId}`;
+  if (entidadeTipo === "midia") return `/midia/${entidadeId}`;
+  if (entidadeTipo === "producao") return `/producao/${entidadeId}`;
   return null;
 }
 
@@ -214,6 +236,16 @@ export async function adicionarComentario(
   const texto = formData.get("texto")?.toString().trim();
   if (!texto) return;
   await db.comentario.create({ data: { entidadeTipo, entidadeId, autorId: user.id, texto } });
+  const destinatarios = await destinatariosDaEntidade(entidadeTipo, entidadeId);
+  await notificarMuitos(destinatarios, {
+    atorId: user.id,
+    tipo: "comentario",
+    titulo: `${user.name ?? "Alguém"} comentou`,
+    descricao: texto.length > 90 ? `${texto.slice(0, 90)}…` : texto,
+    entidadeTipo,
+    entidadeId,
+    url: caminhoEntidade(entidadeTipo, entidadeId),
+  });
   const path = caminhoEntidade(entidadeTipo, entidadeId);
   if (path) revalidatePath(path);
 }
