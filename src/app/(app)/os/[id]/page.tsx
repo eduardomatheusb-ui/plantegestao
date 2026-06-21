@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, FileDown, Receipt } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterOs } from "@/lib/os/queries";
@@ -50,6 +50,12 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={STATUS_BADGE[os.status]}>{STATUS_LABEL[os.status]}</Badge>
             {podeEditar && <OsStatusSelect id={os.id} status={os.status} />}
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/imprimir/os/${os.id}`} target="_blank"><FileDown className="size-4" /> Fatura</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/imprimir/os/${os.id}?tipo=recibo`} target="_blank"><Receipt className="size-4" /> Recibo</Link>
+            </Button>
             {podeEditar && (
               <Button asChild variant="outline" size="sm">
                 <Link href={`/os/${os.id}/editar`}><Pencil className="size-4" /> Editar</Link>
