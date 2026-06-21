@@ -85,6 +85,7 @@ model Usuario {
   apontamentos        Apontamento[]
   jobsResponsavel     Job[]              @relation("JobResponsavel")
   jobsCriados         Job[]              @relation("JobCriadoPor")
+  jobsEnvolvido       JobEnvolvido[]
   tarefasResponsavel  JobTarefa[]
   propostasResponsavel Proposta[]        @relation("PropostaResponsavel")
   propostasCriadas    Proposta[]         @relation("PropostaCriadoPor")
@@ -547,15 +548,26 @@ model JobStatus {
   @@index([ordem])
 }
 
+/// Distingue o trabalho "pesado" (job/campanha, com desdobramentos) da postagem
+/// simples de rede social (sem budget/custo, só prazos + legenda + formato).
+enum JobTipo {
+  JOB
+  POSTAGEM
+}
+
 model Job {
   id           String      @id @default(cuid())
   numero       Int         @unique
+  tipo         JobTipo     @default(JOB)
   titulo       String
   clienteId    String
   projetoId    String?
   responsavelId String?
   statusId     String
-  prazo        DateTime?
+  prazo        DateTime? // p/ postagem = prazo de CRIAÇÃO da arte
+  prazoPostagem DateTime? // só postagem: quando vai ao ar
+  legenda      String? // só postagem
+  formatos     String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
   briefing     String?
   concluidoEm  DateTime? // setado ao entrar em status isConcluido (para "% no prazo")
   arquivado    Boolean     @default(false)
@@ -571,12 +583,23 @@ model Job {
   tarefas      JobTarefa[]
   apontamentos Apontamento[]
   lancamentos  Lancamento[]
+  envolvidos   JobEnvolvido[]
 
   @@index([clienteId])
   @@index([projetoId])
   @@index([responsavelId])
   @@index([statusId])
   @@index([arquivado])
+}
+
+/// Pessoas envolvidas numa postagem/job (além do responsável).
+model JobEnvolvido {
+  jobId     String
+  usuarioId String
+  job       Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, usuarioId])
 }
 
 model JobTarefa {

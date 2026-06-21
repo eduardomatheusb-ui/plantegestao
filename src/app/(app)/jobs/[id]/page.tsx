@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock } from "lucide-react";
+import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock, Copy, Instagram, Send } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { obterJob, listarStatus } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
-import { arquivarJob, excluirJob } from "@/lib/jobs/actions";
+import { arquivarJob, excluirJob, duplicarJob } from "@/lib/jobs/actions";
+import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { formatDate, cn } from "@/lib/utils";
 import { formatHoras } from "@/lib/projetos/situacao";
 import { PageHeader } from "@/components/shared/page-header";
@@ -35,6 +36,8 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
   const statusOpts = statuses.map((s) => ({ id: s.id, nome: s.nome }));
   const hoje = new Date().toISOString().slice(0, 10);
   const atrasado = !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
+  const ehPost = job.tipo === "POSTAGEM";
+  const formatos = ehPost ? rotulosFormatos(job.formatos) : [];
 
   return (
     <div className="space-y-6">
@@ -55,6 +58,12 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
                 Editar
               </Link>
             </Button>
+            <form action={duplicarJob.bind(null, job.id)}>
+              <Button type="submit" variant="outline" size="sm">
+                <Copy className="size-4" />
+                Duplicar
+              </Button>
+            </form>
             {podeGerir && (
               <ConfirmButton
                 action={arquivarJob.bind(null, job.id, !job.arquivado)}
@@ -108,7 +117,7 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
             <p className="text-sm font-medium">{job.responsavel?.nome ?? "—"}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Prazo</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{ehPost ? "Prazo de criação" : "Prazo"}</p>
             <p className={cn("inline-flex items-center gap-1 text-sm font-medium", atrasado && "text-destructive")}>
               <CalendarClock className="size-4" />
               {formatDate(job.prazo)}
@@ -120,6 +129,54 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
           </div>
         </CardContent>
       </Card>
+
+      {ehPost && (
+        <Card className="border-l-4 border-l-fuchsia-400">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Instagram className="size-4 text-fuchsia-500" aria-hidden="true" /> Postagem
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Vai ao ar</p>
+                <p className="inline-flex items-center gap-1 text-sm font-medium text-fuchsia-600 dark:text-fuchsia-400">
+                  <Send className="size-4" />{formatDate(job.prazoPostagem)}
+                </p>
+              </div>
+              <div className="space-y-1 sm:col-span-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Envolvidos</p>
+                <p className="text-sm font-medium">
+                  {job.envolvidos.length ? job.envolvidos.map((e) => e.usuario.nome).join(", ") : "—"}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Formato(s)</p>
+              {formatos.length ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {formatos.map((f) => (
+                    <span key={f} className="rounded-full bg-fuchsia-100 px-2 py-0.5 text-xs font-medium text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300">{f}</span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">—</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Legenda</p>
+              {job.legenda ? (
+                <p className="whitespace-pre-wrap rounded-md bg-muted/50 p-3 text-sm">{job.legenda}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Sem legenda.</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">

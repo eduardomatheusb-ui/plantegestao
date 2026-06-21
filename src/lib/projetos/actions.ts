@@ -133,6 +133,38 @@ export async function salvarProjeto(
   redirect(destino);
 }
 
+/** Duplica um projeto: novo número, "(cópia)", status zerado, copia envolvidos (não os jobs/filhos). */
+export async function duplicarProjeto(id: string) {
+  const user = await assertPapel(EDITAR);
+  const orig = await db.projeto.findUnique({
+    where: { id },
+    include: { envolvidos: { select: { usuarioId: true } } },
+  });
+  if (!orig) throw new Error("Projeto não encontrado.");
+
+  const numero = await proximoNumero("PROJETO");
+  const novo = await db.projeto.create({
+    data: {
+      numero,
+      nome: `${orig.nome} (cópia)`,
+      clienteId: orig.clienteId,
+      responsavelId: orig.responsavelId,
+      status: "SEM_STATUS",
+      prazoDesejado: orig.prazoDesejado,
+      prazoEstimado: orig.prazoEstimado,
+      budget: orig.budget,
+      tempoEstimadoMin: orig.tempoEstimadoMin,
+      briefing: orig.briefing,
+      projetoPaiId: orig.projetoPaiId,
+      criadoPorId: user.id,
+      envolvidos: { create: orig.envolvidos.map((e) => ({ usuarioId: e.usuarioId })) },
+    },
+  });
+  await registrarLog({ entidadeTipo: "projeto", entidadeId: novo.id, usuarioId: user.id, acao: `duplicou de #${orig.numero}` });
+  revalidatePath("/projetos");
+  redirect(`/projetos/${novo.id}`);
+}
+
 export async function alterarStatusProjeto(id: string, status: ProjetoStatus) {
   const user = await assertPapel(EDITAR);
   if (!STATUS_VALUES.includes(status)) throw new Error("Status inválido.");

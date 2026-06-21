@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Archive, ArchiveRestore, Trash2, UserPlus, X, FolderTree } from "lucide-react";
+import { Pencil, Archive, ArchiveRestore, Trash2, UserPlus, X, FolderTree, Copy } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { obterProjeto, listarUsuariosAtivos } from "@/lib/projetos/queries";
-import { arquivarProjeto, excluirProjeto, adicionarEnvolvido, removerEnvolvido } from "@/lib/projetos/actions";
+import { arquivarProjeto, excluirProjeto, adicionarEnvolvido, removerEnvolvido, duplicarProjeto } from "@/lib/projetos/actions";
 import { situacaoProjeto, STATUS_LABEL, formatHoras } from "@/lib/projetos/situacao";
 import { TONE_BADGE } from "@/lib/projetos/estilo";
 import { formatBRL, formatDate } from "@/lib/utils";
@@ -67,6 +67,12 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
                     Editar
                   </Link>
                 </Button>
+                <form action={duplicarProjeto.bind(null, projeto.id)}>
+                  <Button type="submit" variant="outline" size="sm">
+                    <Copy className="size-4" />
+                    Duplicar
+                  </Button>
+                </form>
                 <ConfirmButton
                   action={arquivarProjeto.bind(null, projeto.id, !projeto.arquivado)}
                   variant="outline"

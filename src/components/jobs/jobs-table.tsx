@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Instagram } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
@@ -33,7 +34,10 @@ export function JobsTable({
               <TableRow key={job.id}>
                 <TableCell className="text-muted-foreground tabular-nums">#{job.numero}</TableCell>
                 <TableCell className="font-medium">
-                  <Link href={`/jobs/${job.id}`} className="hover:underline">
+                  <Link href={`/jobs/${job.id}`} className="inline-flex items-center gap-1.5 hover:underline">
+                    {job.tipo === "POSTAGEM" && (
+                      <Instagram className="size-3.5 shrink-0 text-fuchsia-500" aria-label="Postagem" />
+                    )}
                     {job.titulo}
                   </Link>
                 </TableCell>

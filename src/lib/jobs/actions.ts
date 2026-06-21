@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
-import { notificar } from "@/lib/notificacoes";
+import { notificar, notificarMuitos } from "@/lib/notificacoes";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
 
 // Qualquer usuário autenticado trabalha em jobs (rotina diária da equipe).
@@ -21,13 +21,18 @@ async function userOrThrow() {
   return u;
 }
 
+const dataOpt = (v: string | undefined) => (v ? new Date(`${v}T00:00:00`) : null);
+
 const jobSchema = z.object({
-  titulo: z.string().trim().min(1, "Informe o título do job."),
+  tipo: z.enum(["JOB", "POSTAGEM"]).optional().transform((v) => v ?? "JOB"),
+  titulo: z.string().trim().min(1, "Informe o título."),
   clienteId: z.string().trim().min(1, "Selecione o cliente."),
   projetoId: z.string().optional().transform((v) => (v ? v : null)),
   responsavelId: z.string().optional().transform((v) => (v ? v : null)),
   statusId: z.string().optional().transform((v) => (v ? v : null)),
-  prazo: z.string().optional().transform((v) => (v ? new Date(`${v}T00:00:00`) : null)),
+  prazo: z.string().optional().transform(dataOpt),
+  prazoPostagem: z.string().optional().transform(dataOpt),
+  legenda: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
   briefing: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
 });
 
@@ -40,12 +45,15 @@ export async function salvarJob(
   try {
     const user = await assertPapel(TRABALHAR);
     const parsed = jobSchema.safeParse({
+      tipo: formData.get("tipo")?.toString(),
       titulo: formData.get("titulo")?.toString(),
       clienteId: formData.get("clienteId")?.toString(),
       projetoId: formData.get("projetoId")?.toString(),
       responsavelId: formData.get("responsavelId")?.toString(),
       statusId: formData.get("statusId")?.toString(),
       prazo: formData.get("prazo")?.toString(),
+      prazoPostagem: formData.get("prazoPostagem")?.toString(),
+      legenda: formData.get("legenda")?.toString(),
       briefing: formData.get("briefing")?.toString(),
     });
     if (!parsed.success) {
@@ -68,30 +76,53 @@ export async function salvarJob(
     const statusAlvo = await db.jobStatus.findUnique({ where: { id: statusId } });
     const concluidoEm = statusAlvo?.isConcluido ? new Date() : null;
 
+    const ehPost = d.tipo === "POSTAGEM";
+    const formatos = ehPost ? formData.getAll("formatos").map(String).filter(Boolean).join(",") || null : null;
+    const envolvidos = ehPost ? [...new Set(formData.getAll("envolvidos").map(String).filter(Boolean))] : [];
+    const rotulo = ehPost ? "a postagem" : "o job";
+
     const data = {
+      tipo: d.tipo,
       titulo: d.titulo,
       clienteId: d.clienteId,
       projetoId: d.projetoId,
       responsavelId: d.responsavelId ?? user.id,
       statusId,
       prazo: d.prazo,
+      prazoPostagem: ehPost ? d.prazoPostagem : null,
+      legenda: ehPost ? d.legenda : null,
+      formatos,
       briefing: d.briefing,
     };
 
+    let jobId: string;
     if (id) {
       const anterior = await db.job.findUnique({ where: { id }, select: { responsavelId: true } });
       await db.job.update({ where: { id }, data });
-      await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: "editou o job" });
+      jobId = id;
+      await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: `editou ${rotulo}` });
       if (data.responsavelId && data.responsavelId !== anterior?.responsavelId) {
-        await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pelo job "${d.titulo}"`, entidadeTipo: "job", entidadeId: id, url: `/jobs/${id}` });
+        await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável por "${d.titulo}"`, entidadeTipo: "job", entidadeId: id, url: `/jobs/${id}` });
       }
       destino = `/jobs/${id}`;
     } else {
       const numero = await proximoNumero("JOB");
       const criado = await db.job.create({ data: { ...data, numero, concluidoEm, criadoPorId: user.id } });
-      await registrarLog({ entidadeTipo: "job", entidadeId: criado.id, usuarioId: user.id, acao: `criou o job #${numero}` });
-      await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pelo job "${d.titulo}"`, entidadeTipo: "job", entidadeId: criado.id, url: `/jobs/${criado.id}` });
+      jobId = criado.id;
+      await registrarLog({ entidadeTipo: "job", entidadeId: criado.id, usuarioId: user.id, acao: `criou ${rotulo} #${numero}` });
+      await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável por "${d.titulo}"`, entidadeTipo: "job", entidadeId: criado.id, url: `/jobs/${criado.id}` });
       destino = `/jobs/${criado.id}`;
+    }
+
+    // Envolvidos (só postagem): substitui o conjunto + avisa os novos.
+    if (ehPost) {
+      const antigos = (await db.jobEnvolvido.findMany({ where: { jobId }, select: { usuarioId: true } })).map((e) => e.usuarioId);
+      await db.jobEnvolvido.deleteMany({ where: { jobId } });
+      if (envolvidos.length) {
+        await db.jobEnvolvido.createMany({ data: envolvidos.map((usuarioId) => ({ jobId, usuarioId })), skipDuplicates: true });
+        const novos = envolvidos.filter((u) => !antigos.includes(u) && u !== user.id);
+        await notificarMuitos(novos, { atorId: user.id, tipo: "atribuicao", titulo: `Você foi incluído na postagem "${d.titulo}"`, entidadeTipo: "job", entidadeId: jobId, url: `/jobs/${jobId}` });
+      }
     }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Não foi possível salvar o job." };
@@ -149,6 +180,41 @@ export async function excluirJob(id: string) {
   await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: "excluiu o job" });
   revalidatePath("/jobs");
   redirect("/jobs");
+}
+
+/** Duplica um job/postagem: novo número, "(cópia)", status reiniciado, copia subtarefas e envolvidos. */
+export async function duplicarJob(id: string) {
+  const user = await assertPapel(TRABALHAR);
+  const orig = await db.job.findUnique({
+    where: { id },
+    include: { tarefas: { orderBy: { ordem: "asc" } }, envolvidos: { select: { usuarioId: true } } },
+  });
+  if (!orig) throw new Error("Job não encontrado.");
+
+  const primeiro = await db.jobStatus.findFirst({ where: { ativo: true }, orderBy: { ordem: "asc" } });
+  const numero = await proximoNumero("JOB");
+  const novo = await db.job.create({
+    data: {
+      numero,
+      tipo: orig.tipo,
+      titulo: `${orig.titulo} (cópia)`,
+      clienteId: orig.clienteId,
+      projetoId: orig.projetoId,
+      responsavelId: orig.responsavelId,
+      statusId: primeiro?.id ?? orig.statusId,
+      prazo: orig.prazo,
+      prazoPostagem: orig.prazoPostagem,
+      legenda: orig.legenda,
+      formatos: orig.formatos,
+      briefing: orig.briefing,
+      criadoPorId: user.id,
+      tarefas: { create: orig.tarefas.map((t) => ({ descricao: t.descricao, responsavelId: t.responsavelId, ordem: t.ordem, concluida: false })) },
+      envolvidos: { create: orig.envolvidos.map((e) => ({ usuarioId: e.usuarioId })) },
+    },
+  });
+  await registrarLog({ entidadeTipo: "job", entidadeId: novo.id, usuarioId: user.id, acao: `duplicou de #${orig.numero}` });
+  revalidatePath("/jobs");
+  redirect(`/jobs/${novo.id}`);
 }
 
 // ── Subtarefas ────────────────────────────────────────────────────────
