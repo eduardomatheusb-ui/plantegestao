@@ -43,6 +43,7 @@ const propostaSchema = z.object({
   projetoId: z.string().optional().transform((v) => (v ? v : null)),
   responsavelId: z.string().optional().transform((v) => (v ? v : null)),
   validadeDias: z.coerce.number().int().min(0).default(30),
+  versao: z.coerce.number().int().min(1).default(1),
   prazo: z.string().optional().transform((v) => (v ? new Date(`${v}T00:00:00`) : null)),
 });
 
@@ -60,6 +61,7 @@ export async function salvarProposta(
       projetoId: formData.get("projetoId")?.toString(),
       responsavelId: formData.get("responsavelId")?.toString(),
       validadeDias: formData.get("validadeDias")?.toString() || "30",
+      versao: formData.get("versao")?.toString() || "1",
       prazo: formData.get("prazo")?.toString(),
     });
     if (!parsed.success) {
@@ -77,6 +79,7 @@ export async function salvarProposta(
       projetoId: d.projetoId,
       responsavelId: d.responsavelId,
       validadeDias: d.validadeDias,
+      versao: d.versao,
       prazo: d.prazo,
     };
     if (id) {
@@ -121,6 +124,13 @@ export async function atualizarIntroducao(id: string, formData: FormData) {
   await assertPapel(EDITAR);
   const introducao = formData.get("introducao")?.toString() ?? "";
   await db.proposta.update({ where: { id }, data: { introducao: introducao.trim() || null } });
+  revalidatePath(`/propostas/${id}`);
+}
+
+export async function atualizarConsideracoes(id: string, formData: FormData) {
+  await assertPapel(EDITAR);
+  const texto = formData.get("consideracoesFinais")?.toString() ?? "";
+  await db.proposta.update({ where: { id }, data: { consideracoesFinais: texto.trim() || null } });
   revalidatePath(`/propostas/${id}`);
 }
 

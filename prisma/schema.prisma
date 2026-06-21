@@ -442,6 +442,7 @@ enum PropostaStatus {
 model Proposta {
   id            String         @id @default(cuid())
   numero        Int            @unique
+  versao        Int            @default(1)
   titulo        String
   clienteId     String
   projetoId     String?
@@ -450,6 +451,7 @@ model Proposta {
   validadeDias  Int            @default(30)
   prazo         DateTime?
   introducao    String?
+  consideracoesFinais String?
   valorTotal    Decimal        @default(0) @db.Decimal(14, 2)
   criadoPorId   String?
   criadoEm      DateTime       @default(now())

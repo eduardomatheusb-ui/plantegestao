@@ -25,6 +25,7 @@ export default async function EditarPropostaPage({ params }: { params: Promise<{
     projetoId: proposta.projetoId ?? "",
     responsavelId: proposta.responsavelId ?? "",
     validadeDias: String(proposta.validadeDias),
+    versao: String(proposta.versao),
     prazo: proposta.prazo ? proposta.prazo.toISOString().slice(0, 10) : "",
   };
 

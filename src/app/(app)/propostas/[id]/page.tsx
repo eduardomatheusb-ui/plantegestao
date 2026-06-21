@@ -14,6 +14,7 @@ import { ConfirmButton } from "@/components/shared/confirm-button";
 import { HistoryPanel } from "@/components/shared/history-panel";
 import { PropostaStatusSelect } from "@/components/propostas/status-select";
 import { IntroducaoEditor } from "@/components/propostas/introducao-editor";
+import { ConsideracoesEditor } from "@/components/propostas/consideracoes-editor";
 import { AddItemForm } from "@/components/propostas/add-item-form";
 import { ItemRow } from "@/components/propostas/item-row";
 
@@ -60,7 +61,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
   return (
     <div className="space-y-6">
       <PageHeader
-        titulo={`Proposta #${proposta.numero} · ${proposta.titulo}`}
+        titulo={`Proposta #${proposta.numero}.${proposta.versao} · ${proposta.titulo}`}
         descricao={proposta.cliente?.nome}
         acao={
           <div className="flex flex-wrap items-center gap-2">
@@ -170,6 +171,20 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
           </div>
 
           {podeEditar && <AddItemForm propostaId={proposta.id} produtos={produtosPlain} />}
+        </CardContent>
+      </Card>
+
+      {/* Considerações finais */}
+      <Card>
+        <CardHeader><CardTitle>Considerações finais</CardTitle></CardHeader>
+        <CardContent>
+          {podeEditar ? (
+            <ConsideracoesEditor id={proposta.id} consideracoes={proposta.consideracoesFinais} />
+          ) : proposta.consideracoesFinais ? (
+            <p className="whitespace-pre-wrap text-sm">{proposta.consideracoesFinais}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">Sem considerações finais.</p>
+          )}
         </CardContent>
       </Card>
 

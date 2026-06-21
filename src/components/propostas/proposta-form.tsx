@@ -19,6 +19,7 @@ export type PropostaInicial = {
   projetoId?: string;
   responsavelId?: string;
   validadeDias?: string;
+  versao?: string;
   prazo?: string;
 };
 
@@ -96,6 +97,12 @@ export function PropostaForm({
         <div className="space-y-2">
           <Label htmlFor="validadeDias">Validade (dias)</Label>
           <Input id="validadeDias" name="validadeDias" type="number" min="0" defaultValue={inicial.validadeDias ?? "30"} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="versao">Versão</Label>
+          <Input id="versao" name="versao" type="number" min="1" step="1" defaultValue={inicial.versao ?? "1"} />
+          <p className="text-xs text-muted-foreground">Aparece como nº.versão (ex.: 5.1).</p>
         </div>
 
         <div className="space-y-2">

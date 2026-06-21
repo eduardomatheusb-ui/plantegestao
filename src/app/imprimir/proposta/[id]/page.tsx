@@ -4,6 +4,7 @@ import { obterProposta } from "@/lib/propostas/queries";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { LogoMark } from "@/components/brand/logo";
 import { PrintButton } from "@/components/propostas/print-button";
+import { EMPRESA } from "@/lib/empresa";
 
 export default async function ImprimirPropostaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,17 +27,19 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
 
       <article className="mx-auto w-[210mm] max-w-full bg-white p-12 shadow-lg print:w-full print:p-0 print:shadow-none">
         {/* Cabeçalho */}
-        <header className="flex items-start justify-between border-b-4 border-[#f7ff19] pb-6">
-          <div className="flex items-center gap-3">
-            <LogoMark className="size-10" />
-            <div>
-              <p className="font-display text-xl font-bold leading-none">Plante Comunicação</p>
-              <p className="text-xs text-neutral-500">Publicidade & Marketing</p>
+        <header className="flex items-start justify-between gap-6 border-b-4 border-[#f7ff19] pb-6">
+          <div className="flex items-start gap-3">
+            <LogoMark className="size-10 shrink-0" />
+            <div className="space-y-0.5">
+              <p className="font-display text-xl font-bold leading-none">{EMPRESA.marca}</p>
+              <p className="text-xs text-neutral-500">{EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}</p>
+              <p className="text-xs text-neutral-500">{EMPRESA.email} · {EMPRESA.telefone}</p>
+              <p className="text-xs text-neutral-500">{EMPRESA.endereco} · CEP {EMPRESA.cep}</p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             <p className="font-display text-2xl font-bold">PROPOSTA</p>
-            <p className="text-sm text-neutral-500">Nº {proposta.numero}</p>
+            <p className="text-sm text-neutral-500">Nº {proposta.numero}.{proposta.versao}</p>
           </div>
         </header>
 
@@ -47,16 +50,16 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
             <p className="font-medium">{proposta.cliente?.nome}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">Data</p>
-            <p className="font-medium">{formatDate(proposta.criadoEm)}</p>
+            <p className="text-xs uppercase tracking-wide text-neutral-500">Projeto</p>
+            <p className="font-medium">{proposta.projeto ? `#${proposta.projeto.numero} ${proposta.projeto.nome}` : "—"}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-wide text-neutral-500">Responsável</p>
             <p className="font-medium">{proposta.responsavel?.nome ?? "—"}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">Validade</p>
-            <p className="font-medium">{proposta.validadeDias} dias (até {formatDate(validadeAte)})</p>
+            <p className="text-xs uppercase tracking-wide text-neutral-500">Validade · Data</p>
+            <p className="font-medium">{proposta.validadeDias} dias (até {formatDate(validadeAte)}) · {formatDate(proposta.criadoEm)}</p>
           </div>
         </section>
 
@@ -109,9 +112,27 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
           </div>
         </div>
 
+        {/* Considerações finais */}
+        {proposta.consideracoesFinais && (
+          <section className="mt-8">
+            <h2 className="font-display text-sm font-bold uppercase tracking-wide">Considerações finais</h2>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">{proposta.consideracoesFinais}</p>
+          </section>
+        )}
+
+        {/* Assinaturas */}
+        <section className="mt-16 grid grid-cols-2 gap-12">
+          <div className="text-center">
+            <div className="border-t border-[#050505] pt-2 text-sm font-medium">{EMPRESA.marca}</div>
+          </div>
+          <div className="text-center">
+            <div className="border-t border-[#050505] pt-2 text-sm font-medium">{proposta.cliente?.nome}</div>
+          </div>
+        </section>
+
         {/* Rodapé */}
-        <footer className="mt-12 border-t border-neutral-200 pt-4 text-xs text-neutral-400">
-          Proposta válida por {proposta.validadeDias} dias a partir da data de emissão. · Plante Comunicação · Documento gerado pelo sistema interno.
+        <footer className="mt-10 border-t border-neutral-200 pt-4 text-xs text-neutral-400">
+          Proposta válida por {proposta.validadeDias} dias a partir da data de emissão. · {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}
         </footer>
       </article>
     </div>
