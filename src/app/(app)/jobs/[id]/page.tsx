@@ -6,6 +6,7 @@ import { obterJob, listarStatus } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
 import { arquivarJob, excluirJob, duplicarJob } from "@/lib/jobs/actions";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
+import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
 import { formatDate, cn } from "@/lib/utils";
 import { formatHoras } from "@/lib/projetos/situacao";
 import { PageHeader } from "@/components/shared/page-header";
@@ -36,14 +37,14 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
   const statusOpts = statuses.map((s) => ({ id: s.id, nome: s.nome }));
   const hoje = new Date().toISOString().slice(0, 10);
   const atrasado = !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
-  const ehPost = job.tipo === "POSTAGEM";
-  const formatos = ehPost ? rotulosFormatos(job.formatos) : [];
+  const ehSocial = tipoJobSocial(job.tipo);
+  const formatos = ehSocial ? rotulosFormatos(job.formatos) : [];
 
   return (
     <div className="space-y-6">
       <PageHeader
         titulo={`#${job.numero} · ${job.titulo}`}
-        descricao={job.cliente?.nome}
+        descricao={`${rotuloTipoJob(job.tipo)} · ${job.cliente?.nome ?? ""}`}
         acao={
           <div className="flex flex-wrap items-center gap-2">
             <MoverStatus
@@ -117,7 +118,7 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
             <p className="text-sm font-medium">{job.responsavel?.nome ?? "—"}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{ehPost ? "Prazo de criação" : "Prazo"}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{ehSocial ? "Prazo de criação" : "Prazo"}</p>
             <p className={cn("inline-flex items-center gap-1 text-sm font-medium", atrasado && "text-destructive")}>
               <CalendarClock className="size-4" />
               {formatDate(job.prazo)}
@@ -130,11 +131,11 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
         </CardContent>
       </Card>
 
-      {ehPost && (
+      {ehSocial && (
         <Card className="border-l-4 border-l-fuchsia-400">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Instagram className="size-4 text-fuchsia-500" aria-hidden="true" /> Postagem
+              <Instagram className="size-4 text-fuchsia-500" aria-hidden="true" /> {rotuloTipoJob(job.tipo)}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

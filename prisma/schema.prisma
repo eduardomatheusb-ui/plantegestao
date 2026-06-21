@@ -548,17 +548,10 @@ model JobStatus {
   @@index([ordem])
 }
 
-/// Distingue o trabalho "pesado" (job/campanha, com desdobramentos) da postagem
-/// simples de rede social (sem budget/custo, só prazos + legenda + formato).
-enum JobTipo {
-  JOB
-  POSTAGEM
-}
-
 model Job {
   id           String      @id @default(cuid())
   numero       Int         @unique
-  tipo         JobTipo     @default(JOB)
+  tipo         String      @default("outro") // catálogo em lib/jobs/tipos.ts (post_estatico, video, material_grafico…)
   titulo       String
   clienteId    String
   projetoId    String?
