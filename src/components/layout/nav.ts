@@ -12,8 +12,6 @@ import {
   Truck,
   Hammer,
   Radio,
-  Package,
-  ListTree,
   Target,
   Landmark,
   ShieldCheck,
@@ -33,16 +31,19 @@ export type NavItem = {
 
 export type NavGroup = {
   titulo?: string;
+  /** Destaque visual do grupo (título em amarelo). */
+  destaque?: boolean;
   itens: NavItem[];
 };
 
-/** Estrutura do menu lateral. Itens "em breve" ganham vida nas fases seguintes. */
+/** Estrutura do menu lateral. */
 export const NAV: NavGroup[] = [
   {
-    itens: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, disponivel: true }],
+    itens: [{ label: "Minha página", href: "/dashboard", icon: LayoutDashboard, disponivel: true }],
   },
   {
-    titulo: "Trabalho",
+    titulo: "Mão na massa",
+    destaque: true,
     itens: [
       { label: "Projetos", href: "/projetos", icon: FolderKanban, modulo: "projetos", disponivel: true },
       { label: "Jobs", href: "/jobs", icon: ListChecks, modulo: "jobs", disponivel: true },
@@ -56,20 +57,18 @@ export const NAV: NavGroup[] = [
     itens: [
       { label: "Lançamentos", href: "/financeiro", icon: Wallet, modulo: "financeiro", disponivel: true },
       { label: "Relatórios", href: "/relatorios", icon: BarChart3, modulo: "relatorios", disponivel: true },
+      { label: "Centros de custo", href: "/cadastros/centros-custo", icon: Target, modulo: "cadastros", disponivel: true },
+      { label: "Contas bancárias", href: "/cadastros/contas", icon: Landmark, modulo: "cadastros", disponivel: true },
     ],
   },
   {
     titulo: "Cadastros",
     itens: [
       { label: "Clientes", href: "/cadastros/clientes", icon: Users, modulo: "cadastros", disponivel: true },
-      { label: "Colaboradores", href: "/cadastros/colaboradores", icon: Contact, modulo: "cadastros", disponivel: true },
       { label: "Fornecedores", href: "/cadastros/fornecedores", icon: Truck, modulo: "cadastros", disponivel: true },
+      { label: "Colaboradores", href: "/cadastros/colaboradores", icon: Contact, modulo: "cadastros", disponivel: true },
       { label: "Prestadores", href: "/cadastros/prestadores", icon: Hammer, modulo: "cadastros", disponivel: true },
       { label: "Veículos", href: "/cadastros/veiculos", icon: Radio, modulo: "cadastros", disponivel: true },
-      { label: "Produtos", href: "/cadastros/produtos", icon: Package, modulo: "cadastros", disponivel: true },
-      { label: "Categorias", href: "/cadastros/categorias", icon: ListTree, modulo: "cadastros", disponivel: true },
-      { label: "Centros de custo", href: "/cadastros/centros-custo", icon: Target, modulo: "cadastros", disponivel: true },
-      { label: "Contas bancárias", href: "/cadastros/contas", icon: Landmark, modulo: "cadastros", disponivel: true },
     ],
   },
   {

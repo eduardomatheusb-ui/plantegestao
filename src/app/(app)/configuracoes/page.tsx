@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, Users, ShieldCheck, ListChecks } from "lucide-react";
+import { Building2, Users, ShieldCheck, ListChecks, Package, ListTree } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,8 @@ const ITENS = [
   { href: "/configuracoes/usuarios", icon: Users, titulo: "Usuários", desc: "Quem acessa o sistema, perfis e convites." },
   { href: "/configuracoes/perfis", icon: ShieldCheck, titulo: "Perfis de acesso", desc: "Crie e ajuste o que cada perfil pode fazer em cada módulo." },
   { href: "/configuracoes/empresa", icon: Building2, titulo: "Dados da empresa", desc: "Aparecem no cabeçalho das propostas, PIs e produção." },
+  { href: "/cadastros/produtos", icon: Package, titulo: "Produtos / Serviços", desc: "Catálogo usado em propostas e orçamentos." },
+  { href: "/cadastros/categorias", icon: ListTree, titulo: "Categorias", desc: "Plano de contas (receitas e despesas)." },
   { href: "/jobs/status", icon: ListChecks, titulo: "Status de jobs", desc: "Configure as etapas do fluxo (kanban) dos jobs." },
 ];
 

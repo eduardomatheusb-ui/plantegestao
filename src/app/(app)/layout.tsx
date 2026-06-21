@@ -2,6 +2,7 @@ import { requireUser, PAPEL_LABEL } from "@/lib/rbac";
 import { carregarAcesso } from "@/lib/permissoes.server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
@@ -18,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           podeAdmin={acesso.admin}
           caps={acesso.caps}
         />
+        <Breadcrumbs />
         <main className="flex-1 p-4 lg:p-8">{children}</main>
       </div>
     </div>

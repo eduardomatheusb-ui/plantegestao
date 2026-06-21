@@ -36,7 +36,7 @@ export function MobileNav({ caps }: { caps: Capacidades }) {
           {grupos.map((grupo, i) => (
             <div key={i}>
               {grupo.titulo && (
-                <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-chrome-foreground/40">
+                <p className={cn("px-3 pb-2 text-xs font-semibold uppercase tracking-wider", grupo.destaque ? "text-brand-yellow" : "text-chrome-foreground/40")}>
                   {grupo.titulo}
                 </p>
               )}
