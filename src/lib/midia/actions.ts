@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
+import { notificar } from "@/lib/notificacoes";
 import { assertPapel } from "@/lib/rbac";
 import { calcularTotaisMidia } from "./calculo";
 import { STATUS_LABEL } from "./constants";
@@ -102,14 +103,20 @@ export async function salvarMidiaPlano(
     };
 
     if (id) {
+      const anterior = await db.midiaPlano.findUnique({ where: { id }, select: { responsavelId: true } });
       await db.midiaPlano.update({ where: { id }, data });
       await recalcular(id);
       await registrarLog({ entidadeTipo: "midia", entidadeId: id, usuarioId: user.id, acao: "editou o plano de mídia" });
+      if (data.responsavelId && data.responsavelId !== anterior?.responsavelId) {
+        await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pela mídia "${data.titulo}"`, entidadeTipo: "midia", entidadeId: id, url: `/midia/${id}` });
+      }
       destino = `/midia/${id}`;
     } else {
       const numero = await proximoNumero("MIDIA");
-      const criado = await db.midiaPlano.create({ data: { ...data, numero, responsavelId: data.responsavelId ?? user.id, criadoPorId: user.id } });
+      const responsavelId = data.responsavelId ?? user.id;
+      const criado = await db.midiaPlano.create({ data: { ...data, numero, responsavelId, criadoPorId: user.id } });
       await registrarLog({ entidadeTipo: "midia", entidadeId: criado.id, usuarioId: user.id, acao: `criou o plano de mídia #${numero}` });
+      await notificar({ usuarioId: responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pela mídia "${data.titulo}"`, entidadeTipo: "midia", entidadeId: criado.id, url: `/midia/${criado.id}` });
       destino = `/midia/${criado.id}`;
     }
   } catch (e) {
@@ -122,9 +129,12 @@ export async function salvarMidiaPlano(
 export async function alterarStatusMidia(id: string, status: MidiaStatus) {
   const user = await assertPapel(EDITAR);
   if (!STATUS.includes(status)) throw new Error("Status inválido.");
-  const atual = await db.midiaPlano.findUnique({ where: { id }, select: { status: true } });
+  const atual = await db.midiaPlano.findUnique({ where: { id }, select: { status: true, titulo: true, responsavelId: true } });
   await db.midiaPlano.update({ where: { id }, data: { status } });
   await registrarLog({ entidadeTipo: "midia", entidadeId: id, usuarioId: user.id, acao: "mudou o status", de: atual ? STATUS_LABEL[atual.status] : null, para: STATUS_LABEL[status] });
+  if (atual?.responsavelId) {
+    await notificar({ usuarioId: atual.responsavelId, atorId: user.id, tipo: "status", titulo: `Status da mídia "${atual.titulo}" mudou`, descricao: `${STATUS_LABEL[atual.status]} → ${STATUS_LABEL[status]}`, entidadeTipo: "midia", entidadeId: id, url: `/midia/${id}` });
+  }
   revalidatePath(`/midia/${id}`);
   revalidatePath("/midia");
 }

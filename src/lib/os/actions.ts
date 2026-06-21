@@ -111,6 +111,11 @@ export async function gerarLancamentoDaOs(osId: string) {
   const numero = await proximoNumero("LANCAMENTO");
   const competencia = os.dataEmissao;
   const paga = os.status === "PAGA";
+  // Categoria-padrão de receita de serviços (se existir no plano de contas).
+  const categoria = await db.categoria.findFirst({
+    where: { tipo: "RECEITA", nome: "Receita de serviços" },
+    select: { id: true },
+  });
   await db.lancamento.create({
     data: {
       numero,
@@ -118,6 +123,7 @@ export async function gerarLancamentoDaOs(osId: string) {
       titulo: `OS #${os.numero} — ${os.titulo}`,
       clienteId: os.clienteId,
       projetoId: os.projetoId,
+      categoriaId: categoria?.id ?? null,
       osId: os.id,
       docNf: `OS #${os.numero}`,
       dataVencimento: os.vencimento ?? competencia,
