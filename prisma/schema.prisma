@@ -208,6 +208,14 @@ model Sequence {
   ultimo Int    @default(0)
 }
 
+/// Anti-brute-force no login: contagem de falhas e bloqueio temporário por e-mail.
+model LoginAttempt {
+  email        String    @id
+  tentativas   Int       @default(0)
+  bloqueadoAte DateTime?
+  atualizadoEm DateTime  @updatedAt
+}
+
 /// Histórico/auditoria reutilizável por qualquer entidade (LGPD Art. 37 análogo).
 model Log {
   id           String   @id @default(cuid())

@@ -37,6 +37,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <Logo tom="claro" />
           </div>
           {children}
+          <p className="mt-8 text-center text-xs text-muted-foreground">
+            <a href="/privacidade" className="hover:text-foreground hover:underline">Aviso de Privacidade</a>
+          </p>
         </div>
       </section>
     </main>
