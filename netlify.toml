@@ -8,5 +8,7 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  # Garante que o Prisma baixe o engine do runtime serverless (AWS Lambda) no build.
-  PRISMA_CLI_BINARY_TARGETS = "rhel-openssl-3.0.x"
+  # Engines do Prisma vêm do schema (binaryTargets = ["native", "rhel-openssl-3.0.x"]):
+  # "native" = engine de migração/build na máquina Debian do Netlify; "rhel-openssl-3.0.x"
+  # = query engine do runtime serverless (AWS Lambda). NÃO definir PRISMA_CLI_BINARY_TARGETS
+  # aqui, senão o Prisma deixa de baixar o engine "native" e o `migrate deploy` falha.
