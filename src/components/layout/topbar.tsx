@@ -19,7 +19,7 @@ export function Topbar({
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background px-4 lg:px-6">
       <MobileNav />
       <div className="lg:hidden">
-        <Logo showWordmark={false} />
+        <Logo showWordmark={false} tom="claro" />
       </div>
 
       {/* Busca global (stub — ganha função em fase futura) */}
