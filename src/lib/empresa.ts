@@ -14,6 +14,15 @@ export const EMPRESA_PADRAO = {
   telefone: "(31) 98524-5110",
   cep: "32600-115",
   endereco: "Av. Governador Valadares, 355, sala 301 — Centro, Betim/MG",
+  // Dados fiscais (NFS-e) — preenchidos ao integrar o provedor.
+  inscricaoMunicipal: "",
+  codigoMunicipioIbge: "3106705", // Betim/MG
+  itemListaServico: "17.06", // propaganda e publicidade (LC 116/03)
+  codigoTributarioMunicipio: "",
+  aliquotaIss: "", // ex.: "2" (=2%)
+  optanteSimplesNacional: true,
+  incentivadorCultural: false,
+  regimeTributario: "Simples Nacional",
 };
 
 export type EmpresaDados = typeof EMPRESA_PADRAO;
@@ -31,5 +40,13 @@ export async function getEmpresa(): Promise<EmpresaDados> {
     telefone: e.telefone,
     cep: e.cep,
     endereco: e.endereco,
+    inscricaoMunicipal: e.inscricaoMunicipal ?? "",
+    codigoMunicipioIbge: e.codigoMunicipioIbge ?? "3106705",
+    itemListaServico: e.itemListaServico ?? "",
+    codigoTributarioMunicipio: e.codigoTributarioMunicipio ?? "",
+    aliquotaIss: e.aliquotaIss != null ? String(e.aliquotaIss) : "",
+    optanteSimplesNacional: e.optanteSimplesNacional,
+    incentivadorCultural: e.incentivadorCultural,
+    regimeTributario: e.regimeTributario ?? "",
   };
 }

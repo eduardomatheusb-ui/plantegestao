@@ -98,6 +98,7 @@ model Usuario {
   osCriadas           OrdemServico[]     @relation("OsCriadoPor")
   chatMensagens       ChatMensagem[]     @relation("ChatAutor")
   chatLeituras        ChatLeitura[]
+  notasFiscais        NotaFiscal[]
 
   @@index([papel])
 }
@@ -155,8 +156,9 @@ model OrdemServico {
   projeto     Projeto?           @relation(fields: [projetoId], references: [id], onDelete: SetNull)
   responsavel Usuario?           @relation("OsResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
   criadoPor   Usuario?           @relation("OsCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
-  itens       OrdemServicoItem[]
-  lancamentos Lancamento[]
+  itens         OrdemServicoItem[]
+  lancamentos   Lancamento[]
+  notasFiscais  NotaFiscal[]
 
   @@index([clienteId])
   @@index([status])
@@ -248,6 +250,7 @@ model Cliente {
   midiaPlanos         MidiaPlano[]
   producaoOrdens      ProducaoOrdem[]
   ordensServico       OrdemServico[]
+  notasFiscais        NotaFiscal[]
 
   @@index([arquivado])
   @@index([nome])
@@ -714,6 +717,7 @@ model Lancamento {
   conta         ContaBancaria? @relation("LancamentoConta", fields: [contaId], references: [id], onDelete: SetNull)
   contaDestino  ContaBancaria? @relation("LancamentoContaDestino", fields: [contaDestinoId], references: [id], onDelete: SetNull)
   criadoPor     Usuario?       @relation("LancamentoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  notasFiscais  NotaFiscal[]
 
   @@index([tipo])
   @@index([status])
@@ -851,6 +855,53 @@ model Empresa {
   cep             String
   endereco        String
   atualizadoEm    DateTime @updatedAt
+
+  // Dados fiscais p/ emissão de NFS-e (preenchidos quando integrar o provedor).
+  inscricaoMunicipal       String?
+  codigoMunicipioIbge      String? // IBGE do município emissor (Betim = 3106705)
+  itemListaServico         String? // LC 116/03 (ex.: 17.06 — propaganda e publicidade)
+  codigoTributarioMunicipio String? // código de serviço / CNAE municipal
+  aliquotaIss              Decimal? @db.Decimal(6, 4) // ex.: 2.0000 (=2%)
+  optanteSimplesNacional   Boolean  @default(true)
+  incentivadorCultural     Boolean  @default(false)
+  regimeTributario         String? // descrição (ex.: "Simples Nacional")
+}
+
+/// Situação de uma NFS-e junto ao provedor/prefeitura.
+enum NfStatus {
+  PROCESSANDO
+  AUTORIZADA
+  ERRO
+  CANCELADA
+}
+
+/// NFS-e emitida via provedor (Focus NFe). Documento FISCAL — distinto da OS/Fatura (comercial).
+model NotaFiscal {
+  id               String   @id @default(cuid())
+  ref              String   @unique // referência idempotente enviada ao provedor
+  osId             String?
+  lancamentoId     String?
+  clienteId        String
+  status           NfStatus @default(PROCESSANDO)
+  numero           String? // número da NFS-e autorizada
+  codigoVerificacao String?
+  valor            Decimal  @db.Decimal(14, 2)
+  descricao        String
+  urlPdf           String?
+  urlXml           String?
+  mensagemErro     String?
+  criadoPorId      String?
+  criadoEm         DateTime @default(now())
+  atualizadoEm     DateTime @updatedAt
+
+  os         OrdemServico? @relation(fields: [osId], references: [id], onDelete: SetNull)
+  lancamento Lancamento?   @relation(fields: [lancamentoId], references: [id], onDelete: SetNull)
+  cliente    Cliente       @relation(fields: [clienteId], references: [id])
+  criadoPor  Usuario?      @relation(fields: [criadoPorId], references: [id], onDelete: SetNull)
+
+  @@index([osId])
+  @@index([clienteId])
+  @@index([status])
 }
 
 // ─────────────────────────── Produção (Pedido de Produção) ───────────────────────────

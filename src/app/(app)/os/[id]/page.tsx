@@ -15,6 +15,10 @@ import { ConfirmButton } from "@/components/shared/confirm-button";
 import { HistoryPanel } from "@/components/shared/history-panel";
 import { OsStatusSelect } from "@/components/os/status-select";
 import { OsItemRow, OsAddItem } from "@/components/os/itens";
+import { NfPainel } from "@/components/os/nf-painel";
+import { listarNotasDaOs } from "@/lib/nf/queries";
+import { estadoFiscal } from "@/lib/nf/actions";
+import { focusEmHomologacao } from "@/lib/nf/focus";
 
 function Info({ rotulo, valor }: { rotulo: string; valor: React.ReactNode }) {
   return (
@@ -45,6 +49,8 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
     valorUnit: Number(it.valorUnit),
     valorTotal: Number(it.valorTotal),
   }));
+
+  const [notas, estado] = await Promise.all([listarNotasDaOs(os.id), estadoFiscal()]);
 
   return (
     <div className="space-y-6">
@@ -119,6 +125,19 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
             <span className="text-sm font-medium text-muted-foreground">Total</span>
             <span className="font-display text-2xl font-bold tabular-nums">{formatBRL(Number(os.valorTotal))}</span>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Nota Fiscal (NFS-e)</CardTitle></CardHeader>
+        <CardContent>
+          <NfPainel
+            osId={os.id}
+            notas={notas}
+            podeEditar={podeEditar}
+            estado={estado}
+            homologacao={focusEmHomologacao()}
+          />
         </CardContent>
       </Card>
 

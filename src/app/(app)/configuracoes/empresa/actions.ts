@@ -7,6 +7,11 @@ import { assertModulo } from "@/lib/permissoes.server";
 
 export type EmpresaState = { ok?: boolean; error?: string };
 
+const opt = (v: FormDataEntryValue | null) => {
+  const s = v?.toString().trim();
+  return s ? s : null;
+};
+
 const schema = z.object({
   marca: z.string().trim().min(1, "Informe a marca."),
   razaoSocial: z.string().trim().min(1, "Informe a razão social."),
@@ -34,7 +39,25 @@ export async function salvarEmpresa(_prev: EmpresaState, formData: FormData): Pr
     if (!parsed.success) {
       return { error: parsed.error.issues[0]?.message ?? "Confira os campos." };
     }
-    const d = parsed.data;
+
+    // Campos fiscais (NFS-e) — todos opcionais.
+    const aliqStr = formData.get("aliquotaIss")?.toString().trim().replace(",", ".");
+    const aliquotaIss = aliqStr ? Number(aliqStr) : null;
+    if (aliqStr && (Number.isNaN(aliquotaIss) || aliquotaIss! < 0)) {
+      return { error: "Alíquota de ISS inválida (use número, ex.: 2 ou 2.5)." };
+    }
+    const fiscal = {
+      inscricaoMunicipal: opt(formData.get("inscricaoMunicipal")),
+      codigoMunicipioIbge: opt(formData.get("codigoMunicipioIbge")),
+      itemListaServico: opt(formData.get("itemListaServico")),
+      codigoTributarioMunicipio: opt(formData.get("codigoTributarioMunicipio")),
+      aliquotaIss,
+      regimeTributario: opt(formData.get("regimeTributario")),
+      optanteSimplesNacional: formData.get("optanteSimplesNacional") === "on",
+      incentivadorCultural: formData.get("incentivadorCultural") === "on",
+    };
+
+    const d = { ...parsed.data, ...fiscal };
     await db.empresa.upsert({ where: { id: "singleton" }, create: { id: "singleton", ...d }, update: d });
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Não foi possível salvar." };

@@ -66,6 +66,48 @@ export function EmpresaForm({ inicial }: { inicial: EmpresaDados }) {
         </div>
       </div>
 
+      <fieldset className="space-y-5 rounded-lg border border-border p-4">
+        <legend className="px-1 text-sm font-semibold">Dados fiscais (NFS-e)</legend>
+        <p className="text-xs text-muted-foreground">
+          Necessários para emitir Nota Fiscal de Serviço. Confirme com a contabilidade — em
+          especial a <strong>alíquota de ISS</strong> e o <strong>item da lista de serviço</strong>.
+        </p>
+        <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="inscricaoMunicipal">Inscrição municipal</Label>
+            <Input id="inscricaoMunicipal" name="inscricaoMunicipal" defaultValue={inicial.inscricaoMunicipal} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="codigoMunicipioIbge">Código IBGE do município</Label>
+            <Input id="codigoMunicipioIbge" name="codigoMunicipioIbge" defaultValue={inicial.codigoMunicipioIbge} placeholder="Betim = 3106705" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="itemListaServico">Item da lista de serviço (LC 116)</Label>
+            <Input id="itemListaServico" name="itemListaServico" defaultValue={inicial.itemListaServico} placeholder="ex.: 17.06" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="codigoTributarioMunicipio">Código de serviço / CNAE municipal</Label>
+            <Input id="codigoTributarioMunicipio" name="codigoTributarioMunicipio" defaultValue={inicial.codigoTributarioMunicipio} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="aliquotaIss">Alíquota de ISS (%)</Label>
+            <Input id="aliquotaIss" name="aliquotaIss" inputMode="decimal" defaultValue={inicial.aliquotaIss} placeholder="ex.: 2" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="regimeTributario">Regime tributário</Label>
+            <Input id="regimeTributario" name="regimeTributario" defaultValue={inicial.regimeTributario} />
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="optanteSimplesNacional" defaultChecked={inicial.optanteSimplesNacional} className="size-4" />
+            Optante pelo Simples Nacional
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="incentivadorCultural" defaultChecked={inicial.incentivadorCultural} className="size-4" />
+            Incentivador cultural
+          </label>
+        </div>
+      </fieldset>
+
       <Salvar />
     </form>
   );
