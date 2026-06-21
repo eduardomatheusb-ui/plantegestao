@@ -6,6 +6,11 @@
   # As tabelas já existem no Neon (migrations rodam localmente). Build só gera o client + Next.
   command = "npm run build"
 
+# Garante que o engine do Prisma (libquery_engine-rhel-openssl-3.0.x) seja empacotado
+# na função serverless do Netlify — sem isso, as consultas ao banco falham em runtime.
+[functions]
+  included_files = ["node_modules/.prisma/client/**"]
+
 [build.environment]
   NODE_VERSION = "20"
   # Engines do Prisma vêm do schema (binaryTargets = ["native", "rhel-openssl-3.0.x"]):
