@@ -4,7 +4,7 @@ import { obterProposta } from "@/lib/propostas/queries";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { LogoMark } from "@/components/brand/logo";
 import { PrintButton } from "@/components/propostas/print-button";
-import { EMPRESA } from "@/lib/empresa";
+import { getEmpresa } from "@/lib/empresa";
 
 export default async function ImprimirPropostaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -13,6 +13,7 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
   const proposta = await obterProposta(id);
   if (!proposta) notFound();
 
+  const empresa = await getEmpresa();
   const itens = proposta.itens.filter((i) => i.visivel);
   const validadeAte = new Date(new Date(proposta.criadoEm).getTime() + proposta.validadeDias * 86400000);
 
@@ -31,10 +32,10 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
           <div className="flex items-start gap-3">
             <LogoMark className="size-10 shrink-0" />
             <div className="space-y-0.5">
-              <p className="font-display text-xl font-bold leading-none">{EMPRESA.marca}</p>
-              <p className="text-xs text-neutral-500">{EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}</p>
-              <p className="text-xs text-neutral-500">{EMPRESA.email} · {EMPRESA.telefone}</p>
-              <p className="text-xs text-neutral-500">{EMPRESA.endereco} · CEP {EMPRESA.cep}</p>
+              <p className="font-display text-xl font-bold leading-none">{empresa.marca}</p>
+              <p className="text-xs text-neutral-500">{empresa.razaoSocial} · CNPJ {empresa.cnpj}</p>
+              <p className="text-xs text-neutral-500">{empresa.email} · {empresa.telefone}</p>
+              <p className="text-xs text-neutral-500">{empresa.endereco} · CEP {empresa.cep}</p>
             </div>
           </div>
           <div className="shrink-0 text-right">
@@ -123,7 +124,7 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
         {/* Assinaturas */}
         <section className="mt-16 grid grid-cols-2 gap-12">
           <div className="text-center">
-            <div className="border-t border-[#050505] pt-2 text-sm font-medium">{EMPRESA.marca}</div>
+            <div className="border-t border-[#050505] pt-2 text-sm font-medium">{empresa.marca}</div>
           </div>
           <div className="text-center">
             <div className="border-t border-[#050505] pt-2 text-sm font-medium">{proposta.cliente?.nome}</div>
@@ -132,7 +133,7 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
 
         {/* Rodapé */}
         <footer className="mt-10 border-t border-neutral-200 pt-4 text-xs text-neutral-400">
-          Proposta válida por {proposta.validadeDias} dias a partir da data de emissão. · {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}
+          Proposta válida por {proposta.validadeDias} dias a partir da data de emissão. · {empresa.razaoSocial} · CNPJ {empresa.cnpj}
         </footer>
       </article>
     </div>

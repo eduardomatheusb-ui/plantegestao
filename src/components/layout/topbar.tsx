@@ -8,10 +8,12 @@ export function Topbar({
   nome,
   email,
   papelLabel,
+  podeConfig,
 }: {
   nome?: string | null;
   email?: string | null;
   papelLabel: string;
+  podeConfig?: boolean;
 }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background px-4 lg:px-6">
@@ -40,7 +42,7 @@ export function Topbar({
 
       <div className="ml-auto flex items-center gap-1">
         <ThemeToggle />
-        <UserMenu nome={nome} email={email} papelLabel={papelLabel} />
+        <UserMenu nome={nome} email={email} papelLabel={papelLabel} podeConfig={podeConfig} />
       </div>
     </header>
   );

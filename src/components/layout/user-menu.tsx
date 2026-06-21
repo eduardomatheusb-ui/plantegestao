@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { LogOut, Building2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +17,12 @@ export function UserMenu({
   nome,
   email,
   papelLabel,
+  podeConfig = false,
 }: {
   nome?: string | null;
   email?: string | null;
   papelLabel: string;
+  podeConfig?: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -38,6 +41,14 @@ export function UserMenu({
           <span className="mt-1 text-xs font-normal text-muted-foreground">{papelLabel}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {podeConfig && (
+          <DropdownMenuItem asChild>
+            <Link href="/configuracoes/empresa">
+              <Building2 className="size-4" />
+              Dados da empresa
+            </Link>
+          </DropdownMenuItem>
+        )}
         <form action={logoutAction}>
           <button type="submit" className="w-full">
             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">

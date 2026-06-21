@@ -690,6 +690,22 @@ model MidiaInsercao {
   @@index([gradeLinhaId])
 }
 
+// ─────────────────────────── Configuração: dados da empresa (emitente) ───────────────────────────
+
+/// Registro único (id fixo "singleton") com os dados que vão nos documentos.
+model Empresa {
+  id              String   @id @default("singleton")
+  marca           String
+  razaoSocial     String
+  cnpj            String
+  email           String // comercial (propostas)
+  emailFinanceiro String // PI / produção
+  telefone        String
+  cep             String
+  endereco        String
+  atualizadoEm    DateTime @updatedAt
+}
+
 // ─────────────────────────── Produção (Pedido de Produção) ───────────────────────────
 
 enum ProducaoStatus {

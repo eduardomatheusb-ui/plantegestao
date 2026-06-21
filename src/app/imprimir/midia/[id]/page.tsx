@@ -7,7 +7,7 @@ import { MESES } from "@/lib/financeiro/constants";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { LogoMark } from "@/components/brand/logo";
 import { PrintButton } from "@/components/propostas/print-button";
-import { EMPRESA } from "@/lib/empresa";
+import { getEmpresa } from "@/lib/empresa";
 
 function Bloco({ titulo, linhas }: { titulo: string; linhas: (string | null | undefined)[] }) {
   return (
@@ -26,6 +26,7 @@ export default async function ImprimirMidiaPage({ params }: { params: Promise<{ 
   const plano = await obterMidiaPlano(id);
   if (!plano) notFound();
 
+  const empresa = await getEmpresa();
   const diario = plano.tipo === "RADIO" || plano.tipo === "TV";
   const totalLinha = (l: (typeof plano.grades)[number]["linhas"][number]) =>
     diario ? l.insercoes.reduce((a, i) => a + i.quantidade, 0) : l.quantidade;
@@ -51,10 +52,10 @@ export default async function ImprimirMidiaPage({ params }: { params: Promise<{ 
           <div className="flex items-start gap-3">
             <LogoMark className="size-10 shrink-0" />
             <div className="space-y-0.5">
-              <p className="font-display text-xl font-bold leading-none">{EMPRESA.marca}</p>
-              <p className="text-xs text-neutral-500">{EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}</p>
-              <p className="text-xs text-neutral-500">{EMPRESA.emailFinanceiro} · {EMPRESA.telefone}</p>
-              <p className="text-xs text-neutral-500">{EMPRESA.endereco} · CEP {EMPRESA.cep}</p>
+              <p className="font-display text-xl font-bold leading-none">{empresa.marca}</p>
+              <p className="text-xs text-neutral-500">{empresa.razaoSocial} · CNPJ {empresa.cnpj}</p>
+              <p className="text-xs text-neutral-500">{empresa.emailFinanceiro} · {empresa.telefone}</p>
+              <p className="text-xs text-neutral-500">{empresa.endereco} · CEP {empresa.cep}</p>
             </div>
           </div>
           <div className="shrink-0 text-right">
@@ -151,13 +152,13 @@ export default async function ImprimirMidiaPage({ params }: { params: Promise<{ 
             </thead>
             <tbody>
               <tr className="border-b border-neutral-100">
-                <td className="py-1.5 pr-1">Pagar à: {EMPRESA.marca} · 1 Parcela (comissão)</td>
+                <td className="py-1.5 pr-1">Pagar à: {empresa.marca} · 1 Parcela (comissão)</td>
                 <td className="py-1.5 px-1">{formatDate(plano.vencimento)}</td>
                 <td className="py-1.5 px-1 text-right tabular-nums">{formatBRL(totais.comissao)}</td>
                 <td className="py-1.5 pl-1">{forma}</td>
               </tr>
               <tr className="border-b border-neutral-100">
-                <td className="py-1.5 pr-1">Pagar à: {EMPRESA.marca} · 1 Parcela (líquido ao veículo)</td>
+                <td className="py-1.5 pr-1">Pagar à: {empresa.marca} · 1 Parcela (líquido ao veículo)</td>
                 <td className="py-1.5 px-1">{formatDate(plano.vencimento)}</td>
                 <td className="py-1.5 px-1 text-right tabular-nums">{formatBRL(totais.valorLiquido)}</td>
                 <td className="py-1.5 pl-1">{forma}</td>
@@ -194,7 +195,7 @@ export default async function ImprimirMidiaPage({ params }: { params: Promise<{ 
 
         {/* Assinaturas */}
         <section className="mt-12 grid grid-cols-3 gap-8">
-          {[v?.nome ?? "Veículo", c?.nome ?? "Cliente", EMPRESA.marca].map((nome, i) => (
+          {[v?.nome ?? "Veículo", c?.nome ?? "Cliente", empresa.marca].map((nome, i) => (
             <div key={i} className="text-center">
               <div className="border-t border-[#050505] pt-2 text-xs font-medium">{nome}</div>
             </div>
@@ -202,7 +203,7 @@ export default async function ImprimirMidiaPage({ params }: { params: Promise<{ 
         </section>
 
         <footer className="mt-8 border-t border-neutral-200 pt-3 text-[10px] text-neutral-400">
-          *Valor de referência do desconto-padrão/comissão (remuneração da agência — item 1.11 das Normas-Padrão da Atividade Publicitária, CENP). · {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}
+          *Valor de referência do desconto-padrão/comissão (remuneração da agência — item 1.11 das Normas-Padrão da Atividade Publicitária, CENP). · {empresa.razaoSocial} · CNPJ {empresa.cnpj}
         </footer>
       </article>
     </div>
