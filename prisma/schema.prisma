@@ -94,8 +94,62 @@ model Usuario {
   producaoCriadas     ProducaoOrdem[]    @relation("ProducaoCriadoPor")
   notificacoes        Notificacao[]      @relation("NotificacaoDestino")
   notificacoesGeradas Notificacao[]      @relation("NotificacaoAtor")
+  osResponsavel       OrdemServico[]     @relation("OsResponsavel")
+  osCriadas           OrdemServico[]     @relation("OsCriadoPor")
 
   @@index([papel])
+}
+
+/// Status de uma Ordem de Serviço / Fatura emitida ao cliente.
+enum OsStatus {
+  RASCUNHO
+  EMITIDA
+  PAGA
+  CANCELADA
+}
+
+/// Ordem de Serviço — documento de SAÍDA (emitido AO cliente). Base p/ Fatura e Recibo.
+model OrdemServico {
+  id                 String   @id @default(cuid())
+  numero             Int      @unique
+  titulo             String
+  clienteId          String
+  projetoId          String?
+  responsavelId      String?
+  status             OsStatus @default(RASCUNHO)
+  dataEmissao        DateTime @default(now())
+  vencimento         DateTime?
+  formaPagamento     String?
+  condicoesPagamento String?
+  observacao         String?
+  valorTotal         Decimal  @default(0) @db.Decimal(14, 2)
+  criadoPorId        String?
+  criadoEm           DateTime @default(now())
+  atualizadoEm       DateTime @updatedAt
+
+  cliente     Cliente            @relation(fields: [clienteId], references: [id])
+  projeto     Projeto?           @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  responsavel Usuario?           @relation("OsResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor   Usuario?           @relation("OsCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  itens       OrdemServicoItem[]
+
+  @@index([clienteId])
+  @@index([status])
+}
+
+model OrdemServicoItem {
+  id         String   @id @default(cuid())
+  osId       String
+  descricao  String
+  quantidade Decimal  @default(1) @db.Decimal(12, 2)
+  valorUnit  Decimal  @default(0) @db.Decimal(14, 2)
+  valorTotal Decimal  @default(0) @db.Decimal(14, 2)
+  ordem      Int      @default(0)
+  criadoEm   DateTime @default(now())
+
+  os OrdemServico @relation(fields: [osId], references: [id], onDelete: Cascade)
+
+  @@index([osId])
 }
 
 /// Notificações pessoais: tudo que envolve o usuário (atribuições, comentários, status…).
@@ -168,6 +222,7 @@ model Cliente {
   lancamentos         Lancamento[]
   midiaPlanos         MidiaPlano[]
   producaoOrdens      ProducaoOrdem[]
+  ordensServico       OrdemServico[]
 
   @@index([arquivado])
   @@index([nome])
@@ -377,6 +432,7 @@ model Projeto {
   lancamentos  Lancamento[]
   midiaPlanos  MidiaPlano[]
   producaoOrdens ProducaoOrdem[]
+  ordensServico  OrdemServico[]
 
   @@index([clienteId])
   @@index([status])

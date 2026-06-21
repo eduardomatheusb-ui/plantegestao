@@ -12,6 +12,7 @@ export const MODULOS = [
   { key: "propostas", label: "Propostas" },
   { key: "midia", label: "Mídia" },
   { key: "producao", label: "Produção" },
+  { key: "os", label: "Serviços / OS" },
   { key: "financeiro", label: "Financeiro" },
   { key: "relatorios", label: "Relatórios" },
   { key: "cadastros", label: "Cadastros" },
@@ -109,7 +110,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
     descricao: "Projetos, jobs, propostas e clientes. Sem acesso ao financeiro.",
     caps: {
       projetos: "EDITAR", jobs: "EDITAR", propostas: "EDITAR",
-      midia: "VER", producao: "VER", financeiro: "NENHUM",
+      midia: "VER", producao: "VER", os: "EDITAR", financeiro: "NENHUM",
       relatorios: "VER", cadastros: "EDITAR", admin: "NENHUM",
     },
   },

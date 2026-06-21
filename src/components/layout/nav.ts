@@ -5,6 +5,7 @@ import {
   FileText,
   Megaphone,
   Factory,
+  ReceiptText,
   Wallet,
   BarChart3,
   Users,
@@ -50,6 +51,7 @@ export const NAV: NavGroup[] = [
       { label: "Propostas", href: "/propostas", icon: FileText, modulo: "propostas", disponivel: true },
       { label: "Mídia", href: "/midia", icon: Megaphone, modulo: "midia", disponivel: true },
       { label: "Produção", href: "/producao", icon: Factory, modulo: "producao", disponivel: true },
+      { label: "Serviços / OS", href: "/os", icon: ReceiptText, modulo: "os", disponivel: true },
     ],
   },
   {
