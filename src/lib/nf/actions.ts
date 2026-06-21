@@ -59,30 +59,30 @@ async function emitirNotaPara(opts: EmitirOpts): Promise<{ ok: boolean; erro?: s
     data: { ref: opts.ref, osId: opts.osId ?? null, lancamentoId: opts.lancamentoId ?? null, clienteId: cliente.id, status: "PROCESSANDO", valor: opts.valor, descricao: opts.descricao.slice(0, 200), criadoPorId: opts.criadoPorId ?? null },
   });
 
-  const tomador: Record<string, unknown> = {
-    razao_social: cliente.nome,
-    email: cliente.email || undefined,
-    [docTomador.length > 11 ? "cnpj" : "cpf"]: docTomador,
-  };
-  if (cliente.cep) {
-    tomador.endereco = { logradouro: cliente.endereco || "Não informado", codigo_municipio: empresa.codigoMunicipioIbge, cep: soDigitos(cliente.cep) };
-  }
-
-  const payload = {
+  // Payload NFS-e Nacional (Focus /v2/nfsen) — estrutura "achatada" (Betim aderiu ao padrão nacional).
+  // Campos com código nacional (codigo_tributacao_nacional_iss, regime, PIS/COFINS) e a
+  // parametrização da empresa são finalizados no PAINEL DA FOCUS + validados em homologação.
+  const ehCnpj = docTomador.length > 11;
+  const payload: Record<string, unknown> = {
     data_emissao: new Date().toISOString(),
-    natureza_operacao: "1",
-    optante_simples_nacional: empresa.optanteSimplesNacional,
-    incentivador_cultural: empresa.incentivadorCultural,
-    prestador: { cnpj: soDigitos(empresa.cnpj), inscricao_municipal: empresa.inscricaoMunicipal, codigo_municipio: empresa.codigoMunicipioIbge },
-    tomador,
-    servico: {
-      aliquota: Number(empresa.aliquotaIss),
-      discriminacao: opts.discriminacao.slice(0, 1900),
-      iss_retido: false,
-      item_lista_servico: empresa.itemListaServico,
-      codigo_tributario_municipio: empresa.codigoTributarioMunicipio || empresa.itemListaServico,
-      valor_servicos: opts.valor,
-    },
+    // Prestador (Plante)
+    cnpj_prestador: soDigitos(empresa.cnpj),
+    email_prestador: empresa.email || undefined,
+    // Tomador (cliente)
+    [ehCnpj ? "cnpj_tomador" : "cpf_tomador"]: docTomador,
+    razao_social_tomador: cliente.nome,
+    email_tomador: cliente.email || undefined,
+    logradouro_tomador: cliente.endereco || undefined,
+    cep_tomador: cliente.cep ? soDigitos(cliente.cep) : undefined,
+    // Serviço
+    codigo_municipio_prestacao: empresa.codigoMunicipioIbge,
+    codigo_tributacao_nacional_iss: empresa.codigoTributarioMunicipio || empresa.itemListaServico,
+    descricao_servico: opts.discriminacao.slice(0, 1900),
+    valor_servico: opts.valor,
+    aliquota: empresa.aliquotaIss != null ? Number(empresa.aliquotaIss) : undefined,
+    iss_retido: false,
+    // Simples Nacional: 1 = optante, 2 = não optante
+    codigo_opcao_simples_nacional: empresa.optanteSimplesNacional ? 1 : 2,
   };
 
   const r = await emitirNfse(opts.ref, payload);

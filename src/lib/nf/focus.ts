@@ -6,13 +6,22 @@ import "server-only";
  * Ambiente controlado por env (homologação por padrão — não emite nota real).
  *
  * Variáveis de ambiente:
- *   FOCUS_NFE_TOKEN     — token da conta (Script Properties / env do Netlify)
+ *   FOCUS_NFE_TOKEN     — token da conta (env do Netlify)
  *   FOCUS_NFE_AMBIENTE  — "homologacao" (padrão) | "producao"
+ *   FOCUS_NFE_MODELO    — "nacional" (padrão; NFS-e Nacional, /v2/nfsen) | "municipal" (/v2/nfse)
+ *
+ * Betim/MG aderiu à NFS-e Nacional (2026) e autentica por LOGIN/SENHA da prefeitura
+ * (cadastrados no painel da Focus, por empresa) — não por certificado.
  */
 
 function baseFocus(): string {
   const amb = (process.env.FOCUS_NFE_AMBIENTE || "homologacao").toLowerCase();
   return amb === "producao" ? "https://api.focusnfe.com.br" : "https://homologacao.focusnfe.com.br";
+}
+
+/** Recurso da API: NFS-e Nacional (/v2/nfsen) por padrão; municipal antigo se configurado. */
+function recurso(): string {
+  return (process.env.FOCUS_NFE_MODELO || "nacional").toLowerCase() === "municipal" ? "/v2/nfse" : "/v2/nfsen";
 }
 
 export function focusConfigurado(): boolean {
@@ -79,13 +88,13 @@ async function req(method: string, path: string, body?: unknown): Promise<FocusR
 }
 
 export function emitirNfse(ref: string, payload: unknown): Promise<FocusResultado> {
-  return req("POST", `/v2/nfse?ref=${encodeURIComponent(ref)}`, payload);
+  return req("POST", `${recurso()}?ref=${encodeURIComponent(ref)}`, payload);
 }
 
 export function consultarNfse(ref: string): Promise<FocusResultado> {
-  return req("GET", `/v2/nfse/${encodeURIComponent(ref)}`);
+  return req("GET", `${recurso()}/${encodeURIComponent(ref)}`);
 }
 
 export function cancelarNfse(ref: string, justificativa: string): Promise<FocusResultado> {
-  return req("DELETE", `/v2/nfse/${encodeURIComponent(ref)}`, { justificativa });
+  return req("DELETE", `${recurso()}/${encodeURIComponent(ref)}`, { justificativa });
 }
