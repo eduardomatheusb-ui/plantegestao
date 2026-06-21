@@ -8,8 +8,10 @@ import { metricaJobsNoPrazo } from "@/lib/jobs/queries";
 import {
   minhaPauta, meusProjetos, timesheetHoje, ultimosDocumentos, comentariosRecentes, contadores,
 } from "@/lib/dashboard/queries";
+import { getClima } from "@/lib/clima";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Donut } from "@/components/dashboard/donut";
+import { Saudacao } from "@/components/dashboard/saudacao";
 import { formatDate, cn } from "@/lib/utils";
 
 function fmtHoras(min: number) {
@@ -20,9 +22,16 @@ function fmtHoras(min: number) {
   return `${m}min`;
 }
 
+function mensagemDoDia(emAtraso: number, vencemHoje: number, pendentes: number): string {
+  if (emAtraso > 0) return `Você tem ${emAtraso} ${emAtraso === 1 ? "tarefa atrasada" : "tarefas atrasadas"} — comece por elas.`;
+  if (vencemHoje > 0) return `${vencemHoje} ${vencemHoje === 1 ? "entrega vence" : "entregas vencem"} hoje. Bora?`;
+  if (pendentes === 0) return "Sua pauta está limpa. Bom momento para planejar.";
+  return "Tudo em dia por aqui. Mantenha o ritmo.";
+}
+
 export default async function DashboardPage() {
   const user = await requireUser();
-  const [pauta, projetos, timesheet, docs, comentarios, cont, noPrazo] = await Promise.all([
+  const [pauta, projetos, timesheet, docs, comentarios, cont, noPrazo, clima] = await Promise.all([
     minhaPauta(user.id),
     meusProjetos(user.id),
     timesheetHoje(user.id),
@@ -30,17 +39,24 @@ export default async function DashboardPage() {
     comentariosRecentes(),
     contadores(user.id),
     metricaJobsNoPrazo(),
+    getClima(),
   ]);
 
   const primeiroNome = user.name?.split(" ")[0] ?? "";
   const agora = new Date();
+  const inicioHoje = new Date(); inicioHoje.setHours(0, 0, 0, 0);
+  const fimHoje = new Date(); fimHoje.setHours(23, 59, 59, 999);
+  const vencemHoje = pauta.filter((j) => j.prazo && j.prazo >= inicioHoje && j.prazo <= fimHoje).length;
+  const mensagem = mensagemDoDia(cont.emAtraso, vencemHoje, pauta.length);
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="font-display text-2xl font-bold tracking-tight">Olá, {primeiroNome} 👋</h1>
-        <p className="text-sm text-muted-foreground">{PAPEL_LABEL[user.papel]} · Plante Comunicação</p>
-      </div>
+      <Saudacao
+        nome={primeiroNome}
+        subtitulo={`${PAPEL_LABEL[user.papel]} · Plante Comunicação`}
+        clima={clima}
+        mensagem={mensagem}
+      />
 
       {/* Linha 1: módulos, prazo, timesheet */}
       <div className="grid gap-4 lg:grid-cols-3">
