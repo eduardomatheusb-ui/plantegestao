@@ -109,7 +109,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
           }
         />
       ) : view === "kanban-status" || view === "kanban-resp" ? (
-        <KanbanColumns colunas={colunas} statuses={statusOpts} />
+        <KanbanColumns colunas={colunas} statuses={statusOpts} arrastavel={view === "kanban-status"} />
       ) : view === "timeline" ? (
         <Timeline jobs={jobs} statuses={statusOpts} />
       ) : (

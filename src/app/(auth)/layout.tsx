@@ -6,15 +6,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Painel de marca (chrome escuro) */}
       <section className="relative hidden flex-col justify-between bg-chrome p-10 text-chrome-foreground lg:flex">
         <Logo sub="Gestão" />
-        <div className="space-y-4">
-          <h1 className="font-display text-4xl font-bold leading-tight">
-            Gestão da agência,
-            <br />
-            <span className="text-brand-yellow">do briefing ao faturamento.</span>
+        <div className="space-y-5">
+          <h1 className="font-display text-7xl font-black leading-none tracking-tight text-brand-yellow">
+            TREM
           </h1>
-          <p className="max-w-md text-sm text-chrome-foreground/70">
-            Projetos, jobs, propostas, mídia e financeiro da Plante Comunicação — em um
-            só lugar.
+          <p className="font-display text-lg font-semibold leading-snug">
+            <span className="text-brand-yellow">T</span>arefas,{" "}
+            <span className="text-brand-yellow">R</span>otinas,{" "}
+            <span className="text-brand-yellow">E</span>ntregas e{" "}
+            <span className="text-brand-yellow">M</span>etas da Plante.
+          </p>
+          <p className="max-w-md text-sm leading-relaxed text-chrome-foreground/70">
+            O trem de fazer os trem tudo, organizando os trem daqui da agência.
+            Desenvolvido para você poder ter suas tarefas mais organizadas, do jeito
+            mineiro que só a Plante sabe fazer.
           </p>
         </div>
         <p className="text-xs text-chrome-foreground/50">
