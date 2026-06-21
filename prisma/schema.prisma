@@ -22,17 +22,58 @@ enum Papel {
   OPERADOR
 }
 
+/// Nível de acesso de um perfil a um módulo do sistema.
+enum NivelAcesso {
+  NENHUM // não vê o módulo
+  VER    // somente leitura
+  EDITAR // cria, edita, arquiva
+  ADMIN  // tudo, incluindo excluir e configurar
+}
+
+/// Perfil de acesso PERSONALIZÁVEL pelo administrador (ex.: Criativo, Atendimento, Mídia…).
+/// As capacidades por módulo ficam em PerfilCapacidade. `sistema` protege os perfis-base
+/// contra exclusão (podem ser editados, não removidos).
+model PerfilAcesso {
+  id           String             @id @default(cuid())
+  nome         String             @unique
+  descricao    String?
+  sistema      Boolean            @default(false)
+  criadoEm     DateTime           @default(now())
+  atualizadoEm DateTime           @updatedAt
+
+  capacidades  PerfilCapacidade[]
+  usuarios     Usuario[]
+}
+
+/// Nível de um perfil em um módulo. `modulo` é uma chave estável (ver lib/permissoes.ts).
+model PerfilCapacidade {
+  id       String      @id @default(cuid())
+  perfilId String
+  modulo   String
+  nivel    NivelAcesso @default(NENHUM)
+
+  perfil   PerfilAcesso @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@unique([perfilId, modulo])
+}
+
 model Usuario {
   id           String   @id @default(cuid())
   nome         String
   email        String   @unique
-  senhaHash    String
+  senhaHash    String?
   papel        Papel    @default(OPERADOR)
+  perfilId     String?
+  responsavelConta Boolean @default(false)
   avatarUrl    String?
   ativo        Boolean  @default(true)
+  // Convite por e-mail: token de definição de senha (1º acesso / reset).
+  conviteToken   String?   @unique
+  conviteExpira  DateTime?
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  perfil       PerfilAcesso? @relation(fields: [perfilId], references: [id], onDelete: SetNull)
   logs         Log[]
   colaborador  Colaborador?
 

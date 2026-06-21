@@ -42,7 +42,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const usuario = await db.usuario.findUnique({
           where: { email: email.toLowerCase().trim() },
         });
-        if (!usuario || !usuario.ativo) return null;
+        // Sem senha definida = convite pendente; inativo = bloqueado.
+        if (!usuario || !usuario.ativo || !usuario.senhaHash) return null;
 
         const ok = await bcrypt.compare(senha, usuario.senhaHash);
         if (!ok) return null;

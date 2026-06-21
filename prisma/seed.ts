@@ -1,23 +1,45 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { PERFIS_PADRAO, MODULOS, completarCaps, derivarPapel } from "../src/lib/permissoes";
 
 const db = new PrismaClient();
 
 async function main() {
   console.log("🌱 Semeando Plante Gestão…");
 
-  // ── Usuários (3 papéis) ──────────────────────────────────────────────
+  // ── Perfis de acesso (base, editáveis pelo admin) ────────────────────
+  for (const p of PERFIS_PADRAO) {
+    const caps = completarCaps(p.caps);
+    const perfil = await db.perfilAcesso.upsert({
+      where: { nome: p.nome },
+      update: { descricao: p.descricao, sistema: true },
+      create: { nome: p.nome, descricao: p.descricao, sistema: true },
+    });
+    for (const m of MODULOS) {
+      await db.perfilCapacidade.upsert({
+        where: { perfilId_modulo: { perfilId: perfil.id, modulo: m.key } },
+        update: { nivel: caps[m.key] },
+        create: { perfilId: perfil.id, modulo: m.key, nivel: caps[m.key] },
+      });
+    }
+  }
+  console.log(`  ✓ ${PERFIS_PADRAO.length} perfis de acesso (base)`);
+
+  // ── Usuários (ligados a perfis) ──────────────────────────────────────
   const senhaHash = bcrypt.hashSync("plante123", 10);
   const usuarios = [
-    { nome: "Eduardo (Sócio-diretor)", email: "eduardo@plante.com.br", papel: "SOCIO_DIRETOR" as const },
-    { nome: "Gestora de Contas", email: "gestor@plante.com.br", papel: "GESTOR" as const },
-    { nome: "Operador de Criação", email: "operador@plante.com.br", papel: "OPERADOR" as const },
+    { nome: "Eduardo (Sócio-diretor)", email: "eduardo@plante.com.br", perfil: "Administrador", responsavel: true },
+    { nome: "Gestora de Contas", email: "gestor@plante.com.br", perfil: "Total", responsavel: false },
+    { nome: "Operador de Criação", email: "operador@plante.com.br", perfil: "Atendimento", responsavel: false },
   ];
   for (const u of usuarios) {
+    const padrao = PERFIS_PADRAO.find((p) => p.nome === u.perfil)!;
+    const papel = derivarPapel(completarCaps(padrao.caps), u.responsavel);
+    const perfil = await db.perfilAcesso.findUnique({ where: { nome: u.perfil } });
     await db.usuario.upsert({
       where: { email: u.email },
-      update: { nome: u.nome, papel: u.papel },
-      create: { ...u, senhaHash },
+      update: { nome: u.nome, papel, perfilId: perfil?.id, responsavelConta: u.responsavel },
+      create: { nome: u.nome, email: u.email, senhaHash, papel, perfilId: perfil?.id, responsavelConta: u.responsavel },
     });
   }
   console.log(`  ✓ ${usuarios.length} usuários (senha: plante123)`);
