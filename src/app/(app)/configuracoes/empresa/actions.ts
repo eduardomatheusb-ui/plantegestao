@@ -55,6 +55,7 @@ export async function salvarEmpresa(_prev: EmpresaState, formData: FormData): Pr
       regimeTributario: opt(formData.get("regimeTributario")),
       optanteSimplesNacional: formData.get("optanteSimplesNacional") === "on",
       incentivadorCultural: formData.get("incentivadorCultural") === "on",
+      urlEmissaoNfse: opt(formData.get("urlEmissaoNfse")),
     };
 
     const d = { ...parsed.data, ...fiscal };

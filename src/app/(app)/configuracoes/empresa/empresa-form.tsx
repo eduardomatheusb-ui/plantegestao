@@ -105,6 +105,11 @@ export function EmpresaForm({ inicial }: { inicial: EmpresaDados }) {
             <input type="checkbox" name="incentivadorCultural" defaultChecked={inicial.incentivadorCultural} className="size-4" />
             Incentivador cultural
           </label>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="urlEmissaoNfse">Link de emissão de NFS-e</Label>
+            <Input id="urlEmissaoNfse" name="urlEmissaoNfse" type="url" defaultValue={inicial.urlEmissaoNfse} placeholder="https://..." />
+            <p className="text-xs text-muted-foreground">Portal onde a Plante emite a nota (Emissor Nacional ou o site da prefeitura de Betim). É o destino do botão &quot;Emitir nota&quot; nos lançamentos de receita.</p>
+          </div>
         </div>
       </fieldset>
 

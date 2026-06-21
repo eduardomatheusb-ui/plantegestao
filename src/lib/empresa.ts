@@ -23,6 +23,8 @@ export const EMPRESA_PADRAO = {
   optanteSimplesNacional: true,
   incentivadorCultural: false,
   regimeTributario: "Simples Nacional",
+  // Link do portal onde a Plante emite a NFS-e (botão "Emitir nota" no lançamento de receita).
+  urlEmissaoNfse: "https://www.nfse.gov.br/EmissorNacional/",
 };
 
 export type EmpresaDados = typeof EMPRESA_PADRAO;
@@ -48,5 +50,6 @@ export async function getEmpresa(): Promise<EmpresaDados> {
     optanteSimplesNacional: e.optanteSimplesNacional,
     incentivadorCultural: e.incentivadorCultural,
     regimeTributario: e.regimeTributario ?? "",
+    urlEmissaoNfse: e.urlEmissaoNfse || EMPRESA_PADRAO.urlEmissaoNfse,
   };
 }

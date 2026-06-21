@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, ArrowLeft } from "lucide-react";
+import { Pencil, ArrowLeft, Receipt } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterLancamentoDetalhe } from "@/lib/financeiro/queries";
+import { getEmpresa } from "@/lib/empresa";
 import { valorEfetivo } from "@/lib/financeiro/calculo";
 import { TIPO_LABEL, STATUS_LABEL } from "@/lib/financeiro/constants";
 import { listarNotasDoLancamento } from "@/lib/nf/queries";
@@ -40,6 +41,7 @@ export default async function LancamentoDetalhePage({ params }: { params: Promis
   const [notas, estado] = ehReceita
     ? await Promise.all([listarNotasDoLancamento(l.id), estadoFiscal()])
     : [[], { configurado: false, provedor: false, faltando: [] as string[] }];
+  const empresa = ehReceita ? await getEmpresa() : null;
 
   return (
     <div className="space-y-6">
@@ -49,6 +51,11 @@ export default async function LancamentoDetalhePage({ params }: { params: Promis
         acao={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={l.status === "QUITADO" ? "success" : "warning"}>{STATUS_LABEL[l.status]}</Badge>
+            {ehReceita && empresa?.urlEmissaoNfse && (
+              <Button asChild size="sm">
+                <a href={empresa.urlEmissaoNfse} target="_blank" rel="noopener noreferrer"><Receipt className="size-4" /> Emitir nota fiscal</a>
+              </Button>
+            )}
             <Button asChild variant="outline" size="sm"><Link href={`/financeiro${mes}`}><ArrowLeft className="size-4" /> Voltar ao mês</Link></Button>
             {podeEditar && <Button asChild variant="outline" size="sm"><Link href={`/financeiro/${l.id}/editar`}><Pencil className="size-4" /> Editar</Link></Button>}
           </div>

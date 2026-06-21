@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Plus, Minus, ArrowLeftRight, Pencil, Trash2, Check, Undo2, BarChart3, List } from "lucide-react";
+import { Plus, Minus, ArrowLeftRight, Pencil, Trash2, Check, Undo2, BarChart3, List, Receipt } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { requireModulo } from "@/lib/permissoes.server";
 import { listarLancamentosMes, resumoDoMes, serieUltimosMeses } from "@/lib/financeiro/queries";
+import { getEmpresa } from "@/lib/empresa";
 import { quitarLancamento, estornarLancamento, excluirLancamento } from "@/lib/financeiro/actions";
 import { valorEfetivo } from "@/lib/financeiro/calculo";
 import { STATUS_LABEL } from "@/lib/financeiro/constants";
@@ -45,11 +46,13 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
   const mes = Number(sp.mes) || agora.getMonth() + 1;
   const view = sp.view === "grafico" ? "grafico" : "lista";
 
-  const [lancamentos, resumo, serie] = await Promise.all([
+  const [lancamentos, resumo, serie, empresa] = await Promise.all([
     listarLancamentosMes(ano, mes),
     resumoDoMes(ano, mes),
     serieUltimosMeses(ano, mes, 6),
+    getEmpresa(),
   ]);
+  const urlEmissaoNfse = empresa.urlEmissaoNfse;
 
   const novoHref = (tipo: string) => `/financeiro/novo?tipo=${tipo}`;
   const toggleViewHref = `/financeiro?ano=${ano}&mes=${mes}&view=${view === "grafico" ? "lista" : "grafico"}`;
@@ -158,6 +161,13 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                     {podeEditar && (
                       <TableCell>
                         <div className="flex items-center justify-end gap-1">
+                          {l.tipo === "RECEITA" && urlEmissaoNfse && (
+                            <Button asChild variant="ghost" size="sm" title="Emitir nota fiscal (abre o portal de NFS-e)">
+                              <a href={urlEmissaoNfse} target="_blank" rel="noopener noreferrer" aria-label="Emitir nota fiscal">
+                                <Receipt className="size-4" />
+                              </a>
+                            </Button>
+                          )}
                           {l.tipo !== "TRANSFERENCIA" && (
                             quitado ? (
                               <InlineAction action={estornarLancamento.bind(null, l.id)} title="Estornar quitação">
