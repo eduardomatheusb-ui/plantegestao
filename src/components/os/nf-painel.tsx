@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { FileText, FileCode, RefreshCw, Ban, Loader2, AlertTriangle, ReceiptText } from "lucide-react";
-import { emitirNfseDaOs, sincronizarNfse, cancelarNfseDaOs } from "@/lib/nf/actions";
+import { emitirNfseDaOs, emitirNfseDoLancamento, sincronizarNfse, cancelarNfseDaOs } from "@/lib/nf/actions";
 import { Button } from "@/components/ui/button";
 import { formatBRL, cn } from "@/lib/utils";
 import type { NotaFiscalView } from "@/lib/nf/queries";
@@ -22,13 +22,15 @@ const COR: Record<NfStatus, string> = {
 };
 
 export function NfPainel({
-  osId,
+  origemTipo,
+  origemId,
   notas,
   podeEditar,
   estado,
   homologacao,
 }: {
-  osId: string;
+  origemTipo: "os" | "lancamento";
+  origemId: string;
   notas: NotaFiscalView[];
   podeEditar: boolean;
   estado: { configurado: boolean; provedor: boolean; faltando: string[] };
@@ -40,7 +42,7 @@ export function NfPainel({
   function emitir() {
     setErro(null);
     start(async () => {
-      const r = await emitirNfseDaOs(osId);
+      const r = origemTipo === "os" ? await emitirNfseDaOs(origemId) : await emitirNfseDoLancamento(origemId);
       if (!r.ok) setErro(r.erro ?? "Não foi possível emitir.");
     });
   }

@@ -142,7 +142,9 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                     <TableCell className="text-sm">{formatDate(l.dataPagamento)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{l.categoria?.nome ?? "—"}</TableCell>
                     <TableCell className="text-sm">
-                      <span className="text-muted-foreground tabular-nums">#{l.numero}</span> {l.titulo}
+                      <Link href={`/financeiro/${l.id}`} className="hover:underline">
+                        <span className="text-muted-foreground tabular-nums">#{l.numero}</span> {l.titulo}
+                      </Link>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{relacionado}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{sacado}</TableCell>

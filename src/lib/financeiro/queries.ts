@@ -63,6 +63,23 @@ export async function obterLancamento(id: string) {
   return db.lancamento.findUnique({ where: { id } });
 }
 
+/** Lançamento com relações para a tela de detalhe. */
+export async function obterLancamentoDetalhe(id: string) {
+  return db.lancamento.findUnique({
+    where: { id },
+    include: {
+      cliente: { select: { id: true, nome: true, documento: true } },
+      fornecedor: { select: { id: true, nome: true } },
+      categoria: { select: { id: true, nome: true } },
+      projeto: { select: { id: true, numero: true, nome: true } },
+      job: { select: { id: true, numero: true, titulo: true } },
+      os: { select: { id: true, numero: true } },
+      conta: { select: { id: true, nome: true } },
+      contaDestino: { select: { id: true, nome: true } },
+    },
+  });
+}
+
 // ── Opções para os formulários ──────────────────────────────────────────
 
 export function listarCategoriasPorTipo(tipo: "RECEITA" | "DESPESA") {

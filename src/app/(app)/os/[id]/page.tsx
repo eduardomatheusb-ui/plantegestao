@@ -132,7 +132,8 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
         <CardHeader><CardTitle>Nota Fiscal (NFS-e)</CardTitle></CardHeader>
         <CardContent>
           <NfPainel
-            osId={os.id}
+            origemTipo="os"
+            origemId={os.id}
             notas={notas}
             podeEditar={podeEditar}
             estado={estado}

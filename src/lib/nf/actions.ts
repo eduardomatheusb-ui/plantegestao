@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { assertModulo } from "@/lib/permissoes.server";
 import { registrarLog } from "@/lib/log";
+import { valorEfetivo } from "@/lib/financeiro/calculo";
 import { emitirNfse, consultarNfse, cancelarNfse, focusConfigurado } from "./focus";
 import type { FocusResultado } from "./focus";
-import type { NfStatus } from "@prisma/client";
+import type { NfStatus, Cliente, Empresa } from "@prisma/client";
 
 function mapStatus(r: FocusResultado): NfStatus {
   switch (r.status) {
@@ -15,6 +16,10 @@ function mapStatus(r: FocusResultado): NfStatus {
     case "erro_autorizacao": return "ERRO";
     default: return r.erro && r.http >= 400 ? "ERRO" : "PROCESSANDO";
   }
+}
+
+function soDigitos(s: string | null | undefined): string {
+  return (s ?? "").replace(/\D/g, "");
 }
 
 /** Confere se a empresa tem os dados fiscais mínimos para emitir. */
@@ -29,49 +34,38 @@ export async function estadoFiscal(): Promise<{ configurado: boolean; provedor: 
   return { configurado: faltando.length === 0, provedor: focusConfigurado(), faltando };
 }
 
-function soDigitos(s: string | null | undefined): string {
-  return (s ?? "").replace(/\D/g, "");
-}
+type EmitirOpts = {
+  ref: string;
+  cliente: Cliente;
+  empresa: Empresa;
+  valor: number;
+  descricao: string; // resumo curto guardado na NotaFiscal
+  discriminacao: string; // texto completo enviado ao provedor
+  osId?: string | null;
+  lancamentoId?: string | null;
+  criadoPorId?: string | null;
+};
 
-/** Emite uma NFS-e a partir de uma Ordem de Serviço. */
-export async function emitirNfseDaOs(osId: string): Promise<{ ok: boolean; erro?: string; notaId?: string }> {
-  const acesso = await assertModulo("os", "EDITAR");
-
-  const [os, empresa] = await Promise.all([
-    db.ordemServico.findUnique({ where: { id: osId }, include: { cliente: true, itens: { orderBy: { ordem: "asc" } }, lancamentos: { where: { tipo: "RECEITA" }, select: { id: true } } } }),
-    db.empresa.findUnique({ where: { id: "singleton" } }),
-  ]);
-  if (!os) return { ok: false, erro: "OS não encontrada." };
-  if (!empresa) return { ok: false, erro: "Dados da empresa não configurados." };
-
+/** Núcleo de emissão: valida, cria o registro, chama o provedor e atualiza. */
+async function emitirNotaPara(opts: EmitirOpts): Promise<{ ok: boolean; erro?: string; notaId?: string }> {
   const estado = await estadoFiscal();
   if (!estado.configurado) return { ok: false, erro: `Configuração fiscal incompleta: ${estado.faltando.join(", ")}. Preencha em Administração → Dados da empresa.` };
-  const docTomador = soDigitos(os.cliente.documento);
-  if (!docTomador) return { ok: false, erro: "O cliente desta OS está sem CNPJ/CPF — preencha no cadastro do cliente." };
+  const docTomador = soDigitos(opts.cliente.documento);
+  if (!docTomador) return { ok: false, erro: "O cliente está sem CNPJ/CPF — preencha no cadastro do cliente." };
+  if (opts.valor <= 0) return { ok: false, erro: "Valor inválido para emissão da nota." };
 
-  const valor = Number(os.valorTotal);
-  const itensTxt = os.itens.map((i) => `• ${i.descricao}`).join("\n");
-  const discriminacao = [os.titulo, itensTxt].filter(Boolean).join("\n").slice(0, 1900);
-
-  // Referência idempotente única por OS+tentativa.
-  const tentativas = await db.notaFiscal.count({ where: { osId } });
-  const ref = `os-${os.numero}-${tentativas + 1}`;
-
+  const { empresa, cliente } = opts;
   const nota = await db.notaFiscal.create({
-    data: { ref, osId, clienteId: os.clienteId, status: "PROCESSANDO", valor: os.valorTotal, descricao: os.titulo, criadoPorId: acesso.id },
+    data: { ref: opts.ref, osId: opts.osId ?? null, lancamentoId: opts.lancamentoId ?? null, clienteId: cliente.id, status: "PROCESSANDO", valor: opts.valor, descricao: opts.descricao.slice(0, 200), criadoPorId: opts.criadoPorId ?? null },
   });
 
   const tomador: Record<string, unknown> = {
-    razao_social: os.cliente.nome,
-    email: os.cliente.email || undefined,
+    razao_social: cliente.nome,
+    email: cliente.email || undefined,
     [docTomador.length > 11 ? "cnpj" : "cpf"]: docTomador,
   };
-  if (os.cliente.cep) {
-    tomador.endereco = {
-      logradouro: os.cliente.endereco || "Não informado",
-      codigo_municipio: empresa.codigoMunicipioIbge,
-      cep: soDigitos(os.cliente.cep),
-    };
+  if (cliente.cep) {
+    tomador.endereco = { logradouro: cliente.endereco || "Não informado", codigo_municipio: empresa.codigoMunicipioIbge, cep: soDigitos(cliente.cep) };
   }
 
   const payload = {
@@ -79,23 +73,19 @@ export async function emitirNfseDaOs(osId: string): Promise<{ ok: boolean; erro?
     natureza_operacao: "1",
     optante_simples_nacional: empresa.optanteSimplesNacional,
     incentivador_cultural: empresa.incentivadorCultural,
-    prestador: {
-      cnpj: soDigitos(empresa.cnpj),
-      inscricao_municipal: empresa.inscricaoMunicipal,
-      codigo_municipio: empresa.codigoMunicipioIbge,
-    },
+    prestador: { cnpj: soDigitos(empresa.cnpj), inscricao_municipal: empresa.inscricaoMunicipal, codigo_municipio: empresa.codigoMunicipioIbge },
     tomador,
     servico: {
       aliquota: Number(empresa.aliquotaIss),
-      discriminacao,
+      discriminacao: opts.discriminacao.slice(0, 1900),
       iss_retido: false,
       item_lista_servico: empresa.itemListaServico,
       codigo_tributario_municipio: empresa.codigoTributarioMunicipio || empresa.itemListaServico,
-      valor_servicos: valor,
+      valor_servicos: opts.valor,
     },
   };
 
-  const r = await emitirNfse(ref, payload);
+  const r = await emitirNfse(opts.ref, payload);
   const novoStatus = r.configurado ? mapStatus(r) : "ERRO";
   await db.notaFiscal.update({
     where: { id: nota.id },
@@ -106,18 +96,62 @@ export async function emitirNfseDaOs(osId: string): Promise<{ ok: boolean; erro?
       urlPdf: r.urlPdf ?? null,
       urlXml: r.urlXml ?? null,
       mensagemErro: r.configurado ? r.erro ?? null : "Provedor não configurado (FOCUS_NFE_TOKEN ausente).",
-      // já vincula ao lançamento de receita da OS, se houver
-      lancamentoId: os.lancamentos[0]?.id ?? null,
     },
   });
-  await registrarLog({ entidadeTipo: "os", entidadeId: osId, usuarioId: acesso.id, acao: "solicitou emissão de NFS-e", para: novoStatus });
-  revalidatePath(`/os/${osId}`);
   return { ok: novoStatus !== "ERRO", erro: novoStatus === "ERRO" ? (r.erro ?? "Provedor não configurado.") : undefined, notaId: nota.id };
+}
+
+/** Emite uma NFS-e a partir de uma Ordem de Serviço. */
+export async function emitirNfseDaOs(osId: string): Promise<{ ok: boolean; erro?: string; notaId?: string }> {
+  const acesso = await assertModulo("os", "EDITAR");
+  const os = await db.ordemServico.findUnique({ where: { id: osId }, include: { cliente: true, itens: { orderBy: { ordem: "asc" } }, lancamentos: { where: { tipo: "RECEITA" }, select: { id: true } } } });
+  if (!os) return { ok: false, erro: "OS não encontrada." };
+  const empresa = await db.empresa.findUnique({ where: { id: "singleton" } });
+  if (!empresa) return { ok: false, erro: "Dados da empresa não configurados." };
+
+  const tentativas = await db.notaFiscal.count({ where: { osId } });
+  const ref = `os-${os.numero}-${tentativas + 1}`;
+  const itensTxt = os.itens.map((i) => `• ${i.descricao}`).join("\n");
+
+  const res = await emitirNotaPara({
+    ref, cliente: os.cliente, empresa, valor: Number(os.valorTotal),
+    descricao: os.titulo,
+    discriminacao: [os.titulo, itensTxt].filter(Boolean).join("\n"),
+    osId, lancamentoId: os.lancamentos[0]?.id ?? null, criadoPorId: acesso.id,
+  });
+  await registrarLog({ entidadeTipo: "os", entidadeId: osId, usuarioId: acesso.id, acao: "solicitou emissão de NFS-e", para: res.ok ? "PROCESSANDO/AUTORIZADA" : "ERRO" });
+  revalidatePath(`/os/${osId}`);
+  return res;
+}
+
+/** Emite uma NFS-e a partir de um lançamento financeiro de RECEITA. */
+export async function emitirNfseDoLancamento(lancamentoId: string): Promise<{ ok: boolean; erro?: string; notaId?: string }> {
+  const acesso = await assertModulo("financeiro", "EDITAR");
+  const lanc = await db.lancamento.findUnique({ where: { id: lancamentoId }, include: { cliente: true } });
+  if (!lanc) return { ok: false, erro: "Lançamento não encontrado." };
+  if (lanc.tipo !== "RECEITA") return { ok: false, erro: "Só é possível emitir NFS-e de um lançamento de receita." };
+  if (!lanc.cliente) return { ok: false, erro: "Este lançamento está sem cliente — defina o cliente para emitir a nota." };
+  const empresa = await db.empresa.findUnique({ where: { id: "singleton" } });
+  if (!empresa) return { ok: false, erro: "Dados da empresa não configurados." };
+
+  const tentativas = await db.notaFiscal.count({ where: { lancamentoId, osId: null } });
+  const ref = `lanc-${lanc.numero}-${tentativas + 1}`;
+  const valor = valorEfetivo(Number(lanc.valor), Number(lanc.acrescimos), Number(lanc.descontos));
+
+  const res = await emitirNotaPara({
+    ref, cliente: lanc.cliente, empresa, valor,
+    descricao: lanc.titulo,
+    discriminacao: [lanc.titulo, lanc.observacao].filter(Boolean).join("\n"),
+    lancamentoId, criadoPorId: acesso.id,
+  });
+  await registrarLog({ entidadeTipo: "lancamento", entidadeId: lancamentoId, usuarioId: acesso.id, acao: "solicitou emissão de NFS-e", para: res.ok ? "PROCESSANDO/AUTORIZADA" : "ERRO" });
+  revalidatePath(`/financeiro/${lancamentoId}`);
+  return res;
 }
 
 /** Consulta o provedor e atualiza a situação da nota (PROCESSANDO → AUTORIZADA/ERRO). */
 export async function sincronizarNfse(notaId: string): Promise<void> {
-  await assertModulo("os", "VER");
+  await assertModulo("os", "VER").catch(() => assertModulo("financeiro", "VER"));
   const nota = await db.notaFiscal.findUnique({ where: { id: notaId } });
   if (!nota) return;
   const r = await consultarNfse(nota.ref);
@@ -134,11 +168,12 @@ export async function sincronizarNfse(notaId: string): Promise<void> {
     },
   });
   if (nota.osId) revalidatePath(`/os/${nota.osId}`);
+  if (nota.lancamentoId) revalidatePath(`/financeiro/${nota.lancamentoId}`);
 }
 
 /** Cancela uma NFS-e autorizada (justificativa mínima de 15 caracteres exigida pelo provedor). */
 export async function cancelarNfseDaOs(notaId: string, justificativa: string): Promise<{ ok: boolean; erro?: string }> {
-  const acesso = await assertModulo("os", "EDITAR");
+  const acesso = await assertModulo("os", "VER").catch(() => assertModulo("financeiro", "EDITAR"));
   const just = justificativa.trim();
   if (just.length < 15) return { ok: false, erro: "A justificativa precisa ter pelo menos 15 caracteres." };
   const nota = await db.notaFiscal.findUnique({ where: { id: notaId } });
@@ -147,7 +182,8 @@ export async function cancelarNfseDaOs(notaId: string, justificativa: string): P
   if (!r.configurado) return { ok: false, erro: "Provedor não configurado." };
   if (r.http >= 400 && r.erro) return { ok: false, erro: r.erro };
   await db.notaFiscal.update({ where: { id: notaId }, data: { status: "CANCELADA", mensagemErro: null } });
-  await registrarLog({ entidadeTipo: "os", entidadeId: nota.osId ?? notaId, usuarioId: acesso.id, acao: "cancelou NFS-e", para: just.slice(0, 80) });
+  await registrarLog({ entidadeTipo: nota.osId ? "os" : "lancamento", entidadeId: nota.osId ?? nota.lancamentoId ?? notaId, usuarioId: acesso.id, acao: "cancelou NFS-e", para: just.slice(0, 80) });
   if (nota.osId) revalidatePath(`/os/${nota.osId}`);
+  if (nota.lancamentoId) revalidatePath(`/financeiro/${nota.lancamentoId}`);
   return { ok: true };
 }
