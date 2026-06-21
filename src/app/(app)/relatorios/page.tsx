@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TrendingUp, BarChart3, ListChecks, Users, Truck, ArrowRight } from "lucide-react";
-import { requireUser } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -13,7 +13,7 @@ const RELATORIOS_FINANCEIRO = [
 ];
 
 export default async function RelatoriosPage() {
-  await requireUser();
+  await requireModulo("relatorios", "VER");
 
   return (
     <div className="space-y-8">

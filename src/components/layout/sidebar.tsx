@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/brand/logo";
-import { NAV } from "./nav";
+import { filtrarNav } from "./nav";
+import type { Capacidades } from "@/lib/permissoes";
 import { cn } from "@/lib/utils";
 
-export function Sidebar() {
+export function Sidebar({ caps }: { caps: Capacidades }) {
   const pathname = usePathname();
+  const grupos = filtrarNav(caps);
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col bg-chrome text-chrome-foreground lg:flex">
@@ -18,7 +20,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5" aria-label="Navegação principal">
-        {NAV.map((grupo, i) => (
+        {grupos.map((grupo, i) => (
           <div key={i}>
             {grupo.titulo && (
               <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-chrome-foreground/40">

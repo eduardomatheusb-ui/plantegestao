@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, Minus, ArrowLeftRight, Pencil, Trash2, Check, Undo2, BarChart3, List } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { listarLancamentosMes, resumoDoMes, serieUltimosMeses } from "@/lib/financeiro/queries";
 import { quitarLancamento, estornarLancamento, excluirLancamento } from "@/lib/financeiro/actions";
 import { valorEfetivo } from "@/lib/financeiro/calculo";
@@ -34,6 +35,7 @@ function Resumo({ rotulo, valor, tom }: { rotulo: string; valor: number; tom?: "
 
 export default async function FinanceiroPage({ searchParams }: PageProps) {
   const sp = await searchParams;
+  await requireModulo("financeiro", "VER");
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, "GESTOR");
   const podeExcluir = podePapel(user.papel, "SOCIO_DIRETOR");

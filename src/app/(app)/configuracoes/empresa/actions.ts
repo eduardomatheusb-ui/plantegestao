@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { assertPapel } from "@/lib/rbac";
+import { assertModulo } from "@/lib/permissoes.server";
 
 export type EmpresaState = { ok?: boolean; error?: string };
 
@@ -20,7 +20,7 @@ const schema = z.object({
 
 export async function salvarEmpresa(_prev: EmpresaState, formData: FormData): Promise<EmpresaState> {
   try {
-    await assertPapel("GESTOR");
+    await assertModulo("admin", "ADMIN");
     const parsed = schema.safeParse({
       marca: formData.get("marca")?.toString(),
       razaoSocial: formData.get("razaoSocial")?.toString(),

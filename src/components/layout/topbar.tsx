@@ -3,21 +3,24 @@ import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 import { MobileNav } from "./mobile-nav";
+import type { Capacidades } from "@/lib/permissoes";
 
 export function Topbar({
   nome,
   email,
   papelLabel,
-  podeConfig,
+  podeAdmin,
+  caps,
 }: {
   nome?: string | null;
   email?: string | null;
   papelLabel: string;
-  podeConfig?: boolean;
+  podeAdmin?: boolean;
+  caps: Capacidades;
 }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background px-4 lg:px-6">
-      <MobileNav />
+      <MobileNav caps={caps} />
       <div className="lg:hidden">
         <Logo showWordmark={false} tom="claro" />
       </div>
@@ -42,7 +45,7 @@ export function Topbar({
 
       <div className="ml-auto flex items-center gap-1">
         <ThemeToggle />
-        <UserMenu nome={nome} email={email} papelLabel={papelLabel} podeConfig={podeConfig} />
+        <UserMenu nome={nome} email={email} papelLabel={papelLabel} podeAdmin={podeAdmin} />
       </div>
     </header>
   );

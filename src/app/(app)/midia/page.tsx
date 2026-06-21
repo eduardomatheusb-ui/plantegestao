@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { listarMidiaPlanos } from "@/lib/midia/queries";
 import { STATUS_LABEL, STATUS_BADGE, TIPO_SIGLA, TIPO_LABEL } from "@/lib/midia/constants";
 import { PageHeader } from "@/components/shared/page-header";
@@ -15,6 +16,7 @@ type PageProps = { searchParams: Promise<Record<string, string | string[] | unde
 
 export default async function MidiaPage({ searchParams }: PageProps) {
   const sp = await searchParams;
+  await requireModulo("midia", "VER");
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, "GESTOR");
   const q = typeof sp.q === "string" ? sp.q : undefined;

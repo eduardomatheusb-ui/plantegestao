@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, Settings2 } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { listarStatus, listarJobs } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos, listarClientesAtivos } from "@/lib/projetos/queries";
 import { PageHeader } from "@/components/shared/page-header";
@@ -18,6 +19,7 @@ const VIEWS_VALIDAS = new Set(["minha-pauta", "lista", "kanban-status", "kanban-
 
 export default async function JobsPage({ searchParams }: PageProps) {
   const sp = await searchParams;
+  await requireModulo("jobs", "VER");
   const user = await requireUser();
   const podeGerir = podePapel(user.papel, "GESTOR");
 

@@ -1,11 +1,11 @@
-import { requirePapel } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { getEmpresa } from "@/lib/empresa";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmpresaForm } from "./empresa-form";
 
 export default async function ConfiguracaoEmpresaPage() {
-  await requirePapel("GESTOR");
+  await requireModulo("admin", "ADMIN");
   const empresa = await getEmpresa();
 
   return (

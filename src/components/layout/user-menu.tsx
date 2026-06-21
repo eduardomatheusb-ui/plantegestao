@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Building2 } from "lucide-react";
+import { LogOut, ShieldCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,12 +17,12 @@ export function UserMenu({
   nome,
   email,
   papelLabel,
-  podeConfig = false,
+  podeAdmin = false,
 }: {
   nome?: string | null;
   email?: string | null;
   papelLabel: string;
-  podeConfig?: boolean;
+  podeAdmin?: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -41,11 +41,11 @@ export function UserMenu({
           <span className="mt-1 text-xs font-normal text-muted-foreground">{papelLabel}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {podeConfig && (
+        {podeAdmin && (
           <DropdownMenuItem asChild>
-            <Link href="/configuracoes/empresa">
-              <Building2 className="size-4" />
-              Dados da empresa
+            <Link href="/configuracoes">
+              <ShieldCheck className="size-4" />
+              Administração
             </Link>
           </DropdownMenuItem>
         )}

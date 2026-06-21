@@ -11,12 +11,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Logo } from "@/components/brand/logo";
-import { NAV } from "./nav";
+import { filtrarNav } from "./nav";
+import type { Capacidades } from "@/lib/permissoes";
 import { cn } from "@/lib/utils";
 
-export function MobileNav() {
+export function MobileNav({ caps }: { caps: Capacidades }) {
   const pathname = usePathname();
   const [aberto, setAberto] = React.useState(false);
+  const grupos = filtrarNav(caps);
 
   return (
     <Dialog open={aberto} onOpenChange={setAberto}>
@@ -31,7 +33,7 @@ export function MobileNav() {
           <Logo sub="Gestão" />
         </DialogTitle>
         <nav className="space-y-6 overflow-y-auto px-3 py-4">
-          {NAV.map((grupo, i) => (
+          {grupos.map((grupo, i) => (
             <div key={i}>
               {grupo.titulo && (
                 <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-chrome-foreground/40">

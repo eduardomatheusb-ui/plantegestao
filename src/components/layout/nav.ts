@@ -16,13 +16,17 @@ import {
   ListTree,
   Target,
   Landmark,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
+import type { ModuloKey, Capacidades } from "@/lib/permissoes";
 
 export type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
+  /** Módulo que controla a visibilidade (perfil de acesso). Sem módulo = sempre visível. */
+  modulo?: ModuloKey;
   /** false = módulo de fase futura, exibido como "em breve" (sem link). */
   disponivel?: boolean;
 };
@@ -40,32 +44,46 @@ export const NAV: NavGroup[] = [
   {
     titulo: "Trabalho",
     itens: [
-      { label: "Projetos", href: "/projetos", icon: FolderKanban, disponivel: true },
-      { label: "Jobs", href: "/jobs", icon: ListChecks, disponivel: true },
-      { label: "Propostas", href: "/propostas", icon: FileText, disponivel: true },
-      { label: "Mídia", href: "/midia", icon: Megaphone, disponivel: true },
-      { label: "Produção", href: "/producao", icon: Factory, disponivel: true },
+      { label: "Projetos", href: "/projetos", icon: FolderKanban, modulo: "projetos", disponivel: true },
+      { label: "Jobs", href: "/jobs", icon: ListChecks, modulo: "jobs", disponivel: true },
+      { label: "Propostas", href: "/propostas", icon: FileText, modulo: "propostas", disponivel: true },
+      { label: "Mídia", href: "/midia", icon: Megaphone, modulo: "midia", disponivel: true },
+      { label: "Produção", href: "/producao", icon: Factory, modulo: "producao", disponivel: true },
     ],
   },
   {
     titulo: "Financeiro",
     itens: [
-      { label: "Lançamentos", href: "/financeiro", icon: Wallet, disponivel: true },
-      { label: "Relatórios", href: "/relatorios", icon: BarChart3, disponivel: true },
+      { label: "Lançamentos", href: "/financeiro", icon: Wallet, modulo: "financeiro", disponivel: true },
+      { label: "Relatórios", href: "/relatorios", icon: BarChart3, modulo: "relatorios", disponivel: true },
     ],
   },
   {
     titulo: "Cadastros",
     itens: [
-      { label: "Clientes", href: "/cadastros/clientes", icon: Users, disponivel: true },
-      { label: "Colaboradores", href: "/cadastros/colaboradores", icon: Contact, disponivel: true },
-      { label: "Fornecedores", href: "/cadastros/fornecedores", icon: Truck, disponivel: true },
-      { label: "Prestadores", href: "/cadastros/prestadores", icon: Hammer, disponivel: true },
-      { label: "Veículos", href: "/cadastros/veiculos", icon: Radio, disponivel: true },
-      { label: "Produtos", href: "/cadastros/produtos", icon: Package, disponivel: true },
-      { label: "Categorias", href: "/cadastros/categorias", icon: ListTree, disponivel: true },
-      { label: "Centros de custo", href: "/cadastros/centros-custo", icon: Target, disponivel: true },
-      { label: "Contas bancárias", href: "/cadastros/contas", icon: Landmark, disponivel: true },
+      { label: "Clientes", href: "/cadastros/clientes", icon: Users, modulo: "cadastros", disponivel: true },
+      { label: "Colaboradores", href: "/cadastros/colaboradores", icon: Contact, modulo: "cadastros", disponivel: true },
+      { label: "Fornecedores", href: "/cadastros/fornecedores", icon: Truck, modulo: "cadastros", disponivel: true },
+      { label: "Prestadores", href: "/cadastros/prestadores", icon: Hammer, modulo: "cadastros", disponivel: true },
+      { label: "Veículos", href: "/cadastros/veiculos", icon: Radio, modulo: "cadastros", disponivel: true },
+      { label: "Produtos", href: "/cadastros/produtos", icon: Package, modulo: "cadastros", disponivel: true },
+      { label: "Categorias", href: "/cadastros/categorias", icon: ListTree, modulo: "cadastros", disponivel: true },
+      { label: "Centros de custo", href: "/cadastros/centros-custo", icon: Target, modulo: "cadastros", disponivel: true },
+      { label: "Contas bancárias", href: "/cadastros/contas", icon: Landmark, modulo: "cadastros", disponivel: true },
+    ],
+  },
+  {
+    titulo: "Sistema",
+    itens: [
+      { label: "Administração", href: "/configuracoes", icon: ShieldCheck, modulo: "admin", disponivel: true },
     ],
   },
 ];
+
+/** Filtra os grupos/itens do menu pelas capacidades do usuário (esconde módulos sem acesso). */
+export function filtrarNav(caps: Capacidades): NavGroup[] {
+  return NAV.map((g) => ({
+    ...g,
+    itens: g.itens.filter((i) => !i.modulo || caps[i.modulo] !== "NENHUM"),
+  })).filter((g) => g.itens.length > 0);
+}

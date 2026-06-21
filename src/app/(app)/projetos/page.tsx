@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { listarProjetos, listarClientesAtivos } from "@/lib/projetos/queries";
 import { PROJETO_STATUS } from "@/lib/projetos/situacao";
 import { PageHeader } from "@/components/shared/page-header";
@@ -18,6 +19,7 @@ const STATUS_SET = new Set(PROJETO_STATUS.map((s) => s.value));
 
 export default async function ProjetosPage({ searchParams }: PageProps) {
   const sp = await searchParams;
+  await requireModulo("projetos", "VER");
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, "GESTOR");
 

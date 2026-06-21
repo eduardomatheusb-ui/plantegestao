@@ -10,6 +10,7 @@ import {
   CADASTRO_EDITAR_MINIMO,
   CADASTRO_EXCLUIR_MINIMO,
 } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { PageHeader } from "@/components/shared/page-header";
 import { SearchInput } from "@/components/shared/search-input";
 import { DataTable, type Column } from "@/components/shared/data-table";
@@ -28,6 +29,7 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   const config = getEntidade(entidade);
   if (!config) notFound();
 
+  await requireModulo("cadastros", "VER");
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, CADASTRO_EDITAR_MINIMO);
   const podeExcluir = podePapel(user.papel, CADASTRO_EXCLUIR_MINIMO);
