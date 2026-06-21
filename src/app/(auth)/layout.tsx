@@ -6,17 +6,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Painel de marca (chrome escuro) */}
       <section className="relative hidden flex-col justify-between bg-chrome p-10 text-chrome-foreground lg:flex">
         <Logo sub="Gestão" />
-        <div className="space-y-5">
-          <h1 className="font-display text-7xl font-black leading-none tracking-tight text-brand-yellow">
-            TREM
-          </h1>
-          <p className="font-display text-lg font-semibold leading-snug">
-            <span className="text-brand-yellow">T</span>arefas,{" "}
-            <span className="text-brand-yellow">R</span>otinas,{" "}
-            <span className="text-brand-yellow">E</span>ntregas e{" "}
-            <span className="text-brand-yellow">M</span>etas da Plante.
+        <div className="space-y-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/Logo%20Trem%20Amarelo.svg"
+            alt="TREM"
+            className="h-auto w-72"
+          />
+          <p className="font-display text-xl font-semibold leading-snug">
+            <span className="font-bold text-white">T</span>arefas,{" "}
+            <span className="font-bold text-white">R</span>otinas,{" "}
+            <span className="font-bold text-white">E</span>ntregas e{" "}
+            <span className="font-bold text-white">M</span>etas da Plante.
           </p>
-          <p className="max-w-md text-sm leading-relaxed text-chrome-foreground/70">
+          <p className="max-w-md text-base leading-relaxed text-chrome-foreground/70">
             O trem de fazer os trem tudo, organizando os trem daqui da agência.
             Desenvolvido para você poder ter suas tarefas mais organizadas, do jeito
             mineiro que só a Plante sabe fazer.
