@@ -29,19 +29,18 @@ export default async function JobsPage({ searchParams }: PageProps) {
   const responsavelId = typeof sp.responsavelId === "string" ? sp.responsavelId : undefined;
   const clienteId = typeof sp.clienteId === "string" ? sp.clienteId : undefined;
 
-  const [statuses, usuarios, clientes] = await Promise.all([
+  const [statuses, usuarios, clientes, jobs] = await Promise.all([
     listarStatus(),
     listarUsuariosAtivos(),
     listarClientesAtivos(),
+    listarJobs({
+      q,
+      statusId,
+      responsavelId: view === "minha-pauta" ? undefined : responsavelId,
+      minhasDoUsuario: view === "minha-pauta" ? user.id : undefined,
+      clienteId,
+    }),
   ]);
-
-  const jobs = await listarJobs({
-    q,
-    statusId,
-    responsavelId: view === "minha-pauta" ? undefined : responsavelId,
-    minhasDoUsuario: view === "minha-pauta" ? user.id : undefined,
-    clienteId,
-  });
 
   const statusOpts = statuses.map((s) => ({ id: s.id, nome: s.nome }));
 
