@@ -3,8 +3,8 @@
 # automaticamente — não é preciso declarar o plugin aqui.
 
 [build]
-  # Aplica migrations pendentes (usa DIRECT_URL) e então gera o client + build do Next.
-  command = "npx prisma migrate deploy && npm run build"
+  # As tabelas já existem no Neon (migrations rodam localmente). Build só gera o client + Next.
+  command = "npm run build"
 
 [build.environment]
   NODE_VERSION = "22"

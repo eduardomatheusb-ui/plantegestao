@@ -8,10 +8,10 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  // Runtime usa a conexão POOLED do Neon (serverless); migrations usam a conexão DIRETA.
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  // Uma única URL (a POOLED do Neon). Migrations são aplicadas localmente
+  // (npx prisma migrate deploy) — o build do Netlify não roda migrate.
+  url      = env("DATABASE_URL")
 }
 
 // ─────────────────────────── Fase 1 — Fundação ───────────────────────────
