@@ -132,6 +132,7 @@ model OrdemServico {
   responsavel Usuario?           @relation("OsResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
   criadoPor   Usuario?           @relation("OsCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
   itens       OrdemServicoItem[]
+  lancamentos Lancamento[]
 
   @@index([clienteId])
   @@index([status])
@@ -655,6 +656,7 @@ model Lancamento {
   categoriaId     String?
   projetoId       String?
   jobId           String?
+  osId            String?
   centroCustoId   String?
   contaId         String? // conta de origem / movimentação
   contaDestinoId  String? // somente em transferência
@@ -683,6 +685,7 @@ model Lancamento {
   categoria     Categoria?     @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   projeto       Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
   job           Job?           @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  os            OrdemServico?  @relation(fields: [osId], references: [id], onDelete: SetNull)
   centroCusto   CentroCusto?   @relation(fields: [centroCustoId], references: [id], onDelete: SetNull)
   conta         ContaBancaria? @relation("LancamentoConta", fields: [contaId], references: [id], onDelete: SetNull)
   contaDestino  ContaBancaria? @relation("LancamentoContaDestino", fields: [contaDestinoId], references: [id], onDelete: SetNull)

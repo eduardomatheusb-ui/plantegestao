@@ -35,6 +35,7 @@ export async function obterOs(id: string) {
       projeto: { select: { id: true, numero: true, nome: true } },
       responsavel: { select: { id: true, nome: true } },
       itens: { orderBy: [{ ordem: "asc" }, { criadoEm: "asc" }] },
+      lancamentos: { select: { id: true, numero: true, status: true, dataCompetencia: true } },
     },
   });
 }

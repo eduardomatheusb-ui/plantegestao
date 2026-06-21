@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Trash2, FileDown, Receipt } from "lucide-react";
+import { Pencil, Trash2, FileDown, Receipt, Wallet } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterOs } from "@/lib/os/queries";
-import { excluirOs } from "@/lib/os/actions";
+import { excluirOs, gerarLancamentoDaOs } from "@/lib/os/actions";
 import { STATUS_LABEL, STATUS_BADGE } from "@/lib/os/constants";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/shared/page-header";
@@ -33,6 +33,11 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
   const os = await obterOs(id);
   if (!os) notFound();
 
+  const lanc = os.lancamentos[0];
+  const lancMes = lanc
+    ? `?ano=${new Date(lanc.dataCompetencia).getFullYear()}&mes=${new Date(lanc.dataCompetencia).getMonth() + 1}`
+    : null;
+
   const itens = os.itens.map((it) => ({
     id: it.id,
     descricao: it.descricao,
@@ -56,6 +61,11 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
             <Button asChild variant="outline" size="sm">
               <Link href={`/imprimir/os/${os.id}?tipo=recibo`} target="_blank"><Receipt className="size-4" /> Recibo</Link>
             </Button>
+            {podeEditar && os.lancamentos.length === 0 && (
+              <form action={gerarLancamentoDaOs.bind(null, os.id)}>
+                <Button type="submit" variant="outline" size="sm"><Wallet className="size-4" /> Lançar no financeiro</Button>
+              </form>
+            )}
             {podeEditar && (
               <Button asChild variant="outline" size="sm">
                 <Link href={`/os/${os.id}/editar`}><Pencil className="size-4" /> Editar</Link>
@@ -85,6 +95,14 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
           <Info rotulo="Forma de pagamento" valor={os.formaPagamento ?? "—"} />
           <Info rotulo="Condições" valor={os.condicoesPagamento ?? "—"} />
           <Info rotulo="Responsável" valor={os.responsavel?.nome ?? "—"} />
+          <Info
+            rotulo="Financeiro"
+            valor={lanc ? (
+              <Link href={`/financeiro${lancMes}`} className="hover:underline">
+                Lançamento #{lanc.numero} · {lanc.status === "QUITADO" ? "Quitado" : "Em aberto"}
+              </Link>
+            ) : "Não lançado"}
+          />
         </CardContent>
       </Card>
 

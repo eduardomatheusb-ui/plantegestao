@@ -83,9 +83,55 @@ export async function alterarStatusOs(id: string, status: OsStatus) {
   if (!STATUS.includes(status)) throw new Error("Status inválido.");
   const atual = await db.ordemServico.findUnique({ where: { id }, select: { status: true } });
   await db.ordemServico.update({ where: { id }, data: { status } });
+  // Quando a OS é marcada como Paga, quita o lançamento financeiro vinculado.
+  if (status === "PAGA") {
+    await db.lancamento.updateMany({ where: { osId: id, status: "EM_ABERTO" }, data: { status: "QUITADO", dataPagamento: new Date() } });
+    revalidatePath("/financeiro");
+  }
   await registrarLog({ entidadeTipo: "os", entidadeId: id, usuarioId: acesso.id, acao: "mudou o status", de: atual ? STATUS_LABEL[atual.status] : null, para: STATUS_LABEL[status] });
   revalidatePath(`/os/${id}`);
   revalidatePath("/os");
+}
+
+/**
+ * Gera (ou abre) o lançamento de RECEITA no Financeiro a partir da OS.
+ * Idempotente: se já houver lançamento vinculado, vai direto pro mês dele.
+ */
+export async function gerarLancamentoDaOs(osId: string) {
+  const acesso = await assertModulo("os", "EDITAR");
+  const os = await db.ordemServico.findUnique({
+    where: { id: osId },
+    include: { lancamentos: { select: { id: true, dataCompetencia: true } } },
+  });
+  if (!os) throw new Error("Ordem de serviço não encontrada.");
+
+  const mesDe = (d: Date) => `?ano=${d.getFullYear()}&mes=${d.getMonth() + 1}`;
+  if (os.lancamentos.length > 0) redirect(`/financeiro${mesDe(os.lancamentos[0].dataCompetencia)}`);
+
+  const numero = await proximoNumero("LANCAMENTO");
+  const competencia = os.dataEmissao;
+  const paga = os.status === "PAGA";
+  await db.lancamento.create({
+    data: {
+      numero,
+      tipo: "RECEITA",
+      titulo: `OS #${os.numero} — ${os.titulo}`,
+      clienteId: os.clienteId,
+      projetoId: os.projetoId,
+      osId: os.id,
+      docNf: `OS #${os.numero}`,
+      dataVencimento: os.vencimento ?? competencia,
+      dataCompetencia: competencia,
+      dataPagamento: paga ? new Date() : null,
+      valor: os.valorTotal,
+      status: paga ? "QUITADO" : "EM_ABERTO",
+      criadoPorId: acesso.id,
+    },
+  });
+  await registrarLog({ entidadeTipo: "os", entidadeId: os.id, usuarioId: acesso.id, acao: "lançou no financeiro", para: `OS #${os.numero}` });
+  revalidatePath(`/os/${os.id}`);
+  revalidatePath("/financeiro");
+  redirect(`/financeiro${mesDe(competencia)}`);
 }
 
 export async function excluirOs(id: string) {
