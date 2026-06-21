@@ -1,0 +1,2 @@
+# Normaliza quebras de linha (LF no repositório), evitando ruído entre Windows/Linux.
+* text=auto eol=lf

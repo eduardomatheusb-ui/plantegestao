@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: plante-gestao-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: plante
+      POSTGRES_PASSWORD: plante
+      POSTGRES_DB: plante_gestao
+    ports:
+      - "5432:5432"
+    volumes:
+      - plante_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plante -d plante_gestao"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  plante_pgdata:

@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Design system Plante — tokens definidos UMA vez.
+  Marca: amarelo #F7FF19 (só com texto escuro em cima) + tons de tinta.
+  Chrome (sidebar/topbar) escuro; conteúdo claro para digitação longa.
+*/
+:root {
+  /* Paleta de marca */
+  --brand-yellow: #f7ff19;
+  --ink-900: #050505;
+  --ink-800: #101010;
+  --ink-700: #1a1a1a;
+  --white: #ffffff;
+  --neutral-200: #e5e7eb;
+  --white-a10: rgba(255, 255, 255, 0.1);
+
+  /* Semânticos — TEMA CLARO */
+  --bg-content: var(--white);
+  --text-content: var(--ink-700);
+
+  --bg-chrome: var(--ink-900); /* sidebar/topbar sempre escuros */
+  --chrome-foreground: #e7e7e7;
+
+  --card: var(--white);
+  --card-foreground: var(--ink-700);
+  --popover: var(--white);
+  --popover-foreground: var(--ink-700);
+
+  --muted: #f4f4f5;
+  --muted-foreground: #6b7280;
+
+  /* Amarelo é ACENTO — texto sempre escuro sobre amarelo */
+  --accent: var(--brand-yellow);
+  --accent-foreground: var(--ink-900);
+
+  --secondary: #f4f4f5;
+  --secondary-foreground: var(--ink-700);
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+
+  --border: var(--neutral-200);
+  --input: var(--neutral-200);
+  --ring: var(--brand-yellow);
+
+  --radius: 0.625rem;
+}
+
+.dark {
+  /* Semânticos — TEMA ESCURO (sem preto puro nem branco puro) */
+  --bg-content: #141414;
+  --text-content: #ededed;
+
+  --bg-chrome: var(--ink-900);
+  --chrome-foreground: #e7e7e7;
+
+  --card: #1b1b1b;
+  --card-foreground: #ededed;
+  --popover: #1b1b1b;
+  --popover-foreground: #ededed;
+
+  --muted: #232323;
+  --muted-foreground: #a1a1aa;
+
+  --accent: var(--brand-yellow);
+  --accent-foreground: var(--ink-900);
+
+  --secondary: #262626;
+  --secondary-foreground: #ededed;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #22c55e;
+  --success-foreground: #052e16;
+  --warning: #f59e0b;
+  --warning-foreground: #1a1a1a;
+
+  --border: var(--white-a10);
+  --input: #2a2a2a;
+  --ring: var(--brand-yellow);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--bg-content);
+    color: var(--text-content);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Acessibilidade: foco sempre visível */
+  :focus-visible {
+    outline: 2px solid var(--brand-yellow);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Respeitar redução de movimento */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Tipografia: títulos/números em Space Grotesk */
+.font-display {
+  font-family: var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif;
+}

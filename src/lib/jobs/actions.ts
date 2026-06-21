@@ -1,0 +1,228 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { proximoNumero } from "@/lib/sequence";
+import { registrarLog } from "@/lib/log";
+import { assertPapel, getSessionUser } from "@/lib/rbac";
+
+// Qualquer usuário autenticado trabalha em jobs (rotina diária da equipe).
+const TRABALHAR: "OPERADOR" = "OPERADOR";
+const GERIR: "GESTOR" = "GESTOR";
+
+export type JobFormState = { error?: string; fieldErrors?: Record<string, string> };
+
+async function userOrThrow() {
+  const u = await getSessionUser();
+  if (!u) throw new Error("Não autenticado.");
+  return u;
+}
+
+const jobSchema = z.object({
+  titulo: z.string().trim().min(1, "Informe o título do job."),
+  clienteId: z.string().trim().min(1, "Selecione o cliente."),
+  projetoId: z.string().optional().transform((v) => (v ? v : null)),
+  responsavelId: z.string().optional().transform((v) => (v ? v : null)),
+  statusId: z.string().optional().transform((v) => (v ? v : null)),
+  prazo: z.string().optional().transform((v) => (v ? new Date(`${v}T00:00:00`) : null)),
+  briefing: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
+});
+
+export async function salvarJob(
+  id: string | null,
+  _prev: JobFormState,
+  formData: FormData,
+): Promise<JobFormState> {
+  let destino = "";
+  try {
+    const user = await assertPapel(TRABALHAR);
+    const parsed = jobSchema.safeParse({
+      titulo: formData.get("titulo")?.toString(),
+      clienteId: formData.get("clienteId")?.toString(),
+      projetoId: formData.get("projetoId")?.toString(),
+      responsavelId: formData.get("responsavelId")?.toString(),
+      statusId: formData.get("statusId")?.toString(),
+      prazo: formData.get("prazo")?.toString(),
+      briefing: formData.get("briefing")?.toString(),
+    });
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const k = issue.path[0];
+        if (typeof k === "string" && !fieldErrors[k]) fieldErrors[k] = issue.message;
+      }
+      return { error: "Confira os campos destacados.", fieldErrors };
+    }
+    const d = parsed.data;
+
+    // Status padrão = primeiro da ordem; responsável padrão = usuário logado.
+    let statusId = d.statusId;
+    if (!statusId) {
+      const primeiro = await db.jobStatus.findFirst({ where: { ativo: true }, orderBy: { ordem: "asc" } });
+      if (!primeiro) return { error: "Nenhum status de job configurado." };
+      statusId = primeiro.id;
+    }
+    const statusAlvo = await db.jobStatus.findUnique({ where: { id: statusId } });
+    const concluidoEm = statusAlvo?.isConcluido ? new Date() : null;
+
+    const data = {
+      titulo: d.titulo,
+      clienteId: d.clienteId,
+      projetoId: d.projetoId,
+      responsavelId: d.responsavelId ?? user.id,
+      statusId,
+      prazo: d.prazo,
+      briefing: d.briefing,
+    };
+
+    if (id) {
+      await db.job.update({ where: { id }, data });
+      await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: "editou o job" });
+      destino = `/jobs/${id}`;
+    } else {
+      const numero = await proximoNumero("JOB");
+      const criado = await db.job.create({ data: { ...data, numero, concluidoEm, criadoPorId: user.id } });
+      await registrarLog({ entidadeTipo: "job", entidadeId: criado.id, usuarioId: user.id, acao: `criou o job #${numero}` });
+      destino = `/jobs/${criado.id}`;
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Não foi possível salvar o job." };
+  }
+  revalidatePath("/jobs");
+  redirect(destino);
+}
+
+export async function moverJobStatus(id: string, statusId: string) {
+  const user = await assertPapel(TRABALHAR);
+  const [job, status] = await Promise.all([
+    db.job.findUnique({ where: { id }, select: { statusId: true, concluidoEm: true, status: { select: { nome: true } } } }),
+    db.jobStatus.findUnique({ where: { id: statusId } }),
+  ]);
+  if (!status) throw new Error("Status inválido.");
+
+  const concluidoEm = status.isConcluido ? (job?.concluidoEm ?? new Date()) : null;
+
+  await db.job.update({ where: { id }, data: { statusId, concluidoEm } });
+  await registrarLog({
+    entidadeTipo: "job",
+    entidadeId: id,
+    usuarioId: user.id,
+    acao: "moveu o status",
+    de: job?.status?.nome ?? null,
+    para: status.nome,
+  });
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${id}`);
+}
+
+export async function arquivarJob(id: string, arquivar: boolean) {
+  const user = await assertPapel(GERIR);
+  await db.job.update({ where: { id }, data: { arquivado: arquivar } });
+  await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: arquivar ? "arquivou o job" : "reativou o job" });
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${id}`);
+}
+
+export async function excluirJob(id: string) {
+  const user = await assertPapel("SOCIO_DIRETOR");
+  await db.job.delete({ where: { id } });
+  await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: "excluiu o job" });
+  revalidatePath("/jobs");
+  redirect("/jobs");
+}
+
+// ── Subtarefas ────────────────────────────────────────────────────────
+
+export async function adicionarTarefa(jobId: string, formData: FormData) {
+  await userOrThrow();
+  const descricao = formData.get("descricao")?.toString().trim();
+  const responsavelId = formData.get("responsavelId")?.toString() || null;
+  if (!descricao) return;
+  const ultima = await db.jobTarefa.findFirst({ where: { jobId }, orderBy: { ordem: "desc" }, select: { ordem: true } });
+  await db.jobTarefa.create({
+    data: { jobId, descricao, responsavelId, ordem: (ultima?.ordem ?? 0) + 1 },
+  });
+  revalidatePath(`/jobs/${jobId}`);
+}
+
+export async function toggleTarefa(id: string) {
+  await userOrThrow();
+  const t = await db.jobTarefa.findUnique({ where: { id }, select: { concluida: true, jobId: true } });
+  if (!t) return;
+  await db.jobTarefa.update({ where: { id }, data: { concluida: !t.concluida } });
+  revalidatePath(`/jobs/${t.jobId}`);
+}
+
+export async function removerTarefa(id: string) {
+  await userOrThrow();
+  const t = await db.jobTarefa.findUnique({ where: { id }, select: { jobId: true } });
+  if (!t) return;
+  await db.jobTarefa.delete({ where: { id } });
+  revalidatePath(`/jobs/${t.jobId}`);
+}
+
+// ── Gestão de status (kanban configurável) ────────────────────────────
+
+const statusSchema = z.object({
+  nome: z.string().trim().min(1, "Informe o nome."),
+  cor: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
+  isConcluido: z.boolean(),
+});
+
+export async function salvarJobStatus(
+  id: string | null,
+  _prev: JobFormState,
+  formData: FormData,
+): Promise<JobFormState> {
+  try {
+    await assertPapel(GERIR);
+    const parsed = statusSchema.safeParse({
+      nome: formData.get("nome")?.toString(),
+      cor: formData.get("cor")?.toString(),
+      isConcluido: formData.get("isConcluido") === "on",
+    });
+    if (!parsed.success) {
+      return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
+    }
+    const d = parsed.data;
+    if (id) {
+      await db.jobStatus.update({ where: { id }, data: { nome: d.nome, cor: d.cor, isConcluido: d.isConcluido } });
+    } else {
+      const ultima = await db.jobStatus.findFirst({ orderBy: { ordem: "desc" }, select: { ordem: true } });
+      await db.jobStatus.create({ data: { nome: d.nome, cor: d.cor, isConcluido: d.isConcluido, ordem: (ultima?.ordem ?? 0) + 1 } });
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Não foi possível salvar o status." };
+  }
+  revalidatePath("/jobs/status");
+  revalidatePath("/jobs");
+  return {};
+}
+
+export async function moverOrdemStatus(id: string, direcao: "cima" | "baixo") {
+  await assertPapel(GERIR);
+  const lista = await db.jobStatus.findMany({ orderBy: { ordem: "asc" } });
+  const idx = lista.findIndex((s) => s.id === id);
+  if (idx < 0) return;
+  const alvoIdx = direcao === "cima" ? idx - 1 : idx + 1;
+  if (alvoIdx < 0 || alvoIdx >= lista.length) return;
+  const a = lista[idx];
+  const b = lista[alvoIdx];
+  await db.$transaction([
+    db.jobStatus.update({ where: { id: a.id }, data: { ordem: b.ordem } }),
+    db.jobStatus.update({ where: { id: b.id }, data: { ordem: a.ordem } }),
+  ]);
+  revalidatePath("/jobs/status");
+  revalidatePath("/jobs");
+}
+
+export async function excluirJobStatus(id: string) {
+  await assertPapel(GERIR);
+  const usados = await db.job.count({ where: { statusId: id } });
+  if (usados > 0) throw new Error(`Há ${usados} job(s) neste status. Mova-os antes de excluir.`);
+  await db.jobStatus.delete({ where: { id } });
+  revalidatePath("/jobs/status");
+  revalidatePath("/jobs");
+}

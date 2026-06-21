@@ -1,0 +1,12 @@
+# Deploy do Plante Gestão no Netlify (Next.js 15 + Prisma + Neon).
+# O Netlify detecta o Next.js e instala o runtime oficial (@netlify/plugin-nextjs)
+# automaticamente — não é preciso declarar o plugin aqui.
+
+[build]
+  # Aplica migrations pendentes (usa DIRECT_URL) e então gera o client + build do Next.
+  command = "npx prisma migrate deploy && npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Garante que o Prisma baixe o engine do runtime serverless (AWS Lambda) no build.
+  PRISMA_CLI_BINARY_TARGETS = "rhel-openssl-3.0.x"

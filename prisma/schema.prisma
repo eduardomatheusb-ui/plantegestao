@@ -1,0 +1,662 @@
+// Plante Gestão — schema Prisma (Fases 1–2: Fundação + Cadastros)
+// Banco: PostgreSQL. Modelos das fases 3–8 entram via novas migrations.
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" para o build/dev; "rhel-openssl-3.0.x" para o runtime serverless do Netlify (AWS Lambda).
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Runtime usa a conexão POOLED do Neon (serverless); migrations usam a conexão DIRETA.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────── Fase 1 — Fundação ───────────────────────────
+
+enum Papel {
+  SOCIO_DIRETOR
+  GESTOR
+  OPERADOR
+}
+
+model Usuario {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  senhaHash    String
+  papel        Papel    @default(OPERADOR)
+  avatarUrl    String?
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  logs         Log[]
+  colaborador  Colaborador?
+
+  projetosResponsavel Projeto[]          @relation("ProjetoResponsavel")
+  projetosCriados     Projeto[]          @relation("ProjetoCriadoPor")
+  envolvimentos       ProjetoEnvolvido[]
+  comentarios         Comentario[]
+  anexos              Anexo[]
+  apontamentos        Apontamento[]
+  jobsResponsavel     Job[]              @relation("JobResponsavel")
+  jobsCriados         Job[]              @relation("JobCriadoPor")
+  tarefasResponsavel  JobTarefa[]
+  propostasResponsavel Proposta[]        @relation("PropostaResponsavel")
+  propostasCriadas    Proposta[]         @relation("PropostaCriadoPor")
+  lancamentosCriados  Lancamento[]       @relation("LancamentoCriadoPor")
+  midiaResponsavel    MidiaPlano[]       @relation("MidiaResponsavel")
+  midiaCriados        MidiaPlano[]       @relation("MidiaCriadoPor")
+
+  @@index([papel])
+}
+
+/// Numeração sequencial por tipo de entidade (PROJETO, JOB, PROPOSTA, MIDIA, LANCAMENTO).
+/// O incremento é feito numa transação com lock de linha — ver lib/sequence.ts.
+model Sequence {
+  tipo   String @id
+  ultimo Int    @default(0)
+}
+
+/// Histórico/auditoria reutilizável por qualquer entidade (LGPD Art. 37 análogo).
+model Log {
+  id           String   @id @default(cuid())
+  entidadeTipo String
+  entidadeId   String
+  usuarioId    String?
+  acao         String
+  de           String?
+  para         String?
+  criadoEm     DateTime @default(now())
+
+  usuario      Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([entidadeTipo, entidadeId])
+  @@index([criadoEm])
+}
+
+// ─────────────────────────── Fase 2 — Cadastros ──────────────────────────
+
+model Cliente {
+  id                  String   @id @default(cuid())
+  nome                String
+  nomeFantasia        String?
+  documento           String? // CNPJ/CPF
+  email               String?
+  telefone            String?
+  endereco            String?
+  condicoesComerciais String?
+  arquivado           Boolean  @default(false)
+  criadoEm            DateTime @default(now())
+  atualizadoEm        DateTime @updatedAt
+
+  projetos            Projeto[]
+  jobs                Job[]
+  propostas           Proposta[]
+  lancamentos         Lancamento[]
+  midiaPlanos         MidiaPlano[]
+
+  @@index([arquivado])
+  @@index([nome])
+}
+
+model Colaborador {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String?
+  telefone     String?
+  funcao       String?
+  usuarioId    String?  @unique
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  usuario      Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([ativo])
+}
+
+model Fornecedor {
+  id           String   @id @default(cuid())
+  nome         String
+  documento    String?
+  contato      String?
+  email        String?
+  telefone     String?
+  arquivado    Boolean  @default(false)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  lancamentos  Lancamento[]
+
+  @@index([arquivado])
+}
+
+model Prestador {
+  id           String   @id @default(cuid())
+  nome         String
+  documento    String?
+  servico      String?
+  contato      String?
+  arquivado    Boolean  @default(false)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([arquivado])
+}
+
+enum VeiculoTipo {
+  RADIO
+  TV
+  EXTERIOR
+  DIGITAL
+  JORNAL
+  REVISTA
+  OUTRO
+}
+
+model Veiculo {
+  id              String      @id @default(cuid())
+  nome            String
+  tipo            VeiculoTipo
+  contatoNome     String?
+  contatoEmail    String?
+  contatoTelefone String?
+  arquivado       Boolean     @default(false)
+  criadoEm        DateTime    @default(now())
+  atualizadoEm    DateTime    @updatedAt
+
+  programas       Programa[]
+  midiaPlanos     MidiaPlano[]
+
+  @@index([arquivado])
+  @@index([tipo])
+}
+
+model Programa {
+  id            String   @id @default(cuid())
+  veiculoId     String
+  nome          String
+  formatoPadrao String?
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  veiculo       Veiculo  @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+
+  @@index([veiculoId])
+}
+
+model Praca {
+  id   String  @id @default(cuid())
+  nome String
+  uf   String?
+
+  @@index([nome])
+}
+
+model Produto {
+  id           String   @id @default(cuid())
+  nome         String
+  descricao    String?
+  valorUnit    Decimal  @default(0) @db.Decimal(12, 2)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  itensProposta PropostaItem[]
+
+  @@index([ativo])
+}
+
+enum CategoriaTipo {
+  RECEITA
+  DESPESA
+}
+
+/// Plano de contas em árvore (categoria pode ter pai e filhos).
+model Categoria {
+  id           String        @id @default(cuid())
+  nome         String
+  tipo         CategoriaTipo
+  paiId        String?
+  ativo        Boolean       @default(true)
+  criadoEm     DateTime      @default(now())
+  atualizadoEm DateTime      @updatedAt
+
+  pai          Categoria?    @relation("Plano", fields: [paiId], references: [id], onDelete: SetNull)
+  filhos       Categoria[]   @relation("Plano")
+  lancamentos  Lancamento[]
+
+  @@index([tipo])
+  @@index([paiId])
+}
+
+model CentroCusto {
+  id           String   @id @default(cuid())
+  nome         String
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  lancamentos  Lancamento[]
+}
+
+model ContaBancaria {
+  id           String   @id @default(cuid())
+  nome         String
+  saldoInicial Decimal  @default(0) @db.Decimal(14, 2)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  lancamentos        Lancamento[] @relation("LancamentoConta")
+  lancamentosDestino Lancamento[] @relation("LancamentoContaDestino")
+}
+
+// ─────────────────────────── Fase 3 — Projetos ───────────────────────────
+
+enum ProjetoStatus {
+  SEM_STATUS
+  EM_ANDAMENTO
+  PAUSADO
+  CONCLUIDO
+  CANCELADO
+}
+
+model Projeto {
+  id              String        @id @default(cuid())
+  numero          Int           @unique
+  nome            String
+  clienteId       String
+  responsavelId   String?
+  status          ProjetoStatus @default(SEM_STATUS)
+  prazoDesejado   DateTime?
+  prazoEstimado   DateTime?
+  budget          Decimal?      @db.Decimal(14, 2)
+  tempoEstimadoMin Int?
+  briefing        String?
+  favorito        Boolean       @default(false)
+  arquivado       Boolean       @default(false)
+  projetoPaiId    String?
+  criadoPorId     String?
+  criadoEm        DateTime      @default(now())
+  atualizadoEm    DateTime      @updatedAt
+
+  cliente      Cliente            @relation(fields: [clienteId], references: [id])
+  responsavel  Usuario?           @relation("ProjetoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor    Usuario?           @relation("ProjetoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  pai          Projeto?           @relation("Subprojetos", fields: [projetoPaiId], references: [id], onDelete: SetNull)
+  subprojetos  Projeto[]          @relation("Subprojetos")
+  envolvidos   ProjetoEnvolvido[]
+  apontamentos Apontamento[]
+  jobs         Job[]
+  propostas    Proposta[]
+  lancamentos  Lancamento[]
+  midiaPlanos  MidiaPlano[]
+
+  @@index([clienteId])
+  @@index([status])
+  @@index([arquivado])
+  @@index([projetoPaiId])
+}
+
+model ProjetoEnvolvido {
+  projetoId String
+  usuarioId String
+  criadoEm  DateTime @default(now())
+
+  projeto   Projeto  @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([projetoId, usuarioId])
+  @@index([usuarioId])
+}
+
+/// Comentário reutilizável por qualquer entidade (entidadeTipo + entidadeId).
+model Comentario {
+  id           String   @id @default(cuid())
+  entidadeTipo String
+  entidadeId   String
+  autorId      String?
+  texto        String
+  criadoEm     DateTime @default(now())
+
+  autor        Usuario? @relation(fields: [autorId], references: [id], onDelete: SetNull)
+
+  @@index([entidadeTipo, entidadeId])
+}
+
+/// Anexo reutilizável (por ora, link/URL — ex.: arquivo no Drive).
+model Anexo {
+  id           String   @id @default(cuid())
+  entidadeTipo String
+  entidadeId   String
+  nome         String
+  url          String
+  criadoPorId  String?
+  criadoEm     DateTime @default(now())
+
+  criadoPor    Usuario? @relation(fields: [criadoPorId], references: [id], onDelete: SetNull)
+
+  @@index([entidadeTipo, entidadeId])
+}
+
+/// Apontamento de horas (timesheet) — base do "Tempo" de projetos e jobs.
+model Apontamento {
+  id        String   @id @default(cuid())
+  usuarioId String
+  projetoId String?
+  jobId     String?
+  data      DateTime
+  minutos   Int
+  descricao String?
+  criadoEm  DateTime @default(now())
+
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  projeto   Projeto? @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  job       Job?     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([projetoId])
+  @@index([jobId])
+  @@index([usuarioId])
+}
+
+// ─────────────────────────── Fase 4 — Jobs ───────────────────────────
+
+/// Status configurável (colunas do kanban). Gerido por gestor/sócio.
+model JobStatus {
+  id           String   @id @default(cuid())
+  nome         String
+  ordem        Int      @default(0)
+  cor          String? // hex para o acento da coluna
+  isConcluido  Boolean  @default(false) // marca colunas de "concluído" (métrica de prazo)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  jobs         Job[]
+
+  @@index([ordem])
+}
+
+model Job {
+  id           String      @id @default(cuid())
+  numero       Int         @unique
+  titulo       String
+  clienteId    String
+  projetoId    String?
+  responsavelId String?
+  statusId     String
+  prazo        DateTime?
+  briefing     String?
+  concluidoEm  DateTime? // setado ao entrar em status isConcluido (para "% no prazo")
+  arquivado    Boolean     @default(false)
+  criadoPorId  String?
+  criadoEm     DateTime    @default(now())
+  atualizadoEm DateTime    @updatedAt
+
+  cliente      Cliente     @relation(fields: [clienteId], references: [id])
+  projeto      Projeto?    @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  responsavel  Usuario?    @relation("JobResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor    Usuario?    @relation("JobCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  status       JobStatus   @relation(fields: [statusId], references: [id])
+  tarefas      JobTarefa[]
+  apontamentos Apontamento[]
+  lancamentos  Lancamento[]
+
+  @@index([clienteId])
+  @@index([projetoId])
+  @@index([responsavelId])
+  @@index([statusId])
+  @@index([arquivado])
+}
+
+model JobTarefa {
+  id            String   @id @default(cuid())
+  jobId         String
+  descricao     String
+  responsavelId String?
+  concluida     Boolean  @default(false)
+  ordem         Int      @default(0)
+  criadoEm      DateTime @default(now())
+
+  job           Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  responsavel   Usuario? @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
+
+  @@index([jobId])
+}
+
+// ─────────────────────────── Fase 5 — Propostas ───────────────────────────
+
+enum PropostaStatus {
+  EM_ABERTO
+  ENVIADA
+  APROVADA
+  REPROVADA
+  EXPIRADA
+}
+
+model Proposta {
+  id            String         @id @default(cuid())
+  numero        Int            @unique
+  titulo        String
+  clienteId     String
+  projetoId     String?
+  responsavelId String?
+  status        PropostaStatus @default(EM_ABERTO)
+  validadeDias  Int            @default(30)
+  prazo         DateTime?
+  introducao    String?
+  valorTotal    Decimal        @default(0) @db.Decimal(14, 2)
+  criadoPorId   String?
+  criadoEm      DateTime       @default(now())
+  atualizadoEm  DateTime       @updatedAt
+
+  cliente     Cliente        @relation(fields: [clienteId], references: [id])
+  projeto     Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  responsavel Usuario?       @relation("PropostaResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor   Usuario?       @relation("PropostaCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  itens       PropostaItem[]
+
+  @@index([clienteId])
+  @@index([status])
+}
+
+model PropostaItem {
+  id         String   @id @default(cuid())
+  propostaId String
+  ordem      Int      @default(0)
+  produtoId  String?
+  nome       String
+  descricao  String?
+  valorUnit  Decimal  @default(0) @db.Decimal(12, 2)
+  quantidade Decimal  @default(1) @db.Decimal(12, 2)
+  desconto   Decimal  @default(0) @db.Decimal(12, 2)
+  subtotal   Decimal  @default(0) @db.Decimal(14, 2)
+  visivel    Boolean  @default(true)
+  criadoEm   DateTime @default(now())
+
+  proposta   Proposta @relation(fields: [propostaId], references: [id], onDelete: Cascade)
+  produto    Produto? @relation(fields: [produtoId], references: [id], onDelete: SetNull)
+
+  @@index([propostaId])
+}
+
+// ─────────────────────────── Fase 6 — Financeiro ───────────────────────────
+
+enum LancamentoTipo {
+  RECEITA
+  DESPESA
+  TRANSFERENCIA
+}
+
+enum LancamentoStatus {
+  EM_ABERTO
+  QUITADO
+}
+
+enum CondicaoPagamento {
+  A_VISTA
+  PARCELADO
+}
+
+model Lancamento {
+  id              String            @id @default(cuid())
+  numero          Int               @unique
+  tipo            LancamentoTipo
+  titulo          String
+
+  // Sacado / Cedente: cliente (receita) ou fornecedor (despesa)
+  clienteId       String?
+  fornecedorId    String?
+
+  categoriaId     String?
+  projetoId       String?
+  jobId           String?
+  centroCustoId   String?
+  contaId         String? // conta de origem / movimentação
+  contaDestinoId  String? // somente em transferência
+
+  docNf           String?
+
+  dataVencimento  DateTime
+  dataCompetencia DateTime
+  dataPagamento   DateTime?
+  dataFaturamento DateTime?
+
+  valor           Decimal           @db.Decimal(14, 2)
+  acrescimos      Decimal           @default(0) @db.Decimal(14, 2)
+  descontos       Decimal           @default(0) @db.Decimal(14, 2)
+
+  condicao        CondicaoPagamento @default(A_VISTA)
+  status          LancamentoStatus  @default(EM_ABERTO)
+  observacao      String?
+
+  criadoPorId     String?
+  criadoEm        DateTime          @default(now())
+  atualizadoEm    DateTime          @updatedAt
+
+  cliente       Cliente?       @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  fornecedor    Fornecedor?    @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
+  categoria     Categoria?     @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  projeto       Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  job           Job?           @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  centroCusto   CentroCusto?   @relation(fields: [centroCustoId], references: [id], onDelete: SetNull)
+  conta         ContaBancaria? @relation("LancamentoConta", fields: [contaId], references: [id], onDelete: SetNull)
+  contaDestino  ContaBancaria? @relation("LancamentoContaDestino", fields: [contaDestinoId], references: [id], onDelete: SetNull)
+  criadoPor     Usuario?       @relation("LancamentoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+
+  @@index([tipo])
+  @@index([status])
+  @@index([dataCompetencia])
+  @@index([dataVencimento])
+  @@index([clienteId])
+  @@index([fornecedorId])
+}
+
+// ─────────────────────────── Fase 7 — Mídia ───────────────────────────
+
+enum MidiaStatus {
+  EM_ABERTO
+  ENVIADA
+  APROVADA
+  REPROVADA
+  CANCELADA
+}
+
+model MidiaPlano {
+  id            String      @id @default(cuid())
+  numero        Int         @unique
+  tipo          VeiculoTipo
+  titulo        String
+  clienteId     String
+  projetoId     String?
+  responsavelId String?
+  veiculoId     String?
+  target        String?
+  prazo         DateTime?
+  contatoVeiculo String?
+  rede          String?
+  tipoRede      String?
+  numOrcamento  String?
+  comissaoPct   Decimal     @default(0) @db.Decimal(6, 2)
+  honorarios    Decimal     @default(0) @db.Decimal(14, 2)
+  bonificacao   Decimal     @default(0) @db.Decimal(14, 2)
+  instrucoesFaturamento String?
+  valorTotal    Decimal     @default(0) @db.Decimal(14, 2)
+  status        MidiaStatus @default(EM_ABERTO)
+  criadoPorId   String?
+  criadoEm      DateTime    @default(now())
+  atualizadoEm  DateTime    @updatedAt
+
+  cliente     Cliente      @relation(fields: [clienteId], references: [id])
+  projeto     Projeto?     @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  responsavel Usuario?     @relation("MidiaResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor   Usuario?     @relation("MidiaCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  veiculo     Veiculo?     @relation(fields: [veiculoId], references: [id], onDelete: SetNull)
+  pecas       MidiaPeca[]
+  grades      MidiaGrade[]
+
+  @@index([clienteId])
+  @@index([status])
+  @@index([tipo])
+}
+
+model MidiaPeca {
+  id       String  @id @default(cuid())
+  planoId  String
+  codigo   String // letra/código (A, B, ...)
+  nome     String
+  criadoEm DateTime @default(now())
+
+  plano    MidiaPlano        @relation(fields: [planoId], references: [id], onDelete: Cascade)
+  linhas   MidiaGradeLinha[]
+
+  @@index([planoId])
+}
+
+model MidiaGrade {
+  id       String  @id @default(cuid())
+  planoId  String
+  pracaNome String?
+  ano      Int
+  mes      Int
+  criadoEm DateTime @default(now())
+
+  plano    MidiaPlano        @relation(fields: [planoId], references: [id], onDelete: Cascade)
+  linhas   MidiaGradeLinha[]
+
+  @@index([planoId])
+}
+
+model MidiaGradeLinha {
+  id           String   @id @default(cuid())
+  gradeId      String
+  pecaId       String?
+  programaNome String?
+  formato      String?
+  valorInsercao Decimal @default(0) @db.Decimal(12, 2)
+  ordem        Int      @default(0)
+  criadoEm     DateTime @default(now())
+
+  grade     MidiaGrade      @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  peca      MidiaPeca?      @relation(fields: [pecaId], references: [id], onDelete: SetNull)
+  insercoes MidiaInsercao[]
+
+  @@index([gradeId])
+}
+
+model MidiaInsercao {
+  id          String @id @default(cuid())
+  gradeLinhaId String
+  dia         Int // dia do mês (1..31)
+  quantidade  Int
+
+  gradeLinha  MidiaGradeLinha @relation(fields: [gradeLinhaId], references: [id], onDelete: Cascade)
+
+  @@unique([gradeLinhaId, dia])
+  @@index([gradeLinhaId])
+}
