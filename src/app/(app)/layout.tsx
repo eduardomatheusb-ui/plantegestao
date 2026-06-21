@@ -1,21 +1,23 @@
 import { requireUser, PAPEL_LABEL } from "@/lib/rbac";
 import { carregarAcesso } from "@/lib/permissoes.server";
 import { contarNaoLidas, listarNotificacoes } from "@/lib/notificacoes";
+import { contarChatNaoLidas } from "@/lib/chat/queries";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
-  const [acesso, naoLidas, recentes] = await Promise.all([
+  const [acesso, naoLidas, recentes, chatNaoLidas] = await Promise.all([
     carregarAcesso(user.id),
     contarNaoLidas(user.id),
     listarNotificacoes(user.id, 6),
+    contarChatNaoLidas(user.id),
   ]);
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar caps={acesso.caps} />
+      <Sidebar caps={acesso.caps} chatNaoLidas={chatNaoLidas} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           nome={user.name}

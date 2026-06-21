@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
 import { notificar, notificarMuitos, destinatariosDaEntidade } from "@/lib/notificacoes";
+import { canalDM } from "@/lib/chat/queries";
 import { assertPapel, getSessionUser, podePapel } from "@/lib/rbac";
 import { STATUS_LABEL } from "./situacao";
 import type { ProjetoStatus } from "@prisma/client";
@@ -246,6 +247,22 @@ export async function adicionarComentario(
     atorId: user.id, tipo: "mencao", titulo: `${user.name ?? "Alguém"} mencionou você`,
     descricao: resumo, entidadeTipo, entidadeId, url,
   });
+
+  // Menção também vira mensagem direta no chat (de quem marcou para quem foi marcado).
+  for (const mencionadoId of mencaoSet) {
+    if (mencionadoId === user.id) continue;
+    try {
+      await db.chatMensagem.create({
+        data: {
+          canal: canalDM(user.id, mencionadoId),
+          autorId: user.id,
+          corpo: `📌 Te marquei num comentário${url ? ` (${url})` : ""}: "${resumo}"`,
+        },
+      });
+    } catch (err) {
+      console.error("[mencao→chat] falhou (ignorado):", err);
+    }
+  }
 
   // Demais interessados (responsável/envolvidos) que não foram mencionados.
   const destinatarios = (await destinatariosDaEntidade(entidadeTipo, entidadeId)).filter((d) => !mencaoSet.has(d));

@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  MessageCircle,
   FolderKanban,
   ListChecks,
   FileText,
@@ -40,7 +41,10 @@ export type NavGroup = {
 /** Estrutura do menu lateral. */
 export const NAV: NavGroup[] = [
   {
-    itens: [{ label: "Minha página", href: "/dashboard", icon: LayoutDashboard, disponivel: true }],
+    itens: [
+      { label: "Minha página", href: "/dashboard", icon: LayoutDashboard, disponivel: true },
+      { label: "Chat", href: "/chat", icon: MessageCircle, disponivel: true },
+    ],
   },
   {
     titulo: "Mão na massa",

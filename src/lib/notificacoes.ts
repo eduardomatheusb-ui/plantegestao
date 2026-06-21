@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { enviarEmail, emailConfigurado, layoutEmail, baseUrl } from "@/lib/email";
 
 export type NotificarArgs = {
   usuarioId: string;
@@ -32,6 +33,28 @@ export async function notificar(args: NotificarArgs): Promise<void> {
     });
   } catch (err) {
     console.error("[notif] falha ao notificar (ignorada):", err);
+  }
+  await enviarEmailNotificacao(args);
+}
+
+/** Espelha a notificação por e-mail (best-effort; no-op se Resend não configurado). */
+async function enviarEmailNotificacao(args: NotificarArgs): Promise<void> {
+  if (!emailConfigurado()) return;
+  try {
+    const [u, ator] = await Promise.all([
+      db.usuario.findUnique({ where: { id: args.usuarioId }, select: { email: true, ativo: true } }),
+      args.atorId ? db.usuario.findUnique({ where: { id: args.atorId }, select: { nome: true } }) : Promise.resolve(null),
+    ]);
+    if (!u?.email || !u.ativo) return;
+    const linkUrl = args.url ? `${baseUrl()}${args.url}` : null;
+    const corpo = `${ator?.nome ? `<strong>${ator.nome}</strong> · ` : ""}${args.descricao ? `${args.descricao}` : "Você tem uma novidade no TREM."}`;
+    await enviarEmail({
+      to: u.email,
+      subject: args.titulo,
+      html: layoutEmail({ titulo: args.titulo, corpo, linkUrl }),
+    });
+  } catch (err) {
+    console.error("[notif] falha ao enviar e-mail (ignorada):", err);
   }
 }
 

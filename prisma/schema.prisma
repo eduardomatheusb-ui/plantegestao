@@ -96,8 +96,32 @@ model Usuario {
   notificacoesGeradas Notificacao[]      @relation("NotificacaoAtor")
   osResponsavel       OrdemServico[]     @relation("OsResponsavel")
   osCriadas           OrdemServico[]     @relation("OsCriadoPor")
+  chatMensagens       ChatMensagem[]     @relation("ChatAutor")
+  chatLeituras        ChatLeitura[]
 
   @@index([papel])
+}
+
+/// Chat interno: mural "geral" + conversas diretas. Canal = "geral" ou "dm:<idA>:<idB>" (ids ordenados).
+model ChatMensagem {
+  id       String   @id @default(cuid())
+  canal    String
+  autorId  String
+  autor    Usuario  @relation("ChatAutor", fields: [autorId], references: [id], onDelete: Cascade)
+  corpo    String
+  criadoEm DateTime @default(now())
+
+  @@index([canal, criadoEm])
+}
+
+/// Marca até quando cada usuário leu um canal (para contagem de não lidas).
+model ChatLeitura {
+  usuarioId    String
+  canal        String
+  ultimaLidaEm DateTime @default(now())
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, canal])
 }
 
 /// Status de uma Ordem de Serviço / Fatura emitida ao cliente.

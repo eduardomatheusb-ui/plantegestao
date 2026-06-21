@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 const CHAVE = "plante-sidebar-colapsada";
 
-export function Sidebar({ caps }: { caps: Capacidades }) {
+export function Sidebar({ caps, chatNaoLidas = 0 }: { caps: Capacidades; chatNaoLidas?: number }) {
   const pathname = usePathname();
   const grupos = filtrarNav(caps);
   const [colapsada, setColapsada] = React.useState(false);
@@ -60,6 +60,7 @@ export function Sidebar({ caps }: { caps: Capacidades }) {
                 const Icon = item.icon;
                 const ativo =
                   item.disponivel && (pathname === item.href || pathname.startsWith(item.href + "/"));
+                const badge = item.href === "/chat" ? chatNaoLidas : 0;
                 return (
                   <li key={item.href}>
                     <Link
@@ -67,15 +68,25 @@ export function Sidebar({ caps }: { caps: Capacidades }) {
                       aria-current={ativo ? "page" : undefined}
                       title={colapsada ? item.label : undefined}
                       className={cn(
-                        "flex items-center gap-3 rounded-md py-2 text-sm transition-colors",
+                        "relative flex items-center gap-3 rounded-md py-2 text-sm transition-colors",
                         colapsada ? "justify-center px-2" : "px-3",
                         ativo
                           ? "bg-brand-yellow font-semibold text-ink-900"
                           : "text-chrome-foreground/80 hover:bg-white-a10 hover:text-chrome-foreground",
                       )}
                     >
-                      <Icon className="size-4 shrink-0" aria-hidden="true" />
-                      {!colapsada && <span>{item.label}</span>}
+                      <span className="relative shrink-0">
+                        <Icon className="size-4" aria-hidden="true" />
+                        {badge > 0 && colapsada && (
+                          <span className="absolute -right-1.5 -top-1.5 size-2 rounded-full bg-destructive" aria-hidden="true" />
+                        )}
+                      </span>
+                      {!colapsada && <span className="flex-1">{item.label}</span>}
+                      {!colapsada && badge > 0 && (
+                        <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold leading-5 text-white">
+                          {badge > 9 ? "9+" : badge}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );
