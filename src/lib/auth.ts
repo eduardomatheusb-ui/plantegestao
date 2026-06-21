@@ -39,22 +39,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         const { email, senha } = parsed.data;
-        const usuario = await db.usuario.findUnique({
-          where: { email: email.toLowerCase().trim() },
-        });
-        // Sem senha definida = convite pendente; inativo = bloqueado.
-        if (!usuario || !usuario.ativo || !usuario.senhaHash) return null;
+        try {
+          const usuario = await db.usuario.findUnique({
+            where: { email: email.toLowerCase().trim() },
+          });
+          // Sem senha definida = convite pendente; inativo = bloqueado.
+          if (!usuario || !usuario.ativo || !usuario.senhaHash) return null;
 
-        const ok = await bcrypt.compare(senha, usuario.senhaHash);
-        if (!ok) return null;
+          const ok = await bcrypt.compare(senha, usuario.senhaHash);
+          if (!ok) return null;
 
-        return {
-          id: usuario.id,
-          name: usuario.nome,
-          email: usuario.email,
-          image: usuario.avatarUrl ?? undefined,
-          papel: usuario.papel,
-        };
+          return {
+            id: usuario.id,
+            name: usuario.nome,
+            email: usuario.email,
+            image: usuario.avatarUrl ?? undefined,
+            papel: usuario.papel,
+          };
+        } catch (e) {
+          // Erro de infraestrutura (ex.: conexão com o banco) — registra no log da função.
+          console.error("[auth] falha ao autenticar (verifique a DATABASE_URL):", e);
+          return null;
+        }
       },
     }),
   ],
