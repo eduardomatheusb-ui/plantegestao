@@ -9,6 +9,22 @@ function hoje() {
   return { ini, fim };
 }
 
+/** Aniversariantes do mês (colaboradores ativos), ordenados pelo dia. */
+export async function aniversariantesDoMes(): Promise<{ id: string; nome: string; dia: number }[]> {
+  const mes = new Date().getMonth() + 1;
+  try {
+    return await db.$queryRaw<{ id: string; nome: string; dia: number }[]>`
+      SELECT id, nome, EXTRACT(DAY FROM "dataNascimento")::int AS dia
+      FROM "Colaborador"
+      WHERE ativo = true AND "dataNascimento" IS NOT NULL
+        AND EXTRACT(MONTH FROM "dataNascimento") = ${mes}
+      ORDER BY dia ASC, nome ASC
+    `;
+  } catch {
+    return [];
+  }
+}
+
 /** Minha pauta: meus jobs ainda não concluídos, mais urgentes primeiro. */
 export async function minhaPauta(userId: string) {
   const jobs = await db.job.findMany({

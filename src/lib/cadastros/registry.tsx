@@ -28,6 +28,8 @@ export type FieldDef = {
   /** Quando as opções são carregadas em runtime (ex.: categoria-pai). */
   dynamicOptions?: string;
   colSpan?: 1 | 2;
+  /** Campo sensível: só Administrador vê/edita (ex.: salário). */
+  adminOnly?: boolean;
 };
 
 export type Coluna<T = Registro> = {
@@ -91,6 +93,13 @@ const dataOpcional = z
   .optional()
   .transform((v) => (v ? new Date(`${v}T12:00:00`) : null))
   .refine((v) => v === null || !Number.isNaN(v.getTime()), { message: "Data inválida." });
+
+const currencyOpcional = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => (v ? Number(v.replace(",", ".")) : null))
+  .refine((v) => v === null || (!Number.isNaN(v) && v >= 0), { message: "Valor inválido." });
 
 const emailOpcional = z
   .string()
@@ -184,6 +193,8 @@ export const ENTIDADES: Record<string, EntityConfig> = {
       { name: "telefone", label: "Telefone", type: "tel" },
       { name: "dataNascimento", label: "Aniversário", type: "date" },
       { name: "dataAdmissao", label: "Admissão", type: "date" },
+      { name: "salario", label: "Salário (R$)", type: "currency", adminOnly: true, help: "Visível apenas para Administradores." },
+      { name: "valorHora", label: "Valor/hora (R$)", type: "currency", adminOnly: true },
     ],
     schema: z.object({
       nome: nomeObrigatorio,
@@ -193,6 +204,8 @@ export const ENTIDADES: Record<string, EntityConfig> = {
       telefone: textoOpcional,
       dataNascimento: dataOpcional,
       dataAdmissao: dataOpcional,
+      salario: currencyOpcional,
+      valorHora: currencyOpcional,
     }),
     colunas: [
       { header: "Nome", render: (r) => <span className="font-medium">{String(r.nome)}</span> },
@@ -452,6 +465,6 @@ export function getEntidade(slug: string): EntityConfig | null {
 }
 
 /** Subconjunto serializável dos campos (para passar ao formulário client). */
-export function camposSerializaveis(config: EntityConfig): FieldDef[] {
-  return config.campos;
+export function camposSerializaveis(config: EntityConfig, admin = false): FieldDef[] {
+  return admin ? config.campos : config.campos.filter((c) => !c.adminOnly);
 }

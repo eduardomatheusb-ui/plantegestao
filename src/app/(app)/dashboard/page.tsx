@@ -1,12 +1,12 @@
 import Link from "next/link";
 import {
   FileText, Factory, Megaphone, Clock, ListChecks, Star,
-  MessageSquare, AlertTriangle, ArrowRight, FolderKanban,
+  MessageSquare, AlertTriangle, ArrowRight, FolderKanban, Cake,
 } from "lucide-react";
 import { requireUser, PAPEL_LABEL } from "@/lib/rbac";
 import { metricaJobsNoPrazo } from "@/lib/jobs/queries";
 import {
-  minhaPauta, meusProjetos, timesheetHoje, ultimosDocumentos, comentariosRecentes, contadores,
+  minhaPauta, meusProjetos, timesheetHoje, ultimosDocumentos, comentariosRecentes, contadores, aniversariantesDoMes,
 } from "@/lib/dashboard/queries";
 import { getClima } from "@/lib/clima";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +31,7 @@ function mensagemDoDia(emAtraso: number, vencemHoje: number, pendentes: number):
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const [pauta, projetos, timesheet, docs, comentarios, cont, noPrazo, clima] = await Promise.all([
+  const [pauta, projetos, timesheet, docs, comentarios, cont, noPrazo, clima, aniversariantes] = await Promise.all([
     minhaPauta(user.id),
     meusProjetos(user.id),
     timesheetHoje(user.id),
@@ -40,7 +40,9 @@ export default async function DashboardPage() {
     contadores(user.id),
     metricaJobsNoPrazo(),
     getClima(),
+    aniversariantesDoMes(),
   ]);
+  const mesAtual = new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(new Date());
 
   const primeiroNome = user.name?.split(" ")[0] ?? "";
   const agora = new Date();
@@ -223,6 +225,27 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Aniversariantes do mês */}
+      {aniversariantes.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Cake className="size-4 text-brand-yellow" aria-hidden="true" /> Aniversariantes de {mesAtual}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-wrap gap-2">
+              {aniversariantes.map((a) => (
+                <li key={a.id} className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 text-sm">
+                  <span className="flex size-6 items-center justify-center rounded-full bg-brand-yellow text-[11px] font-bold text-ink-900 tabular-nums">{a.dia}</span>
+                  {a.nome}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

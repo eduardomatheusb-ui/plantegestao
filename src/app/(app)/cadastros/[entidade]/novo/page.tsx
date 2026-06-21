@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getEntidade, camposSerializaveis } from "@/lib/cadastros/registry";
 import { carregarOpcoesDinamicas } from "@/lib/cadastros/options";
 import { requirePapel, CADASTRO_EDITAR_MINIMO } from "@/lib/rbac";
+import { acessoAtual } from "@/lib/permissoes.server";
 import { PageHeader } from "@/components/shared/page-header";
 import { CrudForm } from "@/components/shared/crud-form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +17,7 @@ export default async function NovoCadastroPage({
   if (!config) notFound();
 
   await requirePapel(CADASTRO_EDITAR_MINIMO);
+  const { admin } = await acessoAtual();
   const dynamicOptions = await carregarOpcoesDinamicas(config);
 
   return (
@@ -26,7 +28,7 @@ export default async function NovoCadastroPage({
           <CrudForm
             slug={entidade}
             id={null}
-            fields={camposSerializaveis(config)}
+            fields={camposSerializaveis(config, admin)}
             dynamicOptions={dynamicOptions}
             cancelHref={`/cadastros/${entidade}`}
           />

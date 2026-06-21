@@ -3,6 +3,7 @@ import { getEntidade, camposSerializaveis } from "@/lib/cadastros/registry";
 import { carregarOpcoesDinamicas } from "@/lib/cadastros/options";
 import * as repo from "@/lib/cadastros/repo";
 import { requirePapel, CADASTRO_EDITAR_MINIMO } from "@/lib/rbac";
+import { acessoAtual } from "@/lib/permissoes.server";
 import { PageHeader } from "@/components/shared/page-header";
 import { CrudForm } from "@/components/shared/crud-form";
 import { HistoryPanel } from "@/components/shared/history-panel";
@@ -18,6 +19,7 @@ export default async function EditarCadastroPage({
   if (!config) notFound();
 
   await requirePapel(CADASTRO_EDITAR_MINIMO);
+  const { admin } = await acessoAtual();
 
   const record = await repo.obter(config, id);
   if (!record) notFound();
@@ -25,8 +27,10 @@ export default async function EditarCadastroPage({
   const dynamicOptions = await carregarOpcoesDinamicas(config, id);
 
   // Monta valores iniciais serializáveis (Decimal → number, null → "").
+  // Campos sensíveis (adminOnly) não saem do servidor para quem não é admin.
   const initial: Record<string, unknown> = {};
   for (const campo of config.campos) {
+    if (campo.adminOnly && !admin) continue;
     const v = record[campo.name];
     if (v === null || v === undefined) initial[campo.name] = "";
     else if (campo.type === "currency" || campo.type === "number") initial[campo.name] = Number(v);

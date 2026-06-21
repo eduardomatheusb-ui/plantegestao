@@ -9,6 +9,7 @@ import {
   CADASTRO_EDITAR_MINIMO,
   CADASTRO_EXCLUIR_MINIMO,
 } from "@/lib/rbac";
+import { acessoAtual } from "@/lib/permissoes.server";
 import { registrarLog } from "@/lib/log";
 
 export type FormState = {
@@ -17,9 +18,10 @@ export type FormState = {
   fieldErrors?: Record<string, string>;
 };
 
-function montarRaw(config: EntityConfig, formData: FormData): Record<string, unknown> {
+function montarRaw(config: EntityConfig, formData: FormData, admin: boolean): Record<string, unknown> {
   const obj: Record<string, unknown> = {};
   for (const campo of config.campos) {
+    if (campo.adminOnly && !admin) continue; // campo sensível: ignora para não-admin
     if (campo.type === "checkbox") {
       obj[campo.name] = formData.get(campo.name) === "on";
     } else {
@@ -44,7 +46,8 @@ export async function salvarCadastro(
 
   try {
     const user = await assertPapel(CADASTRO_EDITAR_MINIMO);
-    const raw = montarRaw(config, formData);
+    const { admin } = await acessoAtual();
+    const raw = montarRaw(config, formData, admin);
     const parsed = config.schema.safeParse(raw);
 
     if (!parsed.success) {
@@ -59,6 +62,13 @@ export async function salvarCadastro(
     }
 
     const data = parsed.data as Record<string, unknown>;
+
+    // Não-admin nunca grava campos sensíveis (deixa-os intactos no banco).
+    if (!admin) {
+      for (const campo of config.campos) {
+        if (campo.adminOnly) delete data[campo.name];
+      }
+    }
 
     // Categoria não pode ser pai de si mesma.
     if (config.model === "categoria" && id && data.paiId === id) {

@@ -41,6 +41,24 @@ export function CrudForm({
   const action = salvarCadastro.bind(null, slug, id);
   const [state, formAction] = useActionState<FormState, FormData>(action, {});
 
+  // Autopreenche o Endereço a partir do CEP (ViaCEP). Continua editável à mão.
+  async function buscarCep(valor: string) {
+    const cep = valor.replace(/\D/g, "");
+    if (cep.length !== 8) return;
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const d = await r.json();
+      if (d?.erro) return;
+      const rua = [d.logradouro, d.bairro].filter(Boolean).join(", ");
+      const cidade = [d.localidade, d.uf].filter(Boolean).join("/");
+      const txt = [rua, cidade].filter(Boolean).join(" - ");
+      const el = document.getElementById("endereco") as HTMLInputElement | HTMLTextAreaElement | null;
+      if (el && txt && !el.value.trim()) el.value = txt;
+    } catch {
+      /* offline / CEP inexistente — segue manual */
+    }
+  }
+
   return (
     <form action={formAction} className="space-y-6" noValidate>
       {state.error && (
@@ -121,6 +139,7 @@ export function CrudForm({
                         : campo.type
                   }
                   step={campo.type === "currency" ? "0.01" : undefined}
+                  onBlur={campo.name === "cep" ? (e) => void buscarCep(e.target.value) : undefined}
                   defaultValue={
                     valorInicial === null || valorInicial === undefined
                       ? ""

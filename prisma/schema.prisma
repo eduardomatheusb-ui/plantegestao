@@ -266,6 +266,8 @@ model Colaborador {
   documento      String? // CPF/CNPJ
   dataNascimento DateTime? // aniversário
   dataAdmissao   DateTime?
+  salario        Decimal?  @db.Decimal(12, 2) // sensível — só Administrador
+  valorHora      Decimal?  @db.Decimal(12, 2) // sensível — só Administrador
   usuarioId      String?   @unique
   ativo          Boolean   @default(true)
   criadoEm       DateTime  @default(now())
