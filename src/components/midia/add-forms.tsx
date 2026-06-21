@@ -42,16 +42,39 @@ export function GradeAddForm({ planoId, anoAtual }: { planoId: string; anoAtual:
   );
 }
 
-export function LinhaAddForm({ gradeId, pecas }: { gradeId: string; pecas: { id: string; codigo: string; nome: string }[] }) {
+export function LinhaAddForm({
+  gradeId,
+  pecas,
+  modo = "diario",
+}: {
+  gradeId: string;
+  pecas: { id: string; codigo: string; nome: string }[];
+  modo?: "diario" | "periodo";
+}) {
   return (
     <form action={adicionarLinha.bind(null, gradeId)} className="flex flex-wrap items-center gap-2 border-t border-border p-3">
       <select name="pecaId" className={inp} defaultValue="" aria-label="Peça">
         <option value="">Peça…</option>
         {pecas.map((p) => (<option key={p.id} value={p.id}>{p.codigo} · {p.nome}</option>))}
       </select>
-      <Input name="programaNome" placeholder="Programa" className="h-9" aria-label="Programa" />
-      <Input name="formato" placeholder='Formato (30")' className="h-9 w-28" aria-label="Formato" />
-      <Input name="valorInsercao" type="number" step="0.01" min="0" placeholder="R$/inserção" className="h-9 w-32" aria-label="Valor por inserção" />
+
+      {modo === "periodo" ? (
+        <>
+          <Input name="produto" placeholder="Produto" className="h-9" aria-label="Produto" />
+          <Input name="local" placeholder="Local (linha/ponto)" className="h-9 min-w-0 flex-1" aria-label="Local" />
+          <Input name="periodoInicio" type="date" className="h-9" aria-label="Início" />
+          <Input name="periodoFim" type="date" className="h-9" aria-label="Fim" />
+          <Input name="quantidade" type="number" min="0" step="1" placeholder="Qtd" className="h-9 w-20" aria-label="Total inserções" defaultValue="1" />
+          <Input name="valorInsercao" type="number" step="0.01" min="0" placeholder="R$ unit." className="h-9 w-28" aria-label="Valor unitário" />
+          <Input name="desconto" type="number" step="0.01" min="0" placeholder="Desc." className="h-9 w-24" aria-label="Desconto" defaultValue="0" />
+        </>
+      ) : (
+        <>
+          <Input name="programaNome" placeholder="Programa" className="h-9" aria-label="Programa" />
+          <Input name="formato" placeholder='Formato (30")' className="h-9 w-28" aria-label="Formato" />
+          <Input name="valorInsercao" type="number" step="0.01" min="0" placeholder="R$/inserção" className="h-9 w-32" aria-label="Valor por inserção" />
+        </>
+      )}
       <AddBtn label="Adicionar linha" />
     </form>
   );

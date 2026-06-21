@@ -28,10 +28,22 @@ export async function obterMidiaPlano(id: string) {
   return db.midiaPlano.findUnique({
     where: { id },
     include: {
-      cliente: { select: { id: true, nome: true } },
+      cliente: {
+        select: {
+          id: true, nome: true, nomeFantasia: true, documento: true,
+          inscricaoEstadual: true, inscricaoMunicipal: true, email: true,
+          telefone: true, contatoNome: true, endereco: true, cep: true,
+        },
+      },
       projeto: { select: { id: true, numero: true, nome: true } },
       responsavel: { select: { id: true, nome: true } },
-      veiculo: { select: { id: true, nome: true } },
+      veiculo: {
+        select: {
+          id: true, nome: true, razaoSocial: true, documento: true,
+          inscricaoMunicipal: true, endereco: true, cep: true,
+          contatoNome: true, contatoEmail: true, contatoTelefone: true,
+        },
+      },
       pecas: { orderBy: { codigo: "asc" } },
       grades: {
         orderBy: [{ ano: "asc" }, { mes: "asc" }],

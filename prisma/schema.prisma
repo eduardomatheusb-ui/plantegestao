@@ -50,6 +50,7 @@ model Usuario {
   lancamentosCriados  Lancamento[]       @relation("LancamentoCriadoPor")
   midiaResponsavel    MidiaPlano[]       @relation("MidiaResponsavel")
   midiaCriados        MidiaPlano[]       @relation("MidiaCriadoPor")
+  producaoCriadas     ProducaoOrdem[]    @relation("ProducaoCriadoPor")
 
   @@index([papel])
 }
@@ -85,9 +86,13 @@ model Cliente {
   nome                String
   nomeFantasia        String?
   documento           String? // CNPJ/CPF
+  inscricaoEstadual   String?
+  inscricaoMunicipal  String?
   email               String?
   telefone            String?
+  contatoNome         String?
   endereco            String?
+  cep                 String?
   condicoesComerciais String?
   arquivado           Boolean  @default(false)
   criadoEm            DateTime @default(now())
@@ -98,6 +103,7 @@ model Cliente {
   propostas           Proposta[]
   lancamentos         Lancamento[]
   midiaPlanos         MidiaPlano[]
+  producaoOrdens      ProducaoOrdem[]
 
   @@index([arquivado])
   @@index([nome])
@@ -120,17 +126,22 @@ model Colaborador {
 }
 
 model Fornecedor {
-  id           String   @id @default(cuid())
-  nome         String
-  documento    String?
-  contato      String?
-  email        String?
-  telefone     String?
-  arquivado    Boolean  @default(false)
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  nome               String
+  razaoSocial        String?
+  documento          String?
+  inscricaoMunicipal String?
+  contato            String?
+  email              String?
+  telefone           String?
+  endereco           String?
+  cep                String?
+  arquivado          Boolean  @default(false)
+  criadoEm           DateTime @default(now())
+  atualizadoEm       DateTime @updatedAt
 
-  lancamentos  Lancamento[]
+  lancamentos        Lancamento[]
+  producaoOrdens     ProducaoOrdem[]
 
   @@index([arquivado])
 }
@@ -159,18 +170,23 @@ enum VeiculoTipo {
 }
 
 model Veiculo {
-  id              String      @id @default(cuid())
-  nome            String
-  tipo            VeiculoTipo
-  contatoNome     String?
-  contatoEmail    String?
-  contatoTelefone String?
-  arquivado       Boolean     @default(false)
-  criadoEm        DateTime    @default(now())
-  atualizadoEm    DateTime    @updatedAt
+  id                 String      @id @default(cuid())
+  nome               String
+  tipo               VeiculoTipo
+  razaoSocial        String?
+  documento          String? // CNPJ
+  inscricaoMunicipal String?
+  endereco           String?
+  cep                String?
+  contatoNome        String?
+  contatoEmail       String?
+  contatoTelefone    String?
+  arquivado          Boolean     @default(false)
+  criadoEm           DateTime    @default(now())
+  atualizadoEm       DateTime    @updatedAt
 
-  programas       Programa[]
-  midiaPlanos     MidiaPlano[]
+  programas          Programa[]
+  midiaPlanos        MidiaPlano[]
 
   @@index([arquivado])
   @@index([tipo])
@@ -296,6 +312,7 @@ model Projeto {
   propostas    Proposta[]
   lancamentos  Lancamento[]
   midiaPlanos  MidiaPlano[]
+  producaoOrdens ProducaoOrdem[]
 
   @@index([clienteId])
   @@index([status])
@@ -572,6 +589,7 @@ enum MidiaStatus {
 model MidiaPlano {
   id            String      @id @default(cuid())
   numero        Int         @unique
+  versao        Int         @default(1)
   tipo          VeiculoTipo
   titulo        String
   clienteId     String
@@ -588,6 +606,8 @@ model MidiaPlano {
   honorarios    Decimal     @default(0) @db.Decimal(14, 2)
   bonificacao   Decimal     @default(0) @db.Decimal(14, 2)
   instrucoesFaturamento String?
+  vencimento    DateTime?
+  formaPagamento String?
   valorTotal    Decimal     @default(0) @db.Decimal(14, 2)
   status        MidiaStatus @default(EM_ABERTO)
   criadoPorId   String?
@@ -640,6 +660,13 @@ model MidiaGradeLinha {
   pecaId       String?
   programaNome String?
   formato      String?
+  // Mídia externa (por período): produto/local/datas + quantidade total de inserções.
+  produto      String?
+  local        String?
+  periodoInicio DateTime?
+  periodoFim    DateTime?
+  quantidade   Int      @default(0)
+  desconto     Decimal  @default(0) @db.Decimal(12, 2)
   valorInsercao Decimal @default(0) @db.Decimal(12, 2)
   ordem        Int      @default(0)
   criadoEm     DateTime @default(now())
@@ -661,4 +688,59 @@ model MidiaInsercao {
 
   @@unique([gradeLinhaId, dia])
   @@index([gradeLinhaId])
+}
+
+// ─────────────────────────── Produção (Pedido de Produção) ───────────────────────────
+
+enum ProducaoStatus {
+  EM_ABERTO
+  ENVIADA
+  APROVADA
+  REPROVADA
+  CANCELADA
+}
+
+model ProducaoOrdem {
+  id             String         @id @default(cuid())
+  numero         Int            @unique
+  versao         Int            @default(1)
+  titulo         String
+  clienteId      String
+  projetoId      String?
+  fornecedorId   String?
+  responsavelId  String?
+  dataEntrega    DateTime?
+  vencimento     DateTime?
+  formaPagamento String?
+  comissaoPct    Decimal        @default(0) @db.Decimal(6, 2)
+  observacao     String?
+  valorTotal     Decimal        @default(0) @db.Decimal(14, 2)
+  status         ProducaoStatus @default(EM_ABERTO)
+  criadoPorId    String?
+  criadoEm       DateTime       @default(now())
+  atualizadoEm   DateTime       @updatedAt
+
+  cliente     Cliente        @relation(fields: [clienteId], references: [id])
+  projeto     Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  fornecedor  Fornecedor?    @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
+  criadoPor   Usuario?       @relation("ProducaoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  itens       ProducaoItem[]
+
+  @@index([clienteId])
+  @@index([status])
+}
+
+model ProducaoItem {
+  id         String   @id @default(cuid())
+  ordemId    String
+  ordem      Int      @default(0)
+  titulo     String
+  quantidade Decimal  @default(1) @db.Decimal(12, 2)
+  valorUnit  Decimal  @default(0) @db.Decimal(12, 2)
+  valorTotal Decimal  @default(0) @db.Decimal(14, 2)
+  criadoEm   DateTime @default(now())
+
+  ordemRef   ProducaoOrdem @relation(fields: [ordemId], references: [id], onDelete: Cascade)
+
+  @@index([ordemId])
 }

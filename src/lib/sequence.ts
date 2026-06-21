@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 
 /** Tipos de entidade com numeração sequencial própria. */
-export type TipoSequencia = "PROJETO" | "JOB" | "PROPOSTA" | "MIDIA" | "LANCAMENTO";
+export type TipoSequencia = "PROJETO" | "JOB" | "PROPOSTA" | "MIDIA" | "LANCAMENTO" | "PRODUCAO";
 
 /**
  * Próximo número sequencial para um tipo de entidade.

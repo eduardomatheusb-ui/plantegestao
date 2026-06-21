@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, ListChecks, FileText, Megaphone, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, ListChecks, FileText, Megaphone, Factory, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,6 +36,12 @@ export function AdicionarMenu({ projetoId }: { projetoId: string }) {
           <Link href={`/midia/novo?projeto=${projetoId}`}>
             <Megaphone className="size-4" />
             Mídia
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/producao/novo?projeto=${projetoId}`}>
+            <Factory className="size-4" />
+            Produção
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

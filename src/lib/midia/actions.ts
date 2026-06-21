@@ -26,20 +26,34 @@ function t(v: FormDataEntryValue | null): string | null {
   return s ? s : null;
 }
 
+/** True para tipos com grade diária (rádio/TV); demais usam grade por período. */
+function isGradeDiaria(tipo: VeiculoTipo): boolean {
+  return tipo === "RADIO" || tipo === "TV";
+}
+
 /** Recalcula o valorTotal do plano (Total da Mídia + honorários). */
 async function recalcular(planoId: string) {
   const plano = await db.midiaPlano.findUnique({
     where: { id: planoId },
     select: {
+      tipo: true,
       honorarios: true,
       comissaoPct: true,
-      grades: { select: { linhas: { select: { valorInsercao: true, insercoes: { select: { quantidade: true } } } } } },
+      grades: {
+        select: {
+          linhas: {
+            select: { valorInsercao: true, desconto: true, quantidade: true, insercoes: { select: { quantidade: true } } },
+          },
+        },
+      },
     },
   });
   if (!plano) return;
+  const diario = isGradeDiaria(plano.tipo);
   const linhas = plano.grades.flatMap((g) => g.linhas).map((l) => ({
-    totalInsercoes: l.insercoes.reduce((a, i) => a + i.quantidade, 0),
+    totalInsercoes: diario ? l.insercoes.reduce((a, i) => a + i.quantidade, 0) : l.quantidade,
     valorInsercao: Number(l.valorInsercao),
+    desconto: Number(l.desconto),
   }));
   const { valorTotal } = calcularTotaisMidia(linhas, Number(plano.comissaoPct), Number(plano.honorarios));
   await db.midiaPlano.update({ where: { id: planoId }, data: { valorTotal } });
@@ -82,6 +96,9 @@ export async function salvarMidiaPlano(
       honorarios: n(formData.get("honorarios")),
       bonificacao: n(formData.get("bonificacao")),
       instrucoesFaturamento: t(formData.get("instrucoesFaturamento")),
+      versao: Math.max(1, Math.round(n(formData.get("versao")) || 1)),
+      vencimento: formData.get("vencimento")?.toString() ? new Date(`${formData.get("vencimento")}T00:00:00`) : null,
+      formaPagamento: t(formData.get("formaPagamento")),
     };
 
     if (id) {
@@ -181,12 +198,40 @@ export async function adicionarLinha(gradeId: string, formData: FormData) {
       pecaId: formData.get("pecaId")?.toString() || null,
       programaNome: formData.get("programaNome")?.toString().trim() || null,
       formato: formData.get("formato")?.toString().trim() || null,
+      produto: t(formData.get("produto")),
+      local: t(formData.get("local")),
+      periodoInicio: formData.get("periodoInicio")?.toString() ? new Date(`${formData.get("periodoInicio")}T00:00:00`) : null,
+      periodoFim: formData.get("periodoFim")?.toString() ? new Date(`${formData.get("periodoFim")}T00:00:00`) : null,
+      quantidade: Math.max(0, Math.round(n(formData.get("quantidade")))),
+      desconto: n(formData.get("desconto")),
       valorInsercao: n(formData.get("valorInsercao")),
       ordem: (ultima?.ordem ?? 0) + 1,
     },
   });
   await recalcular(grade.planoId);
   revalidatePath(`/midia/${grade.planoId}`);
+}
+
+/** Atualiza os campos de uma linha (usado no modo período / mídia externa). */
+export async function atualizarLinha(id: string, _prev: { error?: string }, formData: FormData): Promise<{ error?: string }> {
+  await assertPapel(EDITAR);
+  const linha = await db.midiaGradeLinha.findUnique({ where: { id }, select: { grade: { select: { planoId: true } } } });
+  if (!linha) return { error: "Linha não encontrada." };
+  await db.midiaGradeLinha.update({
+    where: { id },
+    data: {
+      produto: t(formData.get("produto")),
+      local: t(formData.get("local")),
+      periodoInicio: formData.get("periodoInicio")?.toString() ? new Date(`${formData.get("periodoInicio")}T00:00:00`) : null,
+      periodoFim: formData.get("periodoFim")?.toString() ? new Date(`${formData.get("periodoFim")}T00:00:00`) : null,
+      quantidade: Math.max(0, Math.round(n(formData.get("quantidade")))),
+      desconto: n(formData.get("desconto")),
+      valorInsercao: n(formData.get("valorInsercao")),
+    },
+  });
+  await recalcular(linha.grade.planoId);
+  revalidatePath(`/midia/${linha.grade.planoId}`);
+  return {};
 }
 
 export async function removerLinha(id: string) {

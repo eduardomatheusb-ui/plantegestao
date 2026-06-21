@@ -6,7 +6,8 @@ export const EMPRESA = {
   marca: "Plante Comunicação",
   razaoSocial: "Plante Ideias LTDA",
   cnpj: "48.560.442/0001-19",
-  email: "larissa.prudencini@planteideias.com.br",
+  email: "larissa.prudencini@planteideias.com.br", // comercial (propostas)
+  emailFinanceiro: "financeiro@planteideias.com.br", // PI / produção
   telefone: "(31) 98524-5110",
   cep: "32600-115",
   endereco: "Av. Governador Valadares, 355, sala 301 — Centro, Betim/MG",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Trash2, CheckCircle2, X } from "lucide-react";
+import { Pencil, Trash2, CheckCircle2, X, FileDown } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { obterMidiaPlano } from "@/lib/midia/queries";
 import { concluirMidia, excluirMidia, removerPeca } from "@/lib/midia/actions";
@@ -35,10 +35,12 @@ export default async function MidiaDetalhePage({ params }: { params: Promise<{ i
   const plano = await obterMidiaPlano(id);
   if (!plano) notFound();
 
+  const diario = plano.tipo === "RADIO" || plano.tipo === "TV";
   const linhasCalc = plano.grades.flatMap((g) =>
     g.linhas.map((l) => ({
-      totalInsercoes: l.insercoes.reduce((a, i) => a + i.quantidade, 0),
+      totalInsercoes: diario ? l.insercoes.reduce((a, i) => a + i.quantidade, 0) : l.quantidade,
       valorInsercao: Number(l.valorInsercao),
+      desconto: Number(l.desconto),
     })),
   );
   const totais = calcularTotaisMidia(linhasCalc, Number(plano.comissaoPct), Number(plano.honorarios));
@@ -48,7 +50,7 @@ export default async function MidiaDetalhePage({ params }: { params: Promise<{ i
   return (
     <div className="space-y-6">
       <PageHeader
-        titulo={`Mídia ${TIPO_LABEL[plano.tipo]} #${plano.numero}`}
+        titulo={`Mídia ${TIPO_LABEL[plano.tipo]} #${plano.numero}.${plano.versao}`}
         descricao={`${plano.titulo} · ${plano.cliente?.nome ?? ""}`}
         acao={
           <div className="flex flex-wrap items-center gap-2">
@@ -60,6 +62,9 @@ export default async function MidiaDetalhePage({ params }: { params: Promise<{ i
                 <Button type="submit" size="sm"><CheckCircle2 className="size-4" />Concluir</Button>
               </form>
             )}
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/imprimir/midia/${plano.id}`} target="_blank"><FileDown className="size-4" />Exportar PI</Link>
+            </Button>
             {podeEditar && (
               <Button asChild variant="outline" size="sm">
                 <Link href={`/midia/${plano.id}/editar`}><Pencil className="size-4" />Editar</Link>
@@ -131,7 +136,7 @@ export default async function MidiaDetalhePage({ params }: { params: Promise<{ i
           ) : (
             <div className="space-y-6">
               {plano.grades.map((g) => (
-                <GradeCard key={g.id} grade={g} pecas={pecasSimple} podeEditar={podeEditar} />
+                <GradeCard key={g.id} grade={g} pecas={pecasSimple} podeEditar={podeEditar} diario={diario} />
               ))}
             </div>
           )}
@@ -150,9 +155,10 @@ export default async function MidiaDetalhePage({ params }: { params: Promise<{ i
           {plano.instrucoesFaturamento && (
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{plano.instrucoesFaturamento}</p>
           )}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             <Info rotulo="Total da Mídia" valor={<span className="font-display text-lg font-bold">{formatBRL(totais.totalMidia)}</span>} />
             <Info rotulo={`Comissão (${Number(plano.comissaoPct)}%)`} valor={formatBRL(totais.comissao)} />
+            <Info rotulo="Valor Líquido" valor={formatBRL(totais.valorLiquido)} />
             <Info rotulo="Bonificação" valor={formatBRL(Number(plano.bonificacao))} />
             <Info rotulo="Valor Total" valor={<span className="font-display text-lg font-bold text-foreground">{formatBRL(totais.valorTotal)}</span>} />
           </div>

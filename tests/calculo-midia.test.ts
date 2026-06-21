@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { totalInsercoes, calcularTotaisMidia } from "../src/lib/midia/calculo";
+import { totalInsercoes, subtotalLinha, calcularTotaisMidia } from "../src/lib/midia/calculo";
 
 describe("totalInsercoes", () => {
   it("soma quantidades dos dias", () => {
@@ -10,25 +10,36 @@ describe("totalInsercoes", () => {
   });
 });
 
-describe("calcularTotaisMidia", () => {
-  const linhas = [
-    { totalInsercoes: 20, valorInsercao: 150 }, // 3000
-    { totalInsercoes: 10, valorInsercao: 250 }, // 2500
-  ];
-  const t = calcularTotaisMidia(linhas, 20, 500);
-
-  it("total da mídia = Σ inserções × valor", () => {
-    expect(t.totalMidia).toBe(5500);
+describe("subtotalLinha", () => {
+  it("inserções × valor − desconto", () => {
+    expect(subtotalLinha(8, 2150, 0)).toBe(17200);
+    expect(subtotalLinha(2, 1000, 150)).toBe(1850);
   });
-  it("comissão = total × %", () => {
-    expect(t.comissao).toBe(1100); // 20% de 5500
+  it("não fica negativo", () => {
+    expect(subtotalLinha(1, 100, 500)).toBe(0);
+  });
+});
+
+describe("calcularTotaisMidia", () => {
+  // Espelha o MEX_503.2: 8 inserções × 2.150,00 = 17.200,00, comissão 20%.
+  const linhas = [{ totalInsercoes: 8, valorInsercao: 2150, desconto: 0 }];
+  const t = calcularTotaisMidia(linhas, 20, 0);
+
+  it("total da mídia", () => {
+    expect(t.totalMidia).toBe(17200);
+  });
+  it("comissão = 20%", () => {
+    expect(t.comissao).toBe(3440);
+  });
+  it("valor líquido = total − comissão", () => {
+    expect(t.valorLiquido).toBe(13760);
   });
   it("valor total = total + honorários", () => {
-    expect(t.valorTotal).toBe(6000); // 5500 + 500
+    expect(calcularTotaisMidia(linhas, 20, 500).valorTotal).toBe(17700);
   });
-  it("sem linhas, totais zerados", () => {
+  it("sem linhas, zerado", () => {
     const z = calcularTotaisMidia([], 20, 0);
     expect(z.totalMidia).toBe(0);
-    expect(z.valorTotal).toBe(0);
+    expect(z.valorLiquido).toBe(0);
   });
 });

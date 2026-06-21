@@ -38,6 +38,9 @@ export default async function EditarMidiaPage({ params }: { params: Promise<{ id
     honorarios: String(Number(plano.honorarios)),
     bonificacao: String(Number(plano.bonificacao)),
     instrucoesFaturamento: plano.instrucoesFaturamento ?? "",
+    versao: String(plano.versao),
+    vencimento: plano.vencimento ? plano.vencimento.toISOString().slice(0, 10) : "",
+    formaPagamento: plano.formaPagamento ?? "",
   };
 
   return (

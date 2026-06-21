@@ -18,7 +18,7 @@ type ProjetoOpt = { id: string; numero: number; nome: string; clienteId: string 
 type VeiculoOpt = { id: string; nome: string; tipo: VeiculoTipo; contatoNome: string | null };
 
 export type MidiaInicial = Partial<Record<
-  "tipo" | "titulo" | "clienteId" | "projetoId" | "responsavelId" | "veiculoId" | "target" | "prazo" | "contatoVeiculo" | "rede" | "tipoRede" | "numOrcamento" | "comissaoPct" | "honorarios" | "bonificacao" | "instrucoesFaturamento",
+  "tipo" | "titulo" | "clienteId" | "projetoId" | "responsavelId" | "veiculoId" | "target" | "prazo" | "contatoVeiculo" | "rede" | "tipoRede" | "numOrcamento" | "comissaoPct" | "honorarios" | "bonificacao" | "instrucoesFaturamento" | "versao" | "vencimento" | "formaPagamento",
   string
 >>;
 
@@ -145,10 +145,22 @@ export function MidiaForm({
           <Label htmlFor="bonificacao">Bonificação (R$)</Label>
           <Input id="bonificacao" name="bonificacao" type="number" step="0.01" min="0" defaultValue={inicial.bonificacao ?? "0"} />
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="versao">Versão</Label>
+          <Input id="versao" name="versao" type="number" min="1" step="1" defaultValue={inicial.versao ?? "1"} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="vencimento">Vencimento (faturamento)</Label>
+          <Input id="vencimento" name="vencimento" type="date" defaultValue={inicial.vencimento ?? ""} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="formaPagamento">Forma de pagamento</Label>
+          <Input id="formaPagamento" name="formaPagamento" defaultValue={inicial.formaPagamento ?? "Transferência"} />
+        </div>
 
         <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="instrucoesFaturamento">Instruções de faturamento</Label>
-          <Textarea id="instrucoesFaturamento" name="instrucoesFaturamento" rows={3} defaultValue={inicial.instrucoesFaturamento ?? ""} />
+          <Label htmlFor="instrucoesFaturamento">Instruções de faturamento (texto livre)</Label>
+          <Textarea id="instrucoesFaturamento" name="instrucoesFaturamento" rows={2} defaultValue={inicial.instrucoesFaturamento ?? ""} />
         </div>
       </div>
 
