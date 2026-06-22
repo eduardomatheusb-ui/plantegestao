@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,14 +11,28 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Logo } from "@/components/brand/logo";
-import { filtrarNav } from "./nav";
+import { filtrarNav, type NavGroup } from "./nav";
 import type { Capacidades } from "@/lib/permissoes";
 import { cn } from "@/lib/utils";
+
+function grupoTemRotaAtiva(grupo: NavGroup, pathname: string) {
+  return grupo.itens.some((i) => i.disponivel && (pathname === i.href || pathname.startsWith(i.href + "/")));
+}
 
 export function MobileNav({ caps }: { caps: Capacidades }) {
   const pathname = usePathname();
   const [aberto, setAberto] = React.useState(false);
   const grupos = filtrarNav(caps);
+
+  const [gruposAbertos, setGruposAbertos] = React.useState<Record<string, boolean>>(() => {
+    const inicial: Record<string, boolean> = {};
+    for (const g of grupos) if (g.titulo) inicial[g.titulo] = grupoTemRotaAtiva(g, pathname);
+    return inicial;
+  });
+
+  function alternarGrupo(titulo: string) {
+    setGruposAbertos((atual) => ({ ...atual, [titulo]: !atual[titulo] }));
+  }
 
   return (
     <Dialog open={aberto} onOpenChange={setAberto}>
@@ -32,15 +46,30 @@ export function MobileNav({ caps }: { caps: Capacidades }) {
         <DialogTitle className="flex h-16 items-center border-b border-white-a10 px-5">
           <Logo />
         </DialogTitle>
-        <nav className="space-y-6 overflow-y-auto px-3 py-4">
-          {grupos.map((grupo, i) => (
-            <div key={i}>
-              {grupo.titulo && (
-                <p className={cn("px-3 pb-2 text-xs font-semibold uppercase tracking-wider", grupo.destaque ? "text-brand-yellow" : "text-chrome-foreground/40")}>
-                  {grupo.titulo}
-                </p>
+        <nav className="space-y-2 overflow-y-auto px-3 py-4">
+          {grupos.map((grupo, i) => {
+            const temTitulo = !!grupo.titulo;
+            const grupoAberto = !temTitulo || gruposAbertos[grupo.titulo!];
+            const listaId = `mnav-grupo-${i}`;
+            return (
+            <div key={i} className={cn(temTitulo && "border-b border-white-a10/50 pb-2")}>
+              {temTitulo && (
+                <button
+                  type="button"
+                  onClick={() => alternarGrupo(grupo.titulo!)}
+                  aria-expanded={grupoAberto}
+                  aria-controls={listaId}
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors hover:bg-white-a10",
+                    grupo.destaque ? "text-brand-yellow" : "text-chrome-foreground/50",
+                  )}
+                >
+                  <span>{grupo.titulo}</span>
+                  <ChevronDown className={cn("size-3.5 transition-transform", grupoAberto ? "" : "-rotate-90")} aria-hidden="true" />
+                </button>
               )}
-              <ul className="space-y-1">
+              {grupoAberto && (
+              <ul id={listaId} className={cn("space-y-1", temTitulo && "mt-1")}>
                 {grupo.itens.map((item) => {
                   const Icon = item.icon;
                   const ativo =
@@ -77,8 +106,10 @@ export function MobileNav({ caps }: { caps: Capacidades }) {
                   );
                 })}
               </ul>
+              )}
             </div>
-          ))}
+          );
+          })}
         </nav>
       </DialogContent>
     </Dialog>
