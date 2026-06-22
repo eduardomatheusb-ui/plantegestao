@@ -1,5 +1,5 @@
 import { requireModulo, acessoAtual } from "@/lib/permissoes.server";
-import { listarUsuarios, perfisParaSelect, colaboradoresSemUsuario } from "@/lib/admin/queries";
+import { listarUsuarios, perfisParaSelect, colaboradoresSemUsuario, colaboradoresVinculaveis } from "@/lib/admin/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,10 +8,11 @@ import { UsuarioAcoes } from "@/components/admin/usuario-acoes";
 
 export default async function UsuariosPage() {
   await requireModulo("admin", "ADMIN");
-  const [usuarios, perfis, colaboradores, eu] = await Promise.all([
+  const [usuarios, perfis, colaboradores, colaboradoresVinc, eu] = await Promise.all([
     listarUsuarios(),
     perfisParaSelect(),
     colaboradoresSemUsuario(),
+    colaboradoresVinculaveis(),
     acessoAtual(),
   ]);
 
@@ -59,12 +60,16 @@ export default async function UsuariosPage() {
 
                 <UsuarioAcoes
                   usuarioId={u.id}
+                  nome={u.nome}
+                  email={u.email}
                   perfilIdAtual={u.perfilId}
                   perfis={perfis}
                   ativo={u.ativo}
                   convitePendente={u.convitePendente}
                   ehProprio={u.id === eu.id}
                   responsavelConta={u.responsavelConta}
+                  colaboradorId={u.colaboradorId}
+                  colaboradores={colaboradoresVinc}
                 />
               </li>
             ))}

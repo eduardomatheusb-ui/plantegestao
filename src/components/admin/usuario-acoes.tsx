@@ -17,26 +17,36 @@ import {
 } from "@/components/ui/dialog";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { ConviteLink } from "@/components/admin/convite-link";
+import { UsuarioEditar } from "@/components/admin/usuario-editar";
 import { recarregarSeStale } from "@/lib/stale-action";
 
 type Perfil = { id: string; nome: string };
+type Colab = { id: string; nome: string; funcao: string | null; usuarioId: string | null };
 
 export function UsuarioAcoes({
   usuarioId,
+  nome,
+  email,
   perfilIdAtual,
   perfis,
   ativo,
   convitePendente,
   ehProprio,
   responsavelConta,
+  colaboradorId,
+  colaboradores,
 }: {
   usuarioId: string;
+  nome: string;
+  email: string;
   perfilIdAtual: string | null;
   perfis: Perfil[];
   ativo: boolean;
   convitePendente: boolean;
   ehProprio: boolean;
   responsavelConta: boolean;
+  colaboradorId: string | null;
+  colaboradores: Colab[];
 }) {
   const [pendente, iniciar] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
@@ -65,6 +75,13 @@ export function UsuarioAcoes({
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-1.5">
+      <UsuarioEditar
+        usuarioId={usuarioId}
+        nome={nome}
+        email={email}
+        colaboradorId={colaboradorId}
+        colaboradores={colaboradores}
+      />
       <select
         value={perfilIdAtual ?? ""}
         onChange={(e) => trocarPerfil(e.target.value)}

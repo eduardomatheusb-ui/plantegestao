@@ -193,6 +193,60 @@ export async function definirAtivoUsuario(usuarioId: string, ativo: boolean): Pr
   revalidatePath("/configuracoes/usuarios");
 }
 
+/** Admin edita nome e e-mail do usuário. */
+export async function editarUsuario(usuarioId: string, _prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  const acesso = await assertModulo("admin", "ADMIN");
+  const nome = String(formData.get("nome") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!nome) return { error: "Informe o nome." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "E-mail inválido." };
+
+  const jaUsado = await db.usuario.findUnique({ where: { email } });
+  if (jaUsado && jaUsado.id !== usuarioId) return { error: "Já existe outro usuário com este e-mail." };
+
+  try {
+    await db.usuario.update({ where: { id: usuarioId }, data: { nome, email } });
+    await registrarLog({ entidadeTipo: "usuario", entidadeId: usuarioId, usuarioId: acesso.id, acao: "editou dados", para: email });
+  } catch {
+    return { error: "Não foi possível salvar." };
+  }
+  revalidatePath("/configuracoes/usuarios");
+  return { ok: true };
+}
+
+/** Admin define/redefine a senha do usuário diretamente (sem link de convite). */
+export async function definirSenhaUsuario(usuarioId: string, _prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  const acesso = await assertModulo("admin", "ADMIN");
+  const senha = String(formData.get("senha") ?? "");
+  const confirmar = String(formData.get("confirmar") ?? "");
+  if (senha.length < 8) return { error: "A senha deve ter ao menos 8 caracteres." };
+  if (senha !== confirmar) return { error: "As senhas não conferem." };
+
+  try {
+    await db.usuario.update({
+      where: { id: usuarioId },
+      data: { senhaHash: bcrypt.hashSync(senha, 10), conviteToken: null, conviteExpira: null, ativo: true },
+    });
+    await registrarLog({ entidadeTipo: "usuario", entidadeId: usuarioId, usuarioId: acesso.id, acao: "redefiniu a senha" });
+  } catch {
+    return { error: "Não foi possível definir a senha." };
+  }
+  revalidatePath("/configuracoes/usuarios");
+  return { ok: true };
+}
+
+/** Admin vincula (ou desvincula, colaboradorId vazio) o usuário a um colaborador. */
+export async function vincularColaborador(usuarioId: string, colaboradorId: string | null): Promise<void> {
+  const acesso = await assertModulo("admin", "ADMIN");
+  // Mantém o 1:1: solta o colaborador atualmente ligado a este usuário.
+  await db.colaborador.updateMany({ where: { usuarioId }, data: { usuarioId: null } });
+  if (colaboradorId) {
+    await db.colaborador.update({ where: { id: colaboradorId }, data: { usuarioId } });
+  }
+  await registrarLog({ entidadeTipo: "usuario", entidadeId: usuarioId, usuarioId: acesso.id, acao: colaboradorId ? "vinculou a colaborador" : "desvinculou do colaborador" });
+  revalidatePath("/configuracoes/usuarios");
+}
+
 export async function reenviarConvite(usuarioId: string): Promise<{ conviteUrl?: string; error?: string }> {
   await assertModulo("admin", "ADMIN");
   const { token, expira } = novoToken();

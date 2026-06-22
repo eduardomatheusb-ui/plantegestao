@@ -63,12 +63,14 @@ export type UsuarioLista = {
   perfilId: string | null;
   perfilNome: string | null;
   funcao: string | null;
+  colaboradorId: string | null;
+  colaboradorNome: string | null;
 };
 
 export async function listarUsuarios(): Promise<UsuarioLista[]> {
   const usuarios = await db.usuario.findMany({
     orderBy: [{ ativo: "desc" }, { nome: "asc" }],
-    include: { perfil: { select: { nome: true } }, colaborador: { select: { funcao: true } } },
+    include: { perfil: { select: { nome: true } }, colaborador: { select: { id: true, nome: true, funcao: true } } },
   });
   return usuarios.map((u) => ({
     id: u.id,
@@ -81,6 +83,8 @@ export async function listarUsuarios(): Promise<UsuarioLista[]> {
     perfilId: u.perfilId,
     perfilNome: u.perfil?.nome ?? null,
     funcao: u.colaborador?.funcao ?? null,
+    colaboradorId: u.colaborador?.id ?? null,
+    colaboradorNome: u.colaborador?.nome ?? null,
   }));
 }
 
@@ -92,5 +96,16 @@ export async function colaboradoresSemUsuario(): Promise<
     where: { ativo: true, usuarioId: null },
     orderBy: { nome: "asc" },
     select: { id: true, nome: true, email: true, funcao: true },
+  });
+}
+
+/** Colaboradores ativos para o seletor de vínculo (livres + o já ligado a cada usuário). */
+export async function colaboradoresVinculaveis(): Promise<
+  { id: string; nome: string; funcao: string | null; usuarioId: string | null }[]
+> {
+  return db.colaborador.findMany({
+    where: { ativo: true },
+    orderBy: { nome: "asc" },
+    select: { id: true, nome: true, funcao: true, usuarioId: true },
   });
 }
