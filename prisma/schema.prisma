@@ -578,6 +578,7 @@ model Job {
   id           String      @id @default(cuid())
   numero       Int         @unique
   tipo         String      @default("outro") // catálogo em lib/jobs/tipos.ts (post_estatico, video, material_grafico…)
+  prioridade   String      @default("normal") // baixa | normal | alta | urgente
   titulo       String
   clienteId    String
   projetoId    String?

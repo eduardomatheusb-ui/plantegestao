@@ -7,6 +7,7 @@ import { useFormStatus } from "react-dom";
 import { AlertCircle } from "lucide-react";
 import { salvarJob, type JobFormState } from "@/lib/jobs/actions";
 import { TIPOS_JOB, TIPO_JOB_PADRAO, tipoJobSocial } from "@/lib/jobs/tipos";
+import { PRIORIDADES } from "@/lib/jobs/prioridade";
 import { FORMATOS_POST } from "@/lib/jobs/formatos";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +19,7 @@ type ProjetoOpt = { id: string; numero: number; nome: string; clienteId: string 
 
 export type JobInicial = {
   tipo?: string;
+  prioridade?: string;
   titulo?: string;
   clienteId?: string;
   projetoId?: string;
@@ -73,6 +75,13 @@ export function JobForm({
           <Label htmlFor="tipo">Tipo de job <span className="text-destructive">*</span></Label>
           <select id="tipo" name="tipo" className={sel} value={tipo} onChange={(e) => setTipo(e.target.value)}>
             {TIPOS_JOB.map((t) => (<option key={t.key} value={t.key}>{t.label}</option>))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="prioridade">Prioridade</Label>
+          <select id="prioridade" name="prioridade" className={sel} defaultValue={inicial.prioridade ?? "normal"}>
+            {PRIORIDADES.map((p) => (<option key={p.key} value={p.key}>{p.label}</option>))}
           </select>
         </div>
 

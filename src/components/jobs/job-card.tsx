@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { CalendarClock, ListTodo, Send } from "lucide-react";
+import { CalendarClock, ListTodo, Send, Flame, PauseCircle } from "lucide-react";
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
+import { prioridadeDestaque, diasParado } from "@/lib/jobs/prioridade";
 import { formatDate, cn } from "@/lib/utils";
 import type { JobListItem } from "@/lib/jobs/queries";
 
@@ -20,6 +21,8 @@ export function JobCard({
     !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
   const social = tipoJobSocial(job.tipo);
   const formatos = social ? rotulosFormatos(job.formatos) : [];
+  const destaque = prioridadeDestaque(job.prioridade);
+  const parado = diasParado(job.atualizadoEm, job.status.isConcluido);
 
   return (
     <div
@@ -38,6 +41,14 @@ export function JobCard({
               {rotuloTipoJob(job.tipo)}
             </span>
             <span className="text-[11px] font-medium text-muted-foreground tabular-nums">#{job.numero}</span>
+            {destaque && (
+              <span className={cn(
+                "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                destaque === "urgente" ? "bg-destructive/15 text-destructive" : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+              )}>
+                <Flame className="size-3" aria-hidden="true" /> {destaque === "urgente" ? "Urgente" : "Alta"}
+              </span>
+            )}
           </span>
           <p className="mt-0.5 text-sm font-medium leading-tight">{job.titulo}</p>
         </Link>
@@ -81,6 +92,11 @@ export function JobCard({
           <span className="inline-flex items-center gap-1" title="Subtarefas">
             <ListTodo className="size-3.5" />
             {job._count.tarefas}
+          </span>
+        )}
+        {parado > 0 && (
+          <span className="inline-flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400" title="Sem movimento">
+            <PauseCircle className="size-3.5" /> parado {parado}d
           </span>
         )}
       </div>

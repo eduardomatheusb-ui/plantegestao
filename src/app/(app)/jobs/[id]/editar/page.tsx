@@ -24,6 +24,7 @@ export default async function EditarJobPage({ params }: { params: Promise<{ id: 
 
   const inicial: JobInicial = {
     tipo: job.tipo,
+    prioridade: job.prioridade,
     titulo: job.titulo,
     clienteId: job.clienteId,
     projetoId: job.projetoId ?? "",

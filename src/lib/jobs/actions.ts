@@ -26,6 +26,7 @@ const dataOpt = (v: string | undefined) => (v ? new Date(`${v}T00:00:00`) : null
 
 const jobSchema = z.object({
   tipo: z.string().optional().transform((v) => (v && v.trim() ? v : TIPO_JOB_PADRAO)),
+  prioridade: z.string().optional().transform((v) => (v && v.trim() ? v : "normal")),
   titulo: z.string().trim().min(1, "Informe o título."),
   clienteId: z.string().trim().min(1, "Selecione o cliente."),
   projetoId: z.string().optional().transform((v) => (v ? v : null)),
@@ -47,6 +48,7 @@ export async function salvarJob(
     const user = await assertPapel(TRABALHAR);
     const parsed = jobSchema.safeParse({
       tipo: formData.get("tipo")?.toString(),
+      prioridade: formData.get("prioridade")?.toString(),
       titulo: formData.get("titulo")?.toString(),
       clienteId: formData.get("clienteId")?.toString(),
       projetoId: formData.get("projetoId")?.toString(),
@@ -83,6 +85,7 @@ export async function salvarJob(
 
     const data = {
       tipo: d.tipo,
+      prioridade: d.prioridade,
       titulo: d.titulo,
       clienteId: d.clienteId,
       projetoId: d.projetoId,
