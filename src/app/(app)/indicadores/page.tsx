@@ -112,11 +112,37 @@ export default async function IndicadoresPage() {
 
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Wallet className="size-4" /> Financeiro do mês</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div><p className="text-xs text-muted-foreground">Receita recebida</p><p className="text-lg font-bold tabular-nums text-emerald-600">{formatBRL(d.financeiro.receita)}</p></div>
-            <div><p className="text-xs text-muted-foreground">A receber (mês)</p><p className="text-lg font-bold tabular-nums">{formatBRL(d.financeiro.aReceber)}</p></div>
-            <div><p className="text-xs text-muted-foreground">Despesa paga</p><p className="text-lg font-bold tabular-nums text-red-600">{formatBRL(d.financeiro.despesa)}</p></div>
-            <div><p className="text-xs text-muted-foreground">Saldo do mês</p><p className={`text-lg font-bold tabular-nums ${d.financeiro.saldo >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatBRL(d.financeiro.saldo)}</p></div>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div><p className="text-xs text-muted-foreground">Receita recebida</p><p className="text-lg font-bold tabular-nums text-emerald-600">{formatBRL(d.financeiro.receita)}</p></div>
+              <div><p className="text-xs text-muted-foreground">A receber (mês)</p><p className="text-lg font-bold tabular-nums">{formatBRL(d.financeiro.aReceber)}</p></div>
+              <div><p className="text-xs text-muted-foreground">Despesa paga</p><p className="text-lg font-bold tabular-nums text-red-600">{formatBRL(d.financeiro.despesa)}</p></div>
+              <div><p className="text-xs text-muted-foreground">Saldo do mês</p><p className={`text-lg font-bold tabular-nums ${d.financeiro.saldo >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatBRL(d.financeiro.saldo)}</p></div>
+            </div>
+
+            {d.financeiro.meta ? (
+              <div className="space-y-1.5 border-t border-border pt-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Meta do mês · {formatBRL(d.financeiro.meta)}</span>
+                  <span className="font-semibold tabular-nums">{d.financeiro.metaPct}%</span>
+                </div>
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={`h-full rounded-full ${(d.financeiro.metaPct ?? 0) >= 100 ? "bg-emerald-500" : "bg-primary"}`}
+                    style={{ width: `${Math.min(100, d.financeiro.metaPct ?? 0)}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {(d.financeiro.metaPct ?? 0) >= 100
+                    ? "Meta batida! 🎉"
+                    : `Faltam ${formatBRL(Math.max(0, d.financeiro.meta - d.financeiro.receita))} para a meta.`}
+                </p>
+              </div>
+            ) : (
+              <p className="border-t border-border pt-3 text-xs text-muted-foreground">
+                Defina uma <Link href="/configuracoes/empresa" className="underline">meta de faturamento</Link> para acompanhar o progresso do mês.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

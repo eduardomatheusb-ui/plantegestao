@@ -46,6 +46,12 @@ export async function salvarEmpresa(_prev: EmpresaState, formData: FormData): Pr
     if (aliqStr && (Number.isNaN(aliquotaIss) || aliquotaIss! < 0)) {
       return { error: "Alíquota de ISS inválida (use número, ex.: 2 ou 2.5)." };
     }
+
+    const metaStr = formData.get("metaFaturamentoMensal")?.toString().trim().replace(/\./g, "").replace(",", ".");
+    const metaFaturamentoMensal = metaStr ? Number(metaStr) : null;
+    if (metaStr && (Number.isNaN(metaFaturamentoMensal) || metaFaturamentoMensal! < 0)) {
+      return { error: "Meta de faturamento inválida (use número, ex.: 50000)." };
+    }
     const fiscal = {
       inscricaoMunicipal: opt(formData.get("inscricaoMunicipal")),
       codigoMunicipioIbge: opt(formData.get("codigoMunicipioIbge")),
@@ -56,6 +62,7 @@ export async function salvarEmpresa(_prev: EmpresaState, formData: FormData): Pr
       optanteSimplesNacional: formData.get("optanteSimplesNacional") === "on",
       incentivadorCultural: formData.get("incentivadorCultural") === "on",
       urlEmissaoNfse: opt(formData.get("urlEmissaoNfse")),
+      metaFaturamentoMensal,
     };
 
     const d = { ...parsed.data, ...fiscal };

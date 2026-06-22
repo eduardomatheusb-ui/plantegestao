@@ -25,6 +25,8 @@ export const EMPRESA_PADRAO = {
   regimeTributario: "Simples Nacional",
   // Link do portal onde a Plante emite a NFS-e (botão "Emitir nota" no lançamento de receita).
   urlEmissaoNfse: "https://www.nfse.gov.br/EmissorNacional/",
+  // Meta de receita do mês (indicadores). Vazio = sem meta definida.
+  metaFaturamentoMensal: "",
 };
 
 export type EmpresaDados = typeof EMPRESA_PADRAO;
@@ -51,5 +53,6 @@ export async function getEmpresa(): Promise<EmpresaDados> {
     incentivadorCultural: e.incentivadorCultural,
     regimeTributario: e.regimeTributario ?? "",
     urlEmissaoNfse: e.urlEmissaoNfse || EMPRESA_PADRAO.urlEmissaoNfse,
+    metaFaturamentoMensal: e.metaFaturamentoMensal != null ? String(e.metaFaturamentoMensal) : "",
   };
 }

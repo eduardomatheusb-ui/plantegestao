@@ -999,6 +999,8 @@ model Empresa {
   incentivadorCultural     Boolean  @default(false)
   regimeTributario         String? // descrição (ex.: "Simples Nacional")
   urlEmissaoNfse           String? // link do portal onde se emite a NFS-e (botão "Emitir nota")
+
+  metaFaturamentoMensal    Decimal? @db.Decimal(14, 2) // meta de receita do mês (indicadores)
 }
 
 /// Situação de uma NFS-e junto ao provedor/prefeitura.

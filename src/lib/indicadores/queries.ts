@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { getEmpresa } from "@/lib/empresa";
 
 const DIAS_PARADO = 7;
 
@@ -20,6 +21,7 @@ export async function carregarIndicadores() {
     clientesPorStatus,
     receitaMes, aReceberMes, despesaMes,
     atrasadosLista,
+    empresa,
   ] = await Promise.all([
     db.job.groupBy({ by: ["responsavelId"], where: { arquivado: false, status: { isConcluido: false } }, _count: { _all: true } }),
     db.job.groupBy({ by: ["statusId"], where: { arquivado: false }, _count: { _all: true } }),
@@ -40,6 +42,7 @@ export async function carregarIndicadores() {
       orderBy: { prazo: "asc" }, take: 8,
       select: { id: true, numero: true, titulo: true, prazo: true, cliente: { select: { nome: true, nomeFantasia: true } }, responsavel: { select: { nome: true } } },
     }),
+    getEmpresa(),
   ]);
 
   const nomePorId = new Map(usuarios.map((u) => [u.id, u.nome]));
@@ -57,6 +60,10 @@ export async function carregarIndicadores() {
 
   const num = (v: unknown) => (v ? Number(v) : 0);
 
+  const meta = empresa.metaFaturamentoMensal ? Number(empresa.metaFaturamentoMensal) : null;
+  const receita = num(receitaMes._sum.valor);
+  const metaPct = meta && meta > 0 ? Math.round((receita / meta) * 100) : null;
+
   return {
     carga,
     porStatus,
@@ -68,10 +75,12 @@ export async function carregarIndicadores() {
     aprovacao: { aguardando: aguardandoAprovacao, ajustes: ajustesAprovacao },
     clientes: clientesPorStatus.map((c) => ({ status: c.status, total: c._count._all })).sort((a, b) => b.total - a.total),
     financeiro: {
-      receita: num(receitaMes._sum.valor),
+      receita,
       aReceber: num(aReceberMes._sum.valor),
       despesa: num(despesaMes._sum.valor),
-      saldo: num(receitaMes._sum.valor) - num(despesaMes._sum.valor),
+      saldo: receita - num(despesaMes._sum.valor),
+      meta,
+      metaPct,
     },
     atrasadosLista,
   };

@@ -113,6 +113,15 @@ export function EmpresaForm({ inicial }: { inicial: EmpresaDados }) {
         </div>
       </fieldset>
 
+      <fieldset className="space-y-4 rounded-lg border border-border p-4">
+        <legend className="px-1 text-sm font-semibold">Metas</legend>
+        <div className="space-y-2 sm:max-w-xs">
+          <Label htmlFor="metaFaturamentoMensal">Meta de faturamento mensal (R$)</Label>
+          <Input id="metaFaturamentoMensal" name="metaFaturamentoMensal" inputMode="decimal" defaultValue={inicial.metaFaturamentoMensal} placeholder="ex.: 50000" />
+          <p className="text-xs text-muted-foreground">Usada no painel de Indicadores para comparar com a receita recebida no mês. Deixe vazio para não exibir meta.</p>
+        </div>
+      </fieldset>
+
       <Salvar />
     </form>
   );
