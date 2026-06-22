@@ -13,6 +13,8 @@ import {
   Wallet,
   BarChart3,
   Gauge,
+  HeartPulse,
+  FileSignature,
   Users,
   Contact,
   Truck,
@@ -75,12 +77,14 @@ export const NAV: NavGroup[] = [
     titulo: "Gestão",
     itens: [
       { label: "Indicadores", href: "/indicadores", icon: Gauge, modulo: "relatorios", disponivel: true },
+      { label: "Saúde financeira", href: "/saude-financeira", icon: HeartPulse, modulo: "financeiro", disponivel: true },
     ],
   },
   {
     titulo: "Financeiro",
     itens: [
       { label: "Lançamentos", href: "/financeiro", icon: Wallet, modulo: "financeiro", disponivel: true },
+      { label: "Contratos", href: "/contratos", icon: FileSignature, modulo: "financeiro", disponivel: true },
       { label: "Relatórios", href: "/relatorios", icon: BarChart3, modulo: "relatorios", disponivel: true },
       { label: "Centros de custo", href: "/cadastros/centros-custo", icon: Target, modulo: "cadastros", disponivel: true },
       { label: "Contas bancárias", href: "/cadastros/contas", icon: Landmark, modulo: "cadastros", disponivel: true },

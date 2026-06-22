@@ -10,6 +10,8 @@ const SECAO: Record<string, string> = {
   crm: "CRM",
   calendario: "Calendário editorial",
   indicadores: "Indicadores",
+  "saude-financeira": "Saúde financeira",
+  contratos: "Contratos",
   projetos: "Projetos",
   jobs: "Jobs",
   propostas: "Propostas",

@@ -318,10 +318,31 @@ model Cliente {
   reunioes            Reuniao[]
   onboarding          OnboardingItem[]
   campanhas           Campanha[]
+  contratos           Contrato[]
   portalToken         String?  @unique // link público do portal do cliente
 
   @@index([arquivado])
   @@index([nome])
+}
+
+/// Contrato/fee recorrente de um cliente (base do MRR).
+model Contrato {
+  id            String    @id @default(cuid())
+  clienteId     String
+  descricao     String?
+  valorMensal   Decimal   @db.Decimal(14, 2)
+  diaVencimento Int? // dia do mês de cobrança (1-31)
+  dataInicio    DateTime
+  dataFim       DateTime? // null = vigente
+  status        String    @default("ativo") // ativo | suspenso | encerrado
+  criadoPorId   String?
+  criadoEm      DateTime  @default(now())
+  atualizadoEm  DateTime  @updatedAt
+
+  cliente Cliente @relation(fields: [clienteId], references: [id])
+
+  @@index([clienteId])
+  @@index([status])
 }
 
 /// Campanha de tráfego pago (Meta, Google, etc.) de um cliente.
