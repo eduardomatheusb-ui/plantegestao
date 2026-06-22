@@ -32,6 +32,8 @@ export default async function EditarJobPage({ params }: { params: Promise<{ id: 
     statusId: job.statusId,
     prazo: dia(job.prazo),
     prazoPostagem: dia(job.prazoPostagem),
+    recorrenciaFreq: job.recorrenciaFreq ?? "",
+    recorrenciaProxima: dia(job.recorrenciaProxima),
     legenda: job.legenda ?? "",
     briefing: job.briefing ?? "",
     formatos: job.formatos ? job.formatos.split(",").filter(Boolean) : [],

@@ -586,6 +586,8 @@ model Job {
   statusId     String
   prazo        DateTime? // p/ postagem = prazo de CRIAÇÃO da arte
   prazoPostagem DateTime? // só postagem: quando vai ao ar
+  recorrenciaFreq String? // null = não recorrente; "semanal"|"quinzenal"|"mensal" → este job gera cópias
+  recorrenciaProxima DateTime? // próxima data de geração
   legenda      String? // só postagem
   formatos     String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
   briefing     String?

@@ -27,6 +27,8 @@ export type JobInicial = {
   statusId?: string;
   prazo?: string;
   prazoPostagem?: string;
+  recorrenciaFreq?: string;
+  recorrenciaProxima?: string;
   legenda?: string;
   briefing?: string;
   formatos?: string[];
@@ -64,6 +66,7 @@ export function JobForm({
   const [tipo, setTipo] = React.useState(inicial.tipo ?? TIPO_JOB_PADRAO);
   const [clienteId, setClienteId] = React.useState(inicial.clienteId ?? "");
   const [projetoId, setProjetoId] = React.useState(inicial.projetoId ?? "");
+  const [freq, setFreq] = React.useState(inicial.recorrenciaFreq ?? "");
   const projetosDoCliente = projetos.filter((p) => p.clienteId === clienteId);
   const social = tipoJobSocial(tipo);
   const formatosIniciais = new Set(inicial.formatos ?? []);
@@ -134,6 +137,24 @@ export function JobForm({
           <div className="space-y-2">
             <Label htmlFor="prazoPostagem">Prazo de postagem <span className="text-xs font-normal text-muted-foreground">(vai ao ar)</span></Label>
             <Input id="prazoPostagem" name="prazoPostagem" type="date" defaultValue={inicial.prazoPostagem ?? ""} />
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="recorrenciaFreq">Recorrência</Label>
+          <select id="recorrenciaFreq" name="recorrenciaFreq" className={sel} value={freq} onChange={(e) => setFreq(e.target.value)}>
+            <option value="">Não se repete</option>
+            <option value="semanal">Semanal</option>
+            <option value="quinzenal">Quinzenal</option>
+            <option value="mensal">Mensal</option>
+          </select>
+        </div>
+
+        {freq && (
+          <div className="space-y-2">
+            <Label htmlFor="recorrenciaProxima">Próxima geração</Label>
+            <Input id="recorrenciaProxima" name="recorrenciaProxima" type="date" defaultValue={inicial.recorrenciaProxima ?? ""} />
+            <p className="text-xs text-muted-foreground">Nessa data o sistema cria uma cópia nova deste job, e agenda a próxima.</p>
           </div>
         )}
 
