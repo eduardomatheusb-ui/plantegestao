@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { assertModulo } from "@/lib/permissoes.server";
 import { registrarLog } from "@/lib/log";
 import { ETAPAS_LEAD } from "./etapas";
+import { ONBOARDING_PADRAO } from "@/lib/onboarding/template";
 
 const ETAPA_KEYS = ETAPAS_LEAD.map((e) => e.key);
 
@@ -73,8 +74,12 @@ export async function converterLeadEmCliente(id: string): Promise<{ ok: boolean;
     },
   });
   await db.lead.update({ where: { id }, data: { clienteId: cliente.id, etapa: "ganho" } });
+  // Já cria o checklist de implantação para o cliente novo.
+  await db.onboardingItem.createMany({
+    data: ONBOARDING_PADRAO.map((titulo, i) => ({ clienteId: cliente.id, titulo, ordem: i + 1 })),
+  });
   await registrarLog({ entidadeTipo: "lead", entidadeId: id, usuarioId: acesso.id, acao: "converteu em cliente", para: cliente.nome });
-  await registrarLog({ entidadeTipo: "cliente", entidadeId: cliente.id, usuarioId: acesso.id, acao: "criado a partir de lead" });
+  await registrarLog({ entidadeTipo: "cliente", entidadeId: cliente.id, usuarioId: acesso.id, acao: "criado a partir de lead (com onboarding)" });
   revalidatePath("/crm");
   return { ok: true, clienteId: cliente.id };
 }
