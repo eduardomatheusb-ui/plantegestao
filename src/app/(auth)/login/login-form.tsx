@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, ShieldCheck } from "lucide-react";
@@ -21,6 +22,11 @@ export function LoginForm() {
   const [state, formAction] = useActionState<LoginState, FormData>(loginAction, {});
   const precisa2fa = !!state.need2fa;
 
+  // Controlados: o React preserva os valores entre os passos (sem isto, o
+  // formulário é resetado após a ação e os campos somem na etapa do 2FA).
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+
   return (
     <form action={formAction} className="space-y-5" noValidate>
       <div className="space-y-1.5">
@@ -37,15 +43,24 @@ export function LoginForm() {
         </div>
       )}
 
-      {/* E-mail e senha continuam no form (reenviados). Em 2FA, ficam só de leitura. */}
       <div className="space-y-2">
         <Label htmlFor="email">E-mail</Label>
-        <Input id="email" name="email" type="email" autoComplete="username" placeholder="voce@plante.com.br" required readOnly={precisa2fa} />
+        <Input
+          id="email" name="email" type="email" autoComplete="username"
+          placeholder="voce@plante.com.br" required
+          value={email} onChange={(e) => setEmail(e.target.value)}
+          readOnly={precisa2fa}
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="senha">Senha</Label>
-        <Input id="senha" name="senha" type="password" autoComplete="current-password" placeholder="Sua senha" required readOnly={precisa2fa} />
+        <Input
+          id="senha" name="senha" type="password" autoComplete="current-password"
+          placeholder="Sua senha" required
+          value={senha} onChange={(e) => setSenha(e.target.value)}
+          readOnly={precisa2fa}
+        />
       </div>
 
       {precisa2fa && (
@@ -58,9 +73,18 @@ export function LoginForm() {
       <SubmitButton label={precisa2fa ? "Verificar" : "Entrar"} />
 
       {precisa2fa && (
-        <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-          <ShieldCheck className="size-3.5" aria-hidden="true" /> Senha confirmada — falta só o código.
-        </p>
+        <div className="space-y-2 text-center">
+          <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            <ShieldCheck className="size-3.5" aria-hidden="true" /> Senha confirmada — falta só o código.
+          </p>
+          <button
+            type="button"
+            onClick={() => { setSenha(""); window.location.reload(); }}
+            className="text-xs text-muted-foreground underline hover:text-foreground"
+          >
+            Entrar com outra conta
+          </button>
+        </div>
       )}
     </form>
   );
