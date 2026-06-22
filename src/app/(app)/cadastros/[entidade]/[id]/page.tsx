@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { listarOnboarding } from "@/lib/onboarding/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
 import { OnboardingPanel } from "@/components/onboarding/onboarding-panel";
+import { PortalPanel } from "@/components/portal/portal-panel";
+import { baseUrl } from "@/lib/email";
 
 export default async function EditarCadastroPage({
   params,
@@ -77,6 +79,20 @@ export default async function EditarCadastroPage({
               status={String(record.status ?? "")}
               itens={onboardingItens}
               usuarios={usuariosOnboarding}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {ehCliente && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Portal do cliente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PortalPanel
+              clienteId={id}
+              link={record.portalToken ? `${baseUrl()}/portal/${record.portalToken}` : null}
             />
           </CardContent>
         </Card>
