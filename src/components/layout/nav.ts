@@ -12,6 +12,7 @@ import {
   ReceiptText,
   Wallet,
   BarChart3,
+  Gauge,
   Users,
   Contact,
   Truck,
@@ -67,6 +68,12 @@ export const NAV: NavGroup[] = [
       { label: "Produção", href: "/producao", icon: Factory, modulo: "producao", disponivel: true },
       { label: "Serviços / OS", href: "/os", icon: ReceiptText, modulo: "os", disponivel: true },
       { label: "Atas de reunião", href: "/reunioes", icon: NotebookPen, modulo: "projetos", disponivel: true },
+    ],
+  },
+  {
+    titulo: "Gestão",
+    itens: [
+      { label: "Indicadores", href: "/indicadores", icon: Gauge, modulo: "relatorios", disponivel: true },
     ],
   },
   {

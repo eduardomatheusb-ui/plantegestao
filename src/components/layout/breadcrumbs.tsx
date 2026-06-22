@@ -9,6 +9,7 @@ const SECAO: Record<string, string> = {
   chat: "Chat",
   crm: "CRM",
   calendario: "Calendário editorial",
+  indicadores: "Indicadores",
   projetos: "Projetos",
   jobs: "Jobs",
   propostas: "Propostas",
