@@ -14,7 +14,7 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const ehChunk = /ChunkLoadError|Loading chunk|importing a module|dynamically imported/i.test(
+  const ehChunk = /ChunkLoadError|Loading chunk|importing a module|dynamically imported|Server Action|was not found on the server|Failed to find Server Action/i.test(
     error?.message ?? "",
   );
 

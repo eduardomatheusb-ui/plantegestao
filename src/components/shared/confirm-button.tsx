@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { recarregarSeStale } from "@/lib/stale-action";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   Dialog,
@@ -49,6 +50,7 @@ export function ConfirmButton({
         await action();
         setAberto(false);
       } catch (e) {
+        if (recarregarSeStale(e)) return;
         setErro(e instanceof Error ? e.message : "Não foi possível concluir a ação.");
       }
     });

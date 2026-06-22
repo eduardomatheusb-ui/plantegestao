@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { ConviteLink } from "@/components/admin/convite-link";
+import { recarregarSeStale } from "@/lib/stale-action";
 
 type Perfil = { id: string; nome: string };
 
@@ -47,6 +48,7 @@ export function UsuarioAcoes({
       try {
         await alterarPerfilUsuario(usuarioId, perfilId);
       } catch (e) {
+        if (recarregarSeStale(e)) return;
         setErro(e instanceof Error ? e.message : "Não foi possível alterar o perfil.");
       }
     });
@@ -103,6 +105,7 @@ export function UsuarioAcoes({
               try {
                 await definirAtivoUsuario(usuarioId, true);
               } catch (e) {
+                if (recarregarSeStale(e)) return;
                 setErro(e instanceof Error ? e.message : "Não foi possível ativar.");
               }
             })
