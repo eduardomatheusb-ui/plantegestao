@@ -252,6 +252,11 @@ model Cliente {
   endereco            String?
   cep                 String?
   condicoesComerciais String?
+  status              String   @default("ativo") // ativo|implantacao|pausado|inadimplente|encerrado
+  escopo              String? // serviços contratados / escopo mensal
+  tomDeVoz            String? // brand kit: tom de voz
+  redesSociais        String? // links das redes
+  linksUteis          String? // outros links (Drive, brand guide…)
   arquivado           Boolean  @default(false)
   criadoEm            DateTime @default(now())
   atualizadoEm        DateTime @updatedAt

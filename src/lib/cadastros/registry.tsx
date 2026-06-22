@@ -77,6 +77,22 @@ export const CATEGORIA_TIPOS = [
   { value: "DESPESA", label: "Despesa" },
 ];
 
+export const CLIENTE_STATUS = [
+  { value: "ativo", label: "Ativo" },
+  { value: "implantacao", label: "Em implantação" },
+  { value: "pausado", label: "Pausado" },
+  { value: "inadimplente", label: "Inadimplente" },
+  { value: "encerrado", label: "Encerrado" },
+];
+
+const CLIENTE_STATUS_VARIANT: Record<string, "success" | "warning" | "destructive" | "muted"> = {
+  ativo: "success",
+  implantacao: "warning",
+  pausado: "warning",
+  inadimplente: "destructive",
+  encerrado: "muted",
+};
+
 // ─────────────────────── Helpers de schema ───────────────────────
 
 const textoOpcional = z
@@ -126,6 +142,13 @@ function statusBadge(arquivado: boolean) {
   );
 }
 
+function clienteStatusBadge(status: unknown, arquivado: boolean) {
+  if (arquivado) return <Badge variant="muted">Arquivado</Badge>;
+  const s = (status as string) || "ativo";
+  const label = CLIENTE_STATUS.find((o) => o.value === s)?.label ?? s;
+  return <Badge variant={CLIENTE_STATUS_VARIANT[s] ?? "muted"}>{label}</Badge>;
+}
+
 export const ENTIDADES: Record<string, EntityConfig> = {
   clientes: {
     slug: "clientes",
@@ -139,6 +162,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
     campos: [
       { name: "nome", label: "Razão social / Nome", type: "text", required: true, colSpan: 2 },
       { name: "nomeFantasia", label: "Nome fantasia", type: "text" },
+      { name: "status", label: "Situação", type: "select", required: true, options: CLIENTE_STATUS },
       { name: "documento", label: "CNPJ / CPF", type: "text" },
       { name: "inscricaoEstadual", label: "Inscrição estadual", type: "text" },
       { name: "inscricaoMunicipal", label: "Inscrição municipal", type: "text" },
@@ -147,6 +171,10 @@ export const ENTIDADES: Record<string, EntityConfig> = {
       { name: "contatoNome", label: "Contato (nome)", type: "text" },
       { name: "cep", label: "CEP", type: "text" },
       { name: "endereco", label: "Endereço", type: "textarea", colSpan: 2 },
+      { name: "escopo", label: "Escopo / serviços contratados", type: "textarea", colSpan: 2, help: "O que está incluso no contrato mensal." },
+      { name: "tomDeVoz", label: "Tom de voz da marca", type: "textarea", colSpan: 2, help: "Como a marca fala (formal, descontraída, etc.)." },
+      { name: "redesSociais", label: "Redes sociais (links)", type: "textarea", colSpan: 2 },
+      { name: "linksUteis", label: "Links úteis (Drive, brand guide…)", type: "textarea", colSpan: 2 },
       {
         name: "condicoesComerciais",
         label: "Condições comerciais",
@@ -158,6 +186,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
     schema: z.object({
       nome: nomeObrigatorio,
       nomeFantasia: textoOpcional,
+      status: z.string().optional().transform((v) => (v && v.trim() ? v : "ativo")),
       documento: textoOpcional,
       inscricaoEstadual: textoOpcional,
       inscricaoMunicipal: textoOpcional,
@@ -166,13 +195,17 @@ export const ENTIDADES: Record<string, EntityConfig> = {
       contatoNome: textoOpcional,
       cep: textoOpcional,
       endereco: textoOpcional,
+      escopo: textoOpcional,
+      tomDeVoz: textoOpcional,
+      redesSociais: textoOpcional,
+      linksUteis: textoOpcional,
       condicoesComerciais: textoOpcional,
     }),
     colunas: [
       { header: "Nome", render: (r) => <span className="font-medium">{String(r.nome)}</span> },
       { header: "Fantasia", render: (r) => (r.nomeFantasia as string) ?? "—" },
       { header: "Documento", render: (r) => (r.documento as string) ?? "—" },
-      { header: "Status", render: (r) => statusBadge(Boolean(r.arquivado)) },
+      { header: "Situação", render: (r) => clienteStatusBadge(r.status, Boolean(r.arquivado)) },
     ],
   },
 
