@@ -7,6 +7,7 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 
 const SECAO: Record<string, string> = {
   chat: "Chat",
+  crm: "CRM",
   projetos: "Projetos",
   jobs: "Jobs",
   propostas: "Propostas",

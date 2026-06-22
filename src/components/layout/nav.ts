@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   MessageCircle,
+  Filter,
   FolderKanban,
   ListChecks,
   FileText,
@@ -44,6 +45,12 @@ export const NAV: NavGroup[] = [
     itens: [
       { label: "Minha página", href: "/dashboard", icon: LayoutDashboard, disponivel: true },
       { label: "Chat", href: "/chat", icon: MessageCircle, disponivel: true },
+    ],
+  },
+  {
+    titulo: "Comercial",
+    itens: [
+      { label: "CRM (funil)", href: "/crm", icon: Filter, modulo: "propostas", disponivel: true },
     ],
   },
   {

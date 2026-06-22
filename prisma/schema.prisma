@@ -104,6 +104,7 @@ model Usuario {
   chatMensagens       ChatMensagem[]     @relation("ChatAutor")
   chatLeituras        ChatLeitura[]
   notasFiscais        NotaFiscal[]
+  leadsResponsavel    Lead[]             @relation("LeadResponsavel")
 
   @@index([papel])
 }
@@ -212,6 +213,30 @@ model Sequence {
   ultimo Int    @default(0)
 }
 
+/// CRM — lead/oportunidade comercial (funil). Vira Cliente ao ganhar.
+model Lead {
+  id            String   @id @default(cuid())
+  nome          String // contato ou empresa
+  empresa       String?
+  origem        String? // indicação, instagram, site, evento…
+  email         String?
+  telefone      String?
+  valorEstimado Decimal? @db.Decimal(14, 2)
+  etapa         String   @default("novo") // novo|contato|proposta|negociacao|ganho|perdido
+  responsavelId String?
+  observacao    String?
+  motivoPerda   String?
+  clienteId     String? // preenchido ao converter
+  criadoPorId   String?
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  responsavel Usuario? @relation("LeadResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  cliente     Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+
+  @@index([etapa])
+}
+
 /// Anti-brute-force no login: contagem de falhas e bloqueio temporário por e-mail.
 model LoginAttempt {
   email        String    @id
@@ -269,6 +294,7 @@ model Cliente {
   producaoOrdens      ProducaoOrdem[]
   ordensServico       OrdemServico[]
   notasFiscais        NotaFiscal[]
+  leads               Lead[]
 
   @@index([arquivado])
   @@index([nome])
