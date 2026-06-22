@@ -11,6 +11,8 @@ export type Column<T> = {
 
 /**
  * Tabela genérica e reutilizável (server-friendly).
+ * No desktop: tabela. No celular: cada linha vira um card empilhado
+ * (rótulo + valor), porque tabela larga é ruim de usar no toque.
  * Renderiza um EmptyState quando não há linhas.
  */
 export function DataTable<T extends { id: string }>({
@@ -27,29 +29,61 @@ export function DataTable<T extends { id: string }>({
   }
 
   return (
-    <div className="rounded-lg border border-border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((col, i) => (
-              <TableHead key={i} className={col.headClassName}>
-                {col.header}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
+    <>
+      {/* Desktop / tablet: tabela */}
+      <div className="hidden rounded-lg border border-border sm:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
               {columns.map((col, i) => (
-                <TableCell key={i} className={cn(col.className)}>
-                  {col.cell(row)}
-                </TableCell>
+                <TableHead key={i} className={col.headClassName}>
+                  {col.header}
+                </TableHead>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.id}>
+                {columns.map((col, i) => (
+                  <TableCell key={i} className={cn(col.className)}>
+                    {col.cell(row)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Celular: cards empilhados */}
+      <div className="space-y-2 sm:hidden">
+        {rows.map((row) => (
+          <div key={row.id} className="rounded-lg border border-border bg-card p-3">
+            {columns.map((col, i) => {
+              const temRotulo = col.header.trim().length > 0;
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "flex items-center justify-between gap-3 py-1",
+                    temRotulo ? "border-b border-border/50 last:border-0" : "pt-2",
+                  )}
+                >
+                  {temRotulo && (
+                    <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {col.header}
+                    </span>
+                  )}
+                  <span className={cn("min-w-0 text-sm", temRotulo ? "text-right" : "flex w-full justify-end")}>
+                    {col.cell(row)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
