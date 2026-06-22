@@ -36,6 +36,7 @@ const jobSchema = z.object({
   prazoPostagem: z.string().optional().transform(dataOpt),
   recorrenciaFreq: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
   recorrenciaProxima: z.string().optional().transform(dataOpt),
+  bloqueadoPorId: z.string().optional().transform((v) => (v ? v : null)),
   legenda: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
   briefing: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
 });
@@ -60,6 +61,7 @@ export async function salvarJob(
       prazoPostagem: formData.get("prazoPostagem")?.toString(),
       recorrenciaFreq: formData.get("recorrenciaFreq")?.toString(),
       recorrenciaProxima: formData.get("recorrenciaProxima")?.toString(),
+      bloqueadoPorId: formData.get("bloqueadoPorId")?.toString(),
       legenda: formData.get("legenda")?.toString(),
       briefing: formData.get("briefing")?.toString(),
     });
@@ -99,6 +101,7 @@ export async function salvarJob(
       prazoPostagem: ehSocial ? d.prazoPostagem : null,
       recorrenciaFreq: d.recorrenciaFreq,
       recorrenciaProxima: d.recorrenciaFreq ? d.recorrenciaProxima : null,
+      bloqueadoPorId: d.bloqueadoPorId && d.bloqueadoPorId !== id ? d.bloqueadoPorId : null,
       legenda: ehSocial ? d.legenda : null,
       formatos,
       briefing: d.briefing,

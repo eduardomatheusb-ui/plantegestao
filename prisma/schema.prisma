@@ -213,6 +213,25 @@ model Sequence {
   ultimo Int    @default(0)
 }
 
+/// Ata de reunião — decisões e próximos passos registrados.
+model Reuniao {
+  id             String   @id @default(cuid())
+  titulo         String
+  data           DateTime
+  clienteId      String?
+  participantes  String?
+  pauta          String?
+  decisoes       String?
+  proximosPassos String?
+  criadoPorId    String?
+  criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
+
+  cliente Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+
+  @@index([data])
+}
+
 /// CRM — lead/oportunidade comercial (funil). Vira Cliente ao ganhar.
 model Lead {
   id            String   @id @default(cuid())
@@ -295,6 +314,7 @@ model Cliente {
   ordensServico       OrdemServico[]
   notasFiscais        NotaFiscal[]
   leads               Lead[]
+  reunioes            Reuniao[]
 
   @@index([arquivado])
   @@index([nome])
@@ -614,6 +634,7 @@ model Job {
   prazoPostagem DateTime? // só postagem: quando vai ao ar
   recorrenciaFreq String? // null = não recorrente; "semanal"|"quinzenal"|"mensal" → este job gera cópias
   recorrenciaProxima DateTime? // próxima data de geração
+  bloqueadoPorId String? // depende de outro job (não pode começar até ele concluir)
   legenda      String? // só postagem
   formatos     String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
   briefing     String?
@@ -632,6 +653,8 @@ model Job {
   apontamentos Apontamento[]
   lancamentos  Lancamento[]
   envolvidos   JobEnvolvido[]
+  bloqueadoPor Job?        @relation("JobDependencia", fields: [bloqueadoPorId], references: [id], onDelete: SetNull)
+  bloqueia     Job[]       @relation("JobDependencia")
 
   @@index([clienteId])
   @@index([projetoId])

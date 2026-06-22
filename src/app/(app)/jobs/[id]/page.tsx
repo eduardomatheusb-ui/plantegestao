@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock, Copy, Instagram, Send } from "lucide-react";
+import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock, Copy, Instagram, Send, Lock, LockOpen } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { obterJob, listarStatus } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
@@ -193,6 +193,33 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
               )}
             </CardContent>
           </Card>
+
+          {(job.bloqueadoPor || job.bloqueia.length > 0) && (
+            <Card>
+              <CardHeader><CardTitle>Dependências</CardTitle></CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                {job.bloqueadoPor && (
+                  <p className="flex items-center gap-2">
+                    {job.bloqueadoPor.concluidoEm ? <LockOpen className="size-4 text-emerald-600" aria-hidden="true" /> : <Lock className="size-4 text-amber-600" aria-hidden="true" />}
+                    <span>
+                      {job.bloqueadoPor.concluidoEm ? "Liberado — dependia de" : "Aguardando"}{" "}
+                      <Link href={`/jobs/${job.bloqueadoPor.id}`} className="font-medium hover:underline">#{job.bloqueadoPor.numero} {job.bloqueadoPor.titulo}</Link>
+                    </span>
+                  </p>
+                )}
+                {job.bloqueia.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bloqueia</p>
+                    <ul className="mt-1 space-y-1">
+                      {job.bloqueia.map((b) => (
+                        <li key={b.id}><Link href={`/jobs/${b.id}`} className="hover:underline">#{b.numero} {b.titulo}</Link></li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, ListTodo, Send, Flame, PauseCircle, Repeat } from "lucide-react";
+import { CalendarClock, ListTodo, Send, Flame, PauseCircle, Repeat, Lock } from "lucide-react";
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
@@ -102,6 +102,11 @@ export function JobCard({
         {job.recorrenciaFreq && (
           <span className="inline-flex items-center gap-1" title={`Recorrente (${job.recorrenciaFreq})`}>
             <Repeat className="size-3.5" /> recorrente
+          </span>
+        )}
+        {job.bloqueadoPor && !job.bloqueadoPor.concluidoEm && (
+          <span className="inline-flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400" title={`Aguarda o job #${job.bloqueadoPor.numero}: ${job.bloqueadoPor.titulo}`}>
+            <Lock className="size-3.5" /> bloqueado por #{job.bloqueadoPor.numero}
           </span>
         )}
       </div>

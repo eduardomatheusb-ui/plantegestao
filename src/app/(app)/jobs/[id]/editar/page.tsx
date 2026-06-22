@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/rbac";
 import { db } from "@/lib/db";
-import { listarStatus, listarProjetosParaSelect } from "@/lib/jobs/queries";
+import { listarStatus, listarProjetosParaSelect, listarJobsParaSelect } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos, listarClientesAtivos } from "@/lib/projetos/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { JobForm, type JobInicial } from "@/components/jobs/job-form";
@@ -13,12 +13,13 @@ export default async function EditarJobPage({ params }: { params: Promise<{ id: 
   const { id } = await params;
   await requireUser();
 
-  const [job, clientes, projetos, usuarios, statuses] = await Promise.all([
+  const [job, clientes, projetos, usuarios, statuses, jobs] = await Promise.all([
     db.job.findUnique({ where: { id }, include: { envolvidos: { select: { usuarioId: true } } } }),
     listarClientesAtivos(),
     listarProjetosParaSelect(),
     listarUsuariosAtivos(),
     listarStatus(),
+    listarJobsParaSelect(),
   ]);
   if (!job) notFound();
 
@@ -34,6 +35,7 @@ export default async function EditarJobPage({ params }: { params: Promise<{ id: 
     prazoPostagem: dia(job.prazoPostagem),
     recorrenciaFreq: job.recorrenciaFreq ?? "",
     recorrenciaProxima: dia(job.recorrenciaProxima),
+    bloqueadoPorId: job.bloqueadoPorId ?? "",
     legenda: job.legenda ?? "",
     briefing: job.briefing ?? "",
     formatos: job.formatos ? job.formatos.split(",").filter(Boolean) : [],

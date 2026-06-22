@@ -14,6 +14,7 @@ const SECAO: Record<string, string> = {
   midia: "Mídia",
   producao: "Produção",
   os: "Serviços / OS",
+  reunioes: "Atas de reunião",
   financeiro: "Financeiro",
   relatorios: "Relatórios",
   cadastros: "Cadastros",

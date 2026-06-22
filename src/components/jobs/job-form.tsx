@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 
 type Opt = { id: string; nome: string };
 type ProjetoOpt = { id: string; numero: number; nome: string; clienteId: string };
+type JobOpt = { id: string; numero: number; titulo: string; clienteId: string };
 
 export type JobInicial = {
   tipo?: string;
@@ -29,6 +30,7 @@ export type JobInicial = {
   prazoPostagem?: string;
   recorrenciaFreq?: string;
   recorrenciaProxima?: string;
+  bloqueadoPorId?: string;
   legenda?: string;
   briefing?: string;
   formatos?: string[];
@@ -49,6 +51,7 @@ export function JobForm({
   projetos,
   usuarios,
   statuses,
+  jobs = [],
   cancelHref,
 }: {
   id: string | null;
@@ -57,6 +60,7 @@ export function JobForm({
   projetos: ProjetoOpt[];
   usuarios: Opt[];
   statuses: Opt[];
+  jobs?: JobOpt[];
   cancelHref: string;
 }) {
   const action = salvarJob.bind(null, id);
@@ -68,6 +72,7 @@ export function JobForm({
   const [projetoId, setProjetoId] = React.useState(inicial.projetoId ?? "");
   const [freq, setFreq] = React.useState(inicial.recorrenciaFreq ?? "");
   const projetosDoCliente = projetos.filter((p) => p.clienteId === clienteId);
+  const jobsDoCliente = jobs.filter((j) => j.clienteId === clienteId && j.id !== id);
   const social = tipoJobSocial(tipo);
   const formatosIniciais = new Set(inicial.formatos ?? []);
 
@@ -157,6 +162,15 @@ export function JobForm({
             <p className="text-xs text-muted-foreground">Nessa data o sistema cria uma cópia nova deste job, e agenda a próxima.</p>
           </div>
         )}
+
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="bloqueadoPorId">Depende de outro job</Label>
+          <select id="bloqueadoPorId" name="bloqueadoPorId" className={sel} defaultValue={inicial.bloqueadoPorId ?? ""} disabled={!clienteId}>
+            <option value="">{clienteId ? "— (não depende de ninguém)" : "Escolha o cliente primeiro"}</option>
+            {jobsDoCliente.map((j) => (<option key={j.id} value={j.id}>#{j.numero} {j.titulo}</option>))}
+          </select>
+          <p className="text-xs text-muted-foreground">Este job fica &quot;bloqueado&quot; até o job escolhido ser concluído.</p>
+        </div>
 
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="envolvidos">Envolvidos <span className="text-xs font-normal text-muted-foreground">(segure Ctrl/⌘ para marcar vários)</span></Label>

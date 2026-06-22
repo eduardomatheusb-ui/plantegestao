@@ -42,6 +42,7 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
       projeto: { select: { id: true, numero: true, nome: true } },
       responsavel: { select: { id: true, nome: true } },
       status: true,
+      bloqueadoPor: { select: { id: true, numero: true, titulo: true, concluidoEm: true } },
       _count: { select: { tarefas: true } },
     },
   });
@@ -56,6 +57,8 @@ export async function obterJob(id: string) {
       responsavel: { select: { id: true, nome: true } },
       criadoPor: { select: { id: true, nome: true } },
       status: true,
+      bloqueadoPor: { select: { id: true, numero: true, titulo: true, concluidoEm: true } },
+      bloqueia: { select: { id: true, numero: true, titulo: true }, orderBy: { numero: "desc" } },
       tarefas: {
         orderBy: [{ concluida: "asc" }, { ordem: "asc" }, { criadoEm: "asc" }],
         include: { responsavel: { select: { id: true, nome: true } } },
@@ -78,6 +81,15 @@ export async function listarProjetosParaSelect() {
     where: { arquivado: false },
     orderBy: { numero: "desc" },
     select: { id: true, numero: true, nome: true, clienteId: true },
+  });
+}
+
+/** Jobs ativos para o select de dependência (filtrado por cliente no client). */
+export async function listarJobsParaSelect() {
+  return db.job.findMany({
+    where: { arquivado: false },
+    orderBy: { numero: "desc" },
+    select: { id: true, numero: true, titulo: true, clienteId: true },
   });
 }
 

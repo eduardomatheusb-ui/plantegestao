@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/rbac";
 import { db } from "@/lib/db";
-import { listarStatus, listarProjetosParaSelect } from "@/lib/jobs/queries";
+import { listarStatus, listarProjetosParaSelect, listarJobsParaSelect } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos, listarClientesAtivos } from "@/lib/projetos/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { JobForm, type JobInicial } from "@/components/jobs/job-form";
@@ -14,11 +14,12 @@ export default async function NovoJobPage({
   await requireUser();
   const { projeto, cliente } = await searchParams;
 
-  const [clientes, projetos, usuarios, statuses] = await Promise.all([
+  const [clientes, projetos, usuarios, statuses, jobs] = await Promise.all([
     listarClientesAtivos(),
     listarProjetosParaSelect(),
     listarUsuariosAtivos(),
     listarStatus(),
+    listarJobsParaSelect(),
   ]);
 
   let inicial: JobInicial = {};
@@ -41,6 +42,7 @@ export default async function NovoJobPage({
             projetos={projetos}
             usuarios={usuarios}
             statuses={statuses}
+            jobs={jobs}
             cancelHref="/jobs"
           />
         </CardContent>

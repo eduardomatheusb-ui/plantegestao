@@ -5,6 +5,7 @@ import {
   FolderKanban,
   ListChecks,
   FileText,
+  NotebookPen,
   Megaphone,
   Factory,
   ReceiptText,
@@ -63,6 +64,7 @@ export const NAV: NavGroup[] = [
       { label: "Mídia", href: "/midia", icon: Megaphone, modulo: "midia", disponivel: true },
       { label: "Produção", href: "/producao", icon: Factory, modulo: "producao", disponivel: true },
       { label: "Serviços / OS", href: "/os", icon: ReceiptText, modulo: "os", disponivel: true },
+      { label: "Atas de reunião", href: "/reunioes", icon: NotebookPen, modulo: "projetos", disponivel: true },
     ],
   },
   {
