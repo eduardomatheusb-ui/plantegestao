@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { LogOut, ShieldCheck, Lock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +41,12 @@ export function UserMenu({
           <span className="mt-1 text-xs font-normal text-muted-foreground">{papelLabel}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/configuracoes/seguranca">
+            <Lock className="size-4" />
+            Segurança (2FA)
+          </Link>
+        </DropdownMenuItem>
         {podeAdmin && (
           <DropdownMenuItem asChild>
             <Link href="/configuracoes">

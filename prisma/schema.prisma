@@ -70,6 +70,10 @@ model Usuario {
   // Convite por e-mail: token de definição de senha (1º acesso / reset).
   conviteToken   String?   @unique
   conviteExpira  DateTime?
+  // 2FA (TOTP) — opt-in. recoveryCodes = hashes bcrypt separados por vírgula.
+  totpSecret     String?
+  totpAtivo      Boolean   @default(false)
+  totpRecoveryCodes String?
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
