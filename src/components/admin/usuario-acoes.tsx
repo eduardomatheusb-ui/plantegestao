@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { KeyRound, Power } from "lucide-react";
+import { KeyRound, Power, Trash2 } from "lucide-react";
 import {
   alterarPerfilUsuario,
   definirAtivoUsuario,
   reenviarConvite,
+  excluirUsuario,
 } from "@/lib/admin/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -130,6 +131,19 @@ export function UsuarioAcoes({
         >
           <Power className="mr-1.5 size-3.5" aria-hidden="true" /> Ativar
         </Button>
+      )}
+
+      {!ehProprio && !responsavelConta && (
+        <ConfirmButton
+          action={excluirUsuario.bind(null, usuarioId)}
+          variant="ghost"
+          confirmVariant="destructive"
+          titulo="Excluir este usuário definitivamente?"
+          descricao="Esta ação não pode ser desfeita. Os apontamentos de horas e as mensagens de chat dessa pessoa serão apagados; a autoria em jobs, projetos e comentários fica sem nome. Para apenas remover o acesso, prefira Desativar."
+          confirmarLabel="Excluir definitivamente"
+          triggerLabel="Excluir"
+          triggerIcon={<Trash2 className="mr-1.5 size-3.5" aria-hidden="true" />}
+        />
       )}
 
       {erro && <p role="alert" className="w-full text-right text-xs text-destructive">{erro}</p>}

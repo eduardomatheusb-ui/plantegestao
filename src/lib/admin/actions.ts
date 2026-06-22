@@ -247,6 +247,21 @@ export async function vincularColaborador(usuarioId: string, colaboradorId: stri
   revalidatePath("/configuracoes/usuarios");
 }
 
+/** Exclusão definitiva do usuário (Administrador). Apaga apontamentos/chat dele;
+ *  autoria em jobs/projetos/comentários vira nula (conteúdo preservado). */
+export async function excluirUsuario(usuarioId: string): Promise<void> {
+  const acesso = await assertModulo("admin", "ADMIN");
+  if (usuarioId === acesso.id) throw new Error("Você não pode excluir a si mesmo.");
+  const alvo = await db.usuario.findUnique({ where: { id: usuarioId }, select: { responsavelConta: true, email: true } });
+  if (!alvo) throw new Error("Usuário não encontrado.");
+  if (alvo.responsavelConta) throw new Error("O responsável da conta não pode ser excluído.");
+  if (await ehUltimoAdmin(usuarioId)) throw new Error("Este é o último administrador — não pode ser excluído.");
+
+  await db.usuario.delete({ where: { id: usuarioId } });
+  await registrarLog({ entidadeTipo: "usuario", entidadeId: usuarioId, usuarioId: acesso.id, acao: "excluiu o usuário", de: alvo.email });
+  revalidatePath("/configuracoes/usuarios");
+}
+
 export async function reenviarConvite(usuarioId: string): Promise<{ conviteUrl?: string; error?: string }> {
   await assertModulo("admin", "ADMIN");
   const { token, expira } = novoToken();
