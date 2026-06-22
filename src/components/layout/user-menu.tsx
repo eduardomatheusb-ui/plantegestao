@@ -44,7 +44,7 @@ export function UserMenu({
         <DropdownMenuItem asChild>
           <Link href="/configuracoes/seguranca">
             <Lock className="size-4" />
-            Segurança (2FA)
+            Minha conta (senha e 2FA)
           </Link>
         </DropdownMenuItem>
         {podeAdmin && (
