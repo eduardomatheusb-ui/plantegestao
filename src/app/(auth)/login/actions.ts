@@ -19,9 +19,9 @@ export type LoginState = { error?: string; need2fa?: boolean };
 
 export async function loginAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = schema.safeParse({
-    email: formData.get("email"),
-    senha: formData.get("senha"),
-    codigo: formData.get("codigo"),
+    email: formData.get("email") ?? "",
+    senha: formData.get("senha") ?? "",
+    codigo: formData.get("codigo") ?? "",
   });
   if (!parsed.success) {
     return { error: parsed.error.errors[0]?.message ?? "Dados inválidos." };
