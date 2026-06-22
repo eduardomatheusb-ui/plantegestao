@@ -33,7 +33,7 @@ export default async function FluxoCaixaPage({ searchParams }: { searchParams: P
       <YearNav ano={ano} />
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="overflow-x-auto pt-6">
           <Table>
             <TableHeader>
               <TableRow>
