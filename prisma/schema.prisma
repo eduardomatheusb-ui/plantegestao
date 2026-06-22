@@ -317,9 +317,52 @@ model Cliente {
   leads               Lead[]
   reunioes            Reuniao[]
   onboarding          OnboardingItem[]
+  campanhas           Campanha[]
+  portalToken         String?  @unique // link público do portal do cliente
 
   @@index([arquivado])
   @@index([nome])
+}
+
+/// Campanha de tráfego pago (Meta, Google, etc.) de um cliente.
+model Campanha {
+  id          String   @id @default(cuid())
+  nome        String
+  clienteId   String
+  plataforma  String   @default("meta") // meta | google | tiktok | linkedin | outro
+  objetivo    String?
+  verba       Decimal? @db.Decimal(14, 2)
+  dataInicio  DateTime?
+  dataFim     DateTime?
+  status      String   @default("ativa") // ativa | pausada | encerrada
+  observacao  String?
+  criadoPorId String?
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  cliente    Cliente              @relation(fields: [clienteId], references: [id])
+  resultados CampanhaResultado[]
+
+  @@index([clienteId])
+  @@index([status])
+}
+
+/// Resultado de uma campanha num período (lançado manual ou importado).
+model CampanhaResultado {
+  id          String   @id @default(cuid())
+  campanhaId  String
+  data        DateTime
+  investido   Decimal  @default(0) @db.Decimal(14, 2)
+  alcance     Int      @default(0)
+  cliques     Int      @default(0)
+  conversoes  Int      @default(0)
+  leads       Int      @default(0)
+  observacao  String?
+  criadoEm    DateTime @default(now())
+
+  campanha Campanha @relation(fields: [campanhaId], references: [id], onDelete: Cascade)
+
+  @@index([campanhaId])
 }
 
 /// Item do checklist de implantação (onboarding) de um cliente novo.
