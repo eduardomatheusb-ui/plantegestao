@@ -64,6 +64,7 @@ export async function obterJob(id: string) {
         include: { responsavel: { select: { id: true, nome: true } } },
       },
       envolvidos: { include: { usuario: { select: { id: true, nome: true } } } },
+      aprovacaoEventos: { orderBy: { criadoEm: "desc" } },
     },
   });
   if (!job) return null;

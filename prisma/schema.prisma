@@ -638,6 +638,9 @@ model Job {
   legenda      String? // só postagem
   formatos     String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
   briefing     String?
+  aprovacaoStatus String   @default("rascunho") // rascunho | enviado | aprovado | ajustes
+  aprovacaoToken String?  @unique // token do link público de aprovação do cliente
+  aprovacaoEm  DateTime? // quando a peça foi enviada para aprovação
   concluidoEm  DateTime? // setado ao entrar em status isConcluido (para "% no prazo")
   arquivado    Boolean     @default(false)
   criadoPorId  String?
@@ -655,12 +658,27 @@ model Job {
   envolvidos   JobEnvolvido[]
   bloqueadoPor Job?        @relation("JobDependencia", fields: [bloqueadoPorId], references: [id], onDelete: SetNull)
   bloqueia     Job[]       @relation("JobDependencia")
+  aprovacaoEventos AprovacaoEvento[]
 
   @@index([clienteId])
   @@index([projetoId])
   @@index([responsavelId])
   @@index([statusId])
   @@index([arquivado])
+}
+
+/// Histórico do fluxo de aprovação de uma peça (envio + respostas do cliente).
+model AprovacaoEvento {
+  id         String   @id @default(cuid())
+  jobId      String
+  acao       String // enviado | aprovado | ajustes | reenviado
+  autor      String? // nome de quem respondeu (cliente no link público) ou usuário interno
+  comentario String?
+  criadoEm   DateTime @default(now())
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
 }
 
 /// Pessoas envolvidas numa postagem/job (além do responsável).

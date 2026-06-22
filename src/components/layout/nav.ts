@@ -6,6 +6,7 @@ import {
   ListChecks,
   FileText,
   NotebookPen,
+  CalendarDays,
   Megaphone,
   Factory,
   ReceiptText,
@@ -60,6 +61,7 @@ export const NAV: NavGroup[] = [
     itens: [
       { label: "Projetos", href: "/projetos", icon: FolderKanban, modulo: "projetos", disponivel: true },
       { label: "Jobs", href: "/jobs", icon: ListChecks, modulo: "jobs", disponivel: true },
+      { label: "Calendário editorial", href: "/calendario", icon: CalendarDays, modulo: "jobs", disponivel: true },
       { label: "Propostas", href: "/propostas", icon: FileText, modulo: "propostas", disponivel: true },
       { label: "Mídia", href: "/midia", icon: Megaphone, modulo: "midia", disponivel: true },
       { label: "Produção", href: "/producao", icon: Factory, modulo: "producao", disponivel: true },

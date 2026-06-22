@@ -20,6 +20,8 @@ import { CommentsPanel } from "@/components/shared/comments-panel";
 import { AttachmentsPanel } from "@/components/shared/attachments-panel";
 import { TimesheetPanel } from "@/components/shared/timesheet-panel";
 import { HistoryPanel } from "@/components/shared/history-panel";
+import { AprovacaoPanel } from "@/components/aprovacao/aprovacao-panel";
+import { baseUrl } from "@/lib/email";
 
 export default async function JobDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -220,6 +222,20 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardHeader><CardTitle>Aprovação do cliente</CardTitle></CardHeader>
+            <CardContent>
+              <AprovacaoPanel
+                jobId={job.id}
+                status={job.aprovacaoStatus}
+                token={job.aprovacaoToken}
+                link={job.aprovacaoToken ? `${baseUrl()}/aprovar/${job.aprovacaoToken}` : null}
+                emailCliente={null}
+                eventos={job.aprovacaoEventos}
+              />
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
