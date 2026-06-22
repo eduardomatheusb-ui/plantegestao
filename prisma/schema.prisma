@@ -518,7 +518,11 @@ model Anexo {
   entidadeTipo String
   entidadeId   String
   nome         String
-  url          String
+  tipo         String   @default("link") // "link" (url) | "arquivo" (Netlify Blobs)
+  url          String? // só quando tipo = link
+  blobKey      String? // chave no Netlify Blobs (tipo = arquivo)
+  tamanho      Int? // bytes (tipo = arquivo)
+  contentType  String? // mime (tipo = arquivo)
   criadoPorId  String?
   criadoEm     DateTime @default(now())
 

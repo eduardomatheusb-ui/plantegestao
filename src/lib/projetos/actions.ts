@@ -331,7 +331,41 @@ export async function adicionarAnexo(
   const url = formData.get("url")?.toString().trim();
   if (!nome || !url) return { error: "Informe nome e link." };
   if (!urlSchema.safeParse(url).success) return { error: "Link inválido (use http/https)." };
-  await db.anexo.create({ data: { entidadeTipo, entidadeId, nome, url, criadoPorId: user.id } });
+  await db.anexo.create({ data: { entidadeTipo, entidadeId, nome, tipo: "link", url, criadoPorId: user.id } });
+  const path = caminhoEntidade(entidadeTipo, entidadeId);
+  if (path) revalidatePath(path);
+  return {};
+}
+
+const MAX_ARQUIVO = 4 * 1024 * 1024; // 4 MB (limite seguro pra função serverless)
+
+/** Upload de arquivo como anexo (armazenado no Netlify Blobs). */
+export async function enviarArquivoAnexo(
+  entidadeTipo: string,
+  entidadeId: string,
+  _prev: { error?: string },
+  formData: FormData,
+): Promise<{ error?: string }> {
+  const user = await getSessionUserOrThrow();
+  const file = formData.get("arquivo");
+  if (!(file instanceof File) || file.size === 0) return { error: "Selecione um arquivo." };
+  if (file.size > MAX_ARQUIVO) return { error: "Arquivo muito grande (máx. 4 MB). Para maiores, use um link do Drive." };
+  try {
+    const { getStore } = await import("@netlify/blobs");
+    const store = getStore("anexos");
+    const key = `${entidadeTipo}/${entidadeId}/${crypto.randomUUID()}`;
+    await store.set(key, await file.arrayBuffer());
+    await db.anexo.create({
+      data: {
+        entidadeTipo, entidadeId, nome: file.name || "arquivo", tipo: "arquivo",
+        blobKey: key, tamanho: file.size, contentType: file.type || "application/octet-stream",
+        criadoPorId: user.id,
+      },
+    });
+  } catch (e) {
+    console.error("[anexo] upload falhou:", e);
+    return { error: "Não foi possível enviar o arquivo (o armazenamento só funciona no site publicado)." };
+  }
   const path = caminhoEntidade(entidadeTipo, entidadeId);
   if (path) revalidatePath(path);
   return {};
@@ -343,6 +377,14 @@ export async function removerAnexo(id: string) {
   if (!a) return;
   if (a.criadoPorId !== user.id && !podePapel(user.papel, EDITAR)) {
     throw new Error("Você só pode remover seus próprios anexos.");
+  }
+  if (a.tipo === "arquivo" && a.blobKey) {
+    try {
+      const { getStore } = await import("@netlify/blobs");
+      await getStore("anexos").delete(a.blobKey);
+    } catch (e) {
+      console.error("[anexo] falha ao apagar blob (ignorada):", e);
+    }
   }
   await db.anexo.delete({ where: { id } });
   const path = caminhoEntidade(a.entidadeTipo, a.entidadeId);
