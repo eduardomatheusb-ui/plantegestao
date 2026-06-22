@@ -62,7 +62,7 @@ export function KanbanColumns({
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 sm:snap-none">
       {cols.map((col) => {
         const alvo = arrastavel && sobre === col.id && arrastando;
         return (
@@ -72,7 +72,7 @@ export function KanbanColumns({
             onDragLeave={arrastavel ? () => setSobre((s) => (s === col.id ? null : s)) : undefined}
             onDrop={arrastavel ? () => soltarNaColuna(col.id) : undefined}
             className={cn(
-              "flex w-72 shrink-0 flex-col rounded-lg bg-muted/40 p-2 transition-colors",
+              "flex w-[85vw] max-w-xs shrink-0 snap-start flex-col rounded-lg bg-muted/40 p-2 transition-colors sm:w-72 sm:max-w-none",
               alvo && "bg-brand-yellow/15 ring-2 ring-brand-yellow",
             )}
           >

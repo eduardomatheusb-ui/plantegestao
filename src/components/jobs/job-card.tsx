@@ -111,7 +111,7 @@ export function JobCard({
         )}
       </div>
 
-      {mostrarMover && <MoverStatus jobId={job.id} statusId={job.statusId} statuses={statuses} className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />}
+      {mostrarMover && <MoverStatus jobId={job.id} statusId={job.statusId} statuses={statuses} className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-8 sm:text-xs" />}
     </div>
   );
 }
