@@ -2,8 +2,8 @@
 
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/rbac";
-import { notificar } from "@/lib/notificacoes";
-import { listarMensagens, podeAcessarCanal, participantesDM, CANAL_GERAL, type ChatMensagemView } from "./queries";
+import { notificar, notificarMuitos } from "@/lib/notificacoes";
+import { listarMensagens, listarConversas, contarChatNaoLidas, podeAcessarCanal, participantesDM, CANAL_GERAL, type ChatMensagemView, type ConversaView } from "./queries";
 
 async function userOrThrow() {
   const u = await getSessionUser();
@@ -38,7 +38,33 @@ export async function enviarMensagem(canal: string, corpo: string): Promise<void
         url: `/chat?c=${encodeURIComponent(canal)}`,
       });
     }
+  } else if (canal === CANAL_GERAL) {
+    // Geral: avisa o time no sino (sem e-mail, pra não floodar).
+    const equipe = await db.usuario.findMany({ where: { ativo: true, id: { not: user.id } }, select: { id: true } });
+    await notificarMuitos(equipe.map((u) => u.id), {
+      atorId: user.id,
+      tipo: "chat",
+      titulo: `${user.name ?? "Um colega"} no chat Geral`,
+      descricao: texto.slice(0, 140),
+      entidadeTipo: "chat",
+      entidadeId: canal,
+      url: `/chat?c=${encodeURIComponent(canal)}`,
+      semEmail: true,
+    });
   }
+}
+
+/** Conversas do usuário (para o widget flutuante). */
+export async function buscarConversas(): Promise<ConversaView[]> {
+  const user = await userOrThrow();
+  return listarConversas(user.id);
+}
+
+/** Total de mensagens não lidas (badge do widget). */
+export async function buscarChatNaoLidas(): Promise<number> {
+  const user = await getSessionUser();
+  if (!user) return 0;
+  return contarChatNaoLidas(user.id);
 }
 
 /** Marca o canal como lido até agora (zera o não lido). */

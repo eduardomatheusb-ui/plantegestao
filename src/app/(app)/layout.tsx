@@ -5,6 +5,7 @@ import { contarChatNaoLidas } from "@/lib/chat/queries";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { ChatWidget } from "@/components/chat/chat-widget";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
@@ -31,6 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Breadcrumbs />
         <main className="flex-1 p-4 lg:p-8">{children}</main>
       </div>
+      <ChatWidget meuId={user.id} naoLidasIniciais={chatNaoLidas} />
     </div>
   );
 }

@@ -10,6 +10,8 @@ export type NotificarArgs = {
   entidadeTipo?: string | null;
   entidadeId?: string | null;
   url?: string | null;
+  /** Só notificação no sino, sem espelhar por e-mail (ex.: chat do mural geral). */
+  semEmail?: boolean;
 };
 
 /**
@@ -34,7 +36,7 @@ export async function notificar(args: NotificarArgs): Promise<void> {
   } catch (err) {
     console.error("[notif] falha ao notificar (ignorada):", err);
   }
-  await enviarEmailNotificacao(args);
+  if (!args.semEmail) await enviarEmailNotificacao(args);
 }
 
 /** Espelha a notificação por e-mail (best-effort; no-op se Resend não configurado). */
