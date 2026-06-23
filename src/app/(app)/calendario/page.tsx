@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { listarPostagensDoMes } from "@/lib/aprovacao/queries";
 import { corAprovacao, rotuloAprovacao } from "@/lib/aprovacao/status";
@@ -43,7 +43,15 @@ export default async function CalendarioPage({ searchParams }: { searchParams: P
 
   return (
     <div className="space-y-6">
-      <PageHeader titulo="Calendário editorial" descricao="Postagens programadas por data de publicação." />
+      <PageHeader
+        titulo="Calendário editorial"
+        descricao="Postagens programadas por data de publicação."
+        acao={
+          <Button asChild variant="outline" size="sm">
+            <a href="/api/calendario/ics" download><CalendarDays className="size-4" /> Exportar (.ics)</a>
+          </Button>
+        }
+      />
 
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-display text-lg font-semibold">{MESES[mes0]} {ano}</h2>

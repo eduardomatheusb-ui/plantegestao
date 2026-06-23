@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Minus, ArrowLeftRight, Pencil, Trash2, Check, Undo2, BarChart3, List, Receipt } from "lucide-react";
+import { Plus, Minus, ArrowLeftRight, Pencil, Trash2, Check, Undo2, BarChart3, List, Receipt, Download } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { requireModulo } from "@/lib/permissoes.server";
 import { listarLancamentosMes, resumoDoMes, serieUltimosMeses } from "@/lib/financeiro/queries";
@@ -125,12 +125,19 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <MonthNav ano={ano} mes={mes} />
-        <Button asChild variant="outline" size="sm">
-          <Link href={toggleViewHref}>
-            {view === "grafico" ? <List className="size-4" /> : <BarChart3 className="size-4" />}
-            {view === "grafico" ? "Ver lista" : "Ver gráfico"}
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {view !== "grafico" && lancamentos.length > 0 && (
+            <Button asChild variant="outline" size="sm">
+              <a href={`/api/financeiro/csv?ano=${ano}&mes=${mes}`} download><Download className="size-4" /> CSV</a>
+            </Button>
+          )}
+          <Button asChild variant="outline" size="sm">
+            <Link href={toggleViewHref}>
+              {view === "grafico" ? <List className="size-4" /> : <BarChart3 className="size-4" />}
+              {view === "grafico" ? "Ver lista" : "Ver gráfico"}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
