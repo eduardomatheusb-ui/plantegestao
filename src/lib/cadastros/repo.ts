@@ -20,9 +20,11 @@ function delegate(config: EntityConfig): Delegate {
   return d;
 }
 
+const POR_PAGINA = 25;
+
 export async function listar(
   config: EntityConfig,
-  opts: { q?: string; incluirArquivados?: boolean } = {},
+  opts: { q?: string; incluirArquivados?: boolean; page?: number; perPage?: number } = {},
 ) {
   const where: Record<string, unknown> = {};
 
@@ -39,11 +41,21 @@ export async function listar(
 
   const include = config.model === "categoria" ? { pai: { select: { nome: true } } } : undefined;
 
-  return delegate(config).findMany({
+  const perPage = opts.perPage ?? POR_PAGINA;
+  const d = delegate(config);
+  const total = await d.count({ where });
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const page = Math.min(Math.max(1, opts.page ?? 1), totalPages);
+
+  const rows = await d.findMany({
     where,
     orderBy: { [config.ordenarPor]: "asc" },
+    skip: (page - 1) * perPage,
+    take: perPage,
     ...(include ? { include } : {}),
   });
+
+  return { rows, total, page, perPage, totalPages };
 }
 
 export async function obter(config: EntityConfig, id: string) {

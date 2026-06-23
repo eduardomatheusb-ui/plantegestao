@@ -36,8 +36,10 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
 
   const q = typeof sp.q === "string" ? sp.q : undefined;
   const incluirArquivados = sp.arquivados === "1";
+  const pageNum = typeof sp.page === "string" ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
 
-  const rows = (await repo.listar(config, { q, incluirArquivados })) as Registro[];
+  const { rows: rowsRaw, total, page, totalPages } = await repo.listar(config, { q, incluirArquivados, page: pageNum });
+  const rows = rowsRaw as Registro[];
 
   const columns: Column<Registro>[] = [
     ...config.colunas.map((c) => ({
@@ -106,6 +108,16 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   if (!incluirArquivados) outroFiltro.set("arquivados", "1");
   const toggleHref = `/cadastros/${entidade}?${outroFiltro.toString()}`;
 
+  // Href de uma página mantendo busca/arquivados.
+  const pageHref = (p: number) => {
+    const sp2 = new URLSearchParams();
+    if (q) sp2.set("q", q);
+    if (incluirArquivados) sp2.set("arquivados", "1");
+    if (p > 1) sp2.set("page", String(p));
+    const qs = sp2.toString();
+    return `/cadastros/${entidade}${qs ? `?${qs}` : ""}`;
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -160,6 +172,22 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
           />
         }
       />
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-muted-foreground">
+            Página {page} de {totalPages} · {total} {total === 1 ? "registro" : "registros"}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" disabled={page <= 1} aria-disabled={page <= 1}>
+              <Link href={pageHref(page - 1)} className={page <= 1 ? "pointer-events-none opacity-50" : ""}>Anterior</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" disabled={page >= totalPages} aria-disabled={page >= totalPages}>
+              <Link href={pageHref(page + 1)} className={page >= totalPages ? "pointer-events-none opacity-50" : ""}>Próxima</Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
