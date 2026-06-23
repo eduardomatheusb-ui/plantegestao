@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { HistoryPanel } from "@/components/shared/history-panel";
+import { IaAssist } from "@/components/ia/ia-assist";
+import { gerarAtaIA } from "@/lib/ia/actions";
 
 function dataBR(d: Date) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(d);
@@ -61,6 +63,14 @@ export default async function ReuniaoDetalhePage({ params }: { params: Promise<{
       <Bloco titulo="Pauta" texto={r.pauta} />
       <Bloco titulo="Decisões" texto={r.decisoes} />
       <Bloco titulo="Próximos passos" texto={r.proximosPassos} />
+
+      <Card>
+        <CardHeader><CardTitle>Assistente de IA</CardTitle></CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-muted-foreground">Gere um rascunho de ata organizada a partir da pauta e decisões acima.</p>
+          <IaAssist acao={gerarAtaIA.bind(null, r.id)} rotulo="Gerar ata com IA" />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle>Histórico</CardTitle></CardHeader>

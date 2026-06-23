@@ -22,6 +22,8 @@ import { TimesheetPanel } from "@/components/shared/timesheet-panel";
 import { HistoryPanel } from "@/components/shared/history-panel";
 import { AprovacaoPanel } from "@/components/aprovacao/aprovacao-panel";
 import { baseUrl } from "@/lib/email";
+import { IaAssist } from "@/components/ia/ia-assist";
+import { gerarBriefingIA } from "@/lib/ia/actions";
 
 export default async function JobDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -187,12 +189,15 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
             <CardHeader>
               <CardTitle>Briefing</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               {job.briefing ? (
                 <p className="whitespace-pre-wrap text-sm text-foreground">{job.briefing}</p>
               ) : (
                 <p className="text-sm text-muted-foreground">Sem briefing.</p>
               )}
+              <div className="border-t border-border pt-3">
+                <IaAssist acao={gerarBriefingIA.bind(null, job.id)} rotulo="Gerar briefing com IA" />
+              </div>
             </CardContent>
           </Card>
 
