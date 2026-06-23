@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Users, AlarmClock, PauseCircle, CheckCircle2, Hourglass, PenLine, Wallet, TrendingUp } from "lucide-react";
+import { Users, AlarmClock, PauseCircle, CheckCircle2, Hourglass, PenLine, Wallet, TrendingUp, Bell, FileSignature, UserX } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { carregarIndicadores } from "@/lib/indicadores/queries";
+import { alertasGestao } from "@/lib/alertas/queries";
 import { CLIENTE_STATUS } from "@/lib/cadastros/registry";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,13 +33,64 @@ function Metrica({ icon: Icon, rotulo, valor, cor, sub }: { icon: typeof Users; 
 
 export default async function IndicadoresPage() {
   await requireModulo("relatorios", "VER");
-  const d = await carregarIndicadores();
+  const [d, alertas] = await Promise.all([carregarIndicadores(), alertasGestao()]);
   const maxCarga = Math.max(1, ...d.carga.map((c) => c.total));
   const maxStatus = Math.max(1, ...d.porStatus.map((s) => s.total));
+  const totalAlertas = alertas.contratosVencendo.length + alertas.clientesParados.length + alertas.jobsSemResponsavel.length;
 
   return (
     <div className="space-y-6">
       <PageHeader titulo="Indicadores" descricao="Visão de gestão: produção, prazos, aprovações e financeiro do mês." />
+
+      {/* Alertas de gestão */}
+      {totalAlertas > 0 && (
+        <Card className="border-amber-300 dark:border-amber-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Bell className="size-4 text-amber-600" aria-hidden="true" /> Alertas ({totalAlertas})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <p className="flex items-center gap-1.5 text-sm font-medium"><FileSignature className="size-4 text-amber-600" aria-hidden="true" /> Contratos vencendo ({alertas.contratosVencendo.length})</p>
+              {alertas.contratosVencendo.length === 0 ? (
+                <p className="mt-1 text-xs text-muted-foreground">Nada nos próximos {alertas.diasContrato} dias.</p>
+              ) : (
+                <ul className="mt-1 space-y-1 text-sm">
+                  {alertas.contratosVencendo.slice(0, 5).map((c) => (
+                    <li key={c.id}><Link href={`/contratos/${c.id}`} className="hover:underline">{c.cliente}</Link> <span className="text-xs text-muted-foreground">· {dataBR(c.dataFim)}</span></li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div>
+              <p className="flex items-center gap-1.5 text-sm font-medium"><PauseCircle className="size-4 text-amber-600" aria-hidden="true" /> Clientes parados ({alertas.clientesParados.length})</p>
+              {alertas.clientesParados.length === 0 ? (
+                <p className="mt-1 text-xs text-muted-foreground">Todos com atividade recente.</p>
+              ) : (
+                <ul className="mt-1 space-y-1 text-sm">
+                  {alertas.clientesParados.slice(0, 5).map((c) => (
+                    <li key={c.id}><Link href={`/cadastros/clientes/${c.id}`} className="hover:underline">{c.nome}</Link></li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-1 text-[11px] text-muted-foreground">Sem job há +{alertas.diasParado} dias.</p>
+            </div>
+            <div>
+              <p className="flex items-center gap-1.5 text-sm font-medium"><UserX className="size-4 text-amber-600" aria-hidden="true" /> Jobs sem responsável ({alertas.jobsSemResponsavel.length})</p>
+              {alertas.jobsSemResponsavel.length === 0 ? (
+                <p className="mt-1 text-xs text-muted-foreground">Todos com responsável.</p>
+              ) : (
+                <ul className="mt-1 space-y-1 text-sm">
+                  {alertas.jobsSemResponsavel.slice(0, 5).map((j) => (
+                    <li key={j.id}><Link href={`/jobs/${j.id}`} className="hover:underline">#{j.numero} {j.titulo}</Link> <span className="text-xs text-muted-foreground">· {j.cliente}</span></li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Métricas-chave */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
