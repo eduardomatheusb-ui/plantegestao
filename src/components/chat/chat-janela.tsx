@@ -54,6 +54,7 @@ export function ChatJanela({
   React.useEffect(() => {
     let vivo = true;
     const tick = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
       try {
         const novas = await buscarMensagens(canalAtual);
         if (!vivo) return;

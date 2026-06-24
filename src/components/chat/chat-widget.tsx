@@ -9,8 +9,8 @@ import { iniciais } from "@/lib/format";
 import { recarregarSeStale } from "@/lib/stale-action";
 import { cn } from "@/lib/utils";
 
-const POLL_BADGE = 10000;
-const POLL_MSGS = 4000;
+const POLL_BADGE = 45000;
+const POLL_MSGS = 5000;
 
 function horario(d: Date) {
   return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(d));
@@ -29,10 +29,11 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
 
   const conversaAtual = conversas.find((c) => c.canal === canal);
 
-  // Badge sempre vivo (mesmo fechado).
+  // Badge: atualiza enquanto a aba está visível (pausa em segundo plano).
   React.useEffect(() => {
     let vivo = true;
     const tick = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
       try { const n = await buscarChatNaoLidas(); if (vivo) setNaoLidas(n); }
       catch { /* silencioso */ }
     };
@@ -54,6 +55,7 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
     if (!aberto || view !== "conversa" || !canal) return;
     let vivo = true;
     const tick = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
       try {
         const novas = await buscarMensagens(canal);
         if (!vivo) return;
