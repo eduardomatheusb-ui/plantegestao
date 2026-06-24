@@ -9,11 +9,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Runtime: DATABASE_URL = endpoint COM POOL do Neon (host "-pooler" +
-  // pgbouncer=true&connection_limit=1) — essencial em serverless.
-  // Migrações: DIRECT_URL = endpoint direto (sem pool).
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // Produção (Netlify): DATABASE_URL = endpoint COM POOL do Neon (host
+  // "-pooler" + pgbouncer=true&connection_limit=1) — essencial em serverless.
+  // Migrações rodam LOCALMENTE, onde o .env aponta DATABASE_URL para o
+  // endpoint DIRETO (sem pool). Por isso não declaramos directUrl: o cliente
+  // em produção depende só de DATABASE_URL e não quebra se faltar outra var.
+  url = env("DATABASE_URL")
 }
 
 // ─────────────────────────── Fase 1 — Fundação ───────────────────────────
