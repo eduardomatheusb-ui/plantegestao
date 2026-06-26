@@ -24,7 +24,9 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
+  // Logout por inatividade: sessão expira após 4h parada; renova sozinha
+  // enquanto a pessoa usa (a cada navegação, no máximo 1x a cada 15min).
+  session: { strategy: "jwt", maxAge: 4 * 60 * 60, updateAge: 15 * 60 },
   pages: { signIn: "/login" },
   trustHost: true,
   providers: [
