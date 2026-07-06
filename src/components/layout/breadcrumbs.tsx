@@ -3,7 +3,31 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, HelpCircle } from "lucide-react";
+
+// Primeira parte da rota → âncora da seção correspondente no guia (/ajuda).
+const AJUDA_ANCORA: Record<string, string> = {
+  chat: "3-chat-da-equipe",
+  crm: "4-comercial--crm--funil-de-leads",
+  projetos: "5-projetos",
+  jobs: "6-jobs",
+  calendario: "8-calendário-editorial",
+  propostas: "9-propostas",
+  midia: "10-mídia-pi",
+  trafego: "11-tráfego--anúncios",
+  producao: "12-produção-e-serviçosos",
+  os: "12-produção-e-serviçosos",
+  reunioes: "13-atas-de-reunião",
+  financeiro: "14-financeiro",
+  contratos: "15-contratos-e-saúde-financeira",
+  "saude-financeira": "15-contratos-e-saúde-financeira",
+  indicadores: "17-indicadores-e-alertas",
+  relatorios: "18-relatórios",
+  clientes: "19-clientes",
+  "clientes-incompletos": "19-clientes",
+  cadastros: "20-outros-cadastros",
+  configuracoes: "21-administração",
+};
 
 const SECAO: Record<string, string> = {
   chat: "Chat",
@@ -64,6 +88,7 @@ export function Breadcrumbs() {
   if (pathname === "/dashboard" || pathname === "/") return null;
 
   const segs = pathname.split("/").filter(Boolean);
+  const ancora = AJUDA_ANCORA[segs[0] ?? ""];
 
   const crumbs = segs.map((seg, i) => {
     const ultimo = i === segs.length - 1;
@@ -99,6 +124,17 @@ export function Breadcrumbs() {
           </React.Fragment>
         ))}
       </nav>
+
+      {ancora && (
+        <Link
+          href={`/ajuda#${ancora}`}
+          title="Ajuda desta tela"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <HelpCircle className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Ajuda</span>
+        </Link>
+      )}
     </div>
   );
 }

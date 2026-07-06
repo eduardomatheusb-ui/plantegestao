@@ -2,11 +2,22 @@ import fs from "node:fs";
 import path from "node:path";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
 import { requireUser } from "@/lib/rbac";
+import { acessoAtual } from "@/lib/permissoes.server";
+import { podeModulo, type Capacidades, type ModuloKey } from "@/lib/permissoes";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = { title: "Ajuda — Guia do TREM" };
+
+// Seção (nº do "## N.") → módulo que controla a visibilidade. null = sempre visível.
+const SECAO_MODULO: Record<number, ModuloKey | null> = {
+  1: null, 2: null, 3: null, 4: "propostas", 5: "projetos", 6: "jobs", 7: "jobs",
+  8: "jobs", 9: "propostas", 10: "midia", 11: "midia", 12: "producao", 13: "projetos",
+  14: "financeiro", 15: "financeiro", 16: "financeiro", 17: "relatorios", 18: "relatorios",
+  19: "cadastros", 20: "cadastros", 21: "admin", 22: "cadastros", 23: null, 24: null,
+};
 
 function lerGuia(): string {
   try {
@@ -16,9 +27,34 @@ function lerGuia(): string {
   }
 }
 
+/** Esconde as seções (e as linhas do sumário) de módulos sem acesso do usuário. */
+function filtrarGuia(md: string, caps: Capacidades): string {
+  const permitido = (n: number) => {
+    const m = SECAO_MODULO[n];
+    return !m || podeModulo(caps, m, "VER");
+  };
+  const out: string[] = [];
+  let pulando = false;
+  for (const l of md.split("\n")) {
+    const numHeading = l.match(/^##\s+(\d+)\.\s/);
+    if (numHeading) {
+      pulando = !permitido(Number(numHeading[1]));
+      if (!pulando) out.push(l);
+      continue;
+    }
+    if (l.startsWith("## ")) { pulando = false; out.push(l); continue; } // ## não numerado (Sumário)
+    if (pulando) continue;
+    const tocLinha = l.match(/^(\d+)\.\s+\[.*\]\(#.*\)/);
+    if (tocLinha && !permitido(Number(tocLinha[1]))) continue;
+    out.push(l);
+  }
+  return out.join("\n");
+}
+
 export default async function AjudaPage() {
   await requireUser();
-  const guia = lerGuia();
+  const acesso = await acessoAtual();
+  const guia = filtrarGuia(lerGuia(), acesso.caps);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -27,11 +63,11 @@ export default async function AjudaPage() {
         <CardContent className="pt-6">
           <article
             className="prose prose-neutral max-w-none dark:prose-invert
-              prose-headings:font-display prose-h1:text-2xl prose-h2:mt-8 prose-h2:border-b prose-h2:border-border prose-h2:pb-1
+              prose-headings:font-display prose-h1:text-2xl prose-h2:mt-8 prose-h2:scroll-mt-24 prose-h2:border-b prose-h2:border-border prose-h2:pb-1
               prose-a:text-foreground prose-a:underline prose-strong:text-foreground
               prose-table:text-sm prose-th:text-left"
           >
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{guia}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>{guia}</ReactMarkdown>
           </article>
         </CardContent>
       </Card>
