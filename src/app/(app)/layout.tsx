@@ -18,6 +18,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen bg-background">
+      <a
+        href="#conteudo"
+        className="sr-only z-50 rounded-md bg-brand-yellow px-4 py-2 font-semibold text-ink-900 focus:not-sr-only focus:absolute focus:left-4 focus:top-4"
+      >
+        Pular para o conteúdo
+      </a>
       <Sidebar caps={acesso.caps} chatNaoLidas={chatNaoLidas} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
@@ -30,7 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           recentes={recentes}
         />
         <Breadcrumbs />
-        <main className="flex-1 p-4 lg:p-8">{children}</main>
+        <main id="conteudo" tabIndex={-1} className="flex-1 p-4 focus:outline-none lg:p-8">{children}</main>
       </div>
       <ChatWidget meuId={user.id} naoLidasIniciais={chatNaoLidas} />
     </div>

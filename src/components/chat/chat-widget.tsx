@@ -188,7 +188,7 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
             </div>
           ) : (
             <>
-              <div className="flex-1 space-y-1.5 overflow-y-auto px-3 py-3">
+              <div role="log" aria-live="polite" aria-relevant="additions" aria-label="Mensagens da conversa" className="flex-1 space-y-1.5 overflow-y-auto px-3 py-3">
                 {mensagens.length === 0 ? (
                   <p className="py-10 text-center text-sm text-muted-foreground">Sem mensagens ainda. Manda a primeira! 👋</p>
                 ) : (
