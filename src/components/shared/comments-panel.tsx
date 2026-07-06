@@ -7,15 +7,21 @@ import { InlineAction } from "./inline-action";
 import { iniciais } from "@/lib/format";
 import { formatDate } from "@/lib/utils";
 
-/** Destaca menções @Nome no texto do comentário. */
+/** Destaca menções @Nome e transforma links (http/https) em cliques. */
 function renderTexto(texto: string) {
-  return texto.split(/(@[\p{L}]+)/u).map((p, i) =>
-    /^@[\p{L}]+$/u.test(p) ? (
-      <span key={i} className="rounded bg-brand-yellow/25 px-0.5 font-medium text-foreground">{p}</span>
-    ) : (
-      <span key={i}>{p}</span>
-    ),
-  );
+  return texto.split(/(https?:\/\/[^\s]+|@[\p{L}]+)/u).map((p, i) => {
+    if (/^https?:\/\//.test(p)) {
+      return (
+        <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline underline-offset-2 hover:opacity-80">
+          {p}
+        </a>
+      );
+    }
+    if (/^@[\p{L}]+$/u.test(p)) {
+      return <span key={i} className="rounded bg-brand-yellow/25 px-0.5 font-medium text-foreground">{p}</span>;
+    }
+    return <span key={i}>{p}</span>;
+  });
 }
 
 export async function CommentsPanel({
@@ -71,7 +77,7 @@ export async function CommentsPanel({
                       )}
                     </div>
                   </div>
-                  <p className="whitespace-pre-wrap text-sm text-foreground">{renderTexto(c.texto)}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm text-foreground">{renderTexto(c.texto)}</p>
                 </div>
               </li>
             );
