@@ -1,6 +1,34 @@
 import "server-only";
 import { db } from "@/lib/db";
 
+/** Clientes ativos com dados faltando (contato ou brand kit). */
+export async function clientesIncompletos() {
+  const cs = await db.cliente.findMany({
+    where: { arquivado: false },
+    orderBy: { nome: "asc" },
+    select: {
+      id: true, nome: true, nomeFantasia: true, status: true,
+      telefone: true, email: true, contatoNome: true,
+      escopo: true, tomDeVoz: true, redesSociais: true, documento: true,
+    },
+  });
+  const vazio = (v: string | null) => !v || !v.trim();
+  return cs
+    .map((c) => {
+      const faltando: string[] = [];
+      if (vazio(c.telefone) && vazio(c.email)) faltando.push("contato (tel/e-mail)");
+      else {
+        if (vazio(c.telefone)) faltando.push("telefone");
+        if (vazio(c.email)) faltando.push("e-mail");
+      }
+      if (vazio(c.contatoNome)) faltando.push("nome do contato");
+      if (vazio(c.documento)) faltando.push("CNPJ/CPF");
+      if (vazio(c.escopo) && vazio(c.tomDeVoz) && vazio(c.redesSociais)) faltando.push("brand kit");
+      return { id: c.id, nome: c.nomeFantasia || c.nome, status: c.status, faltando };
+    })
+    .filter((c) => c.faltando.length > 0);
+}
+
 /** Visão 360 de um cliente: dados, brand kit, trabalho em andamento e resumo. */
 export async function obterClienteVisao(id: string) {
   const c = await db.cliente.findUnique({

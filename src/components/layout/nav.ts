@@ -18,6 +18,7 @@ import {
   FileSignature,
   Users,
   Contact,
+  ClipboardList,
   Truck,
   Hammer,
   Radio,
@@ -96,6 +97,7 @@ export const NAV: NavGroup[] = [
     titulo: "Cadastros",
     itens: [
       { label: "Clientes", href: "/cadastros/clientes", icon: Users, modulo: "cadastros", disponivel: true },
+      { label: "Cadastros incompletos", href: "/clientes-incompletos", icon: ClipboardList, modulo: "cadastros", disponivel: true },
       { label: "Fornecedores", href: "/cadastros/fornecedores", icon: Truck, modulo: "cadastros", disponivel: true },
       { label: "Colaboradores", href: "/cadastros/colaboradores", icon: Contact, modulo: "cadastros", disponivel: true },
       { label: "Prestadores", href: "/cadastros/prestadores", icon: Hammer, modulo: "cadastros", disponivel: true },
