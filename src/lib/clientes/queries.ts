@@ -29,6 +29,54 @@ export async function clientesIncompletos() {
     .filter((c) => c.faltando.length > 0);
 }
 
+/** Relatório mensal do cliente (postagens, jobs entregues, tráfego) para PDF. */
+export async function relatorioCliente(id: string, ano: number, mes: number) {
+  const inicio = new Date(ano, mes - 1, 1);
+  const fim = new Date(ano, mes, 1);
+
+  const cliente = await db.cliente.findUnique({
+    where: { id },
+    select: { id: true, nome: true, nomeFantasia: true, logoUrl: true },
+  });
+  if (!cliente) return null;
+
+  const [postagens, entregues, campanhas] = await Promise.all([
+    db.job.findMany({
+      where: { clienteId: id, prazoPostagem: { gte: inicio, lt: fim } },
+      orderBy: { prazoPostagem: "asc" },
+      select: { id: true, titulo: true, prazoPostagem: true, formatos: true, aprovacaoStatus: true },
+    }),
+    db.job.findMany({
+      where: { clienteId: id, concluidoEm: { gte: inicio, lt: fim } },
+      orderBy: { concluidoEm: "asc" },
+      select: { id: true, numero: true, titulo: true, tipo: true, concluidoEm: true },
+    }),
+    db.campanha.findMany({
+      where: { clienteId: id, resultados: { some: { data: { gte: inicio, lt: fim } } } },
+      select: {
+        id: true, nome: true, plataforma: true,
+        resultados: { where: { data: { gte: inicio, lt: fim } }, select: { investido: true, alcance: true, cliques: true, conversoes: true, leads: true } },
+      },
+    }),
+  ]);
+
+  const trafego = campanhas.map((c) => {
+    const t = c.resultados.reduce(
+      (a, r) => ({
+        investido: a.investido + Number(r.investido),
+        alcance: a.alcance + r.alcance,
+        cliques: a.cliques + r.cliques,
+        conversoes: a.conversoes + r.conversoes,
+        leads: a.leads + r.leads,
+      }),
+      { investido: 0, alcance: 0, cliques: 0, conversoes: 0, leads: 0 },
+    );
+    return { id: c.id, nome: c.nome, plataforma: c.plataforma, ...t, cpl: t.leads > 0 ? t.investido / t.leads : null };
+  });
+
+  return { cliente, postagens, entregues, trafego, ano, mes };
+}
+
 /** Visão 360 de um cliente: dados, brand kit, trabalho em andamento e resumo. */
 export async function obterClienteVisao(id: string) {
   const c = await db.cliente.findUnique({

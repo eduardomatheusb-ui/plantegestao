@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Plus, ListChecks, FolderKanban, CalendarDays, Hourglass, Repeat, ExternalLink } from "lucide-react";
+import { Pencil, Plus, ListChecks, FolderKanban, CalendarDays, Hourglass, Repeat, ExternalLink, FileText } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { obterClienteVisao } from "@/lib/clientes/queries";
 import { listarOnboarding } from "@/lib/onboarding/queries";
@@ -75,6 +75,11 @@ export default async function ClienteVisaoPage({ params }: { params: Promise<{ i
         acoes={
           <>
             <Button asChild variant="outline" size="sm"><Link href={`/cadastros/clientes/${id}`}><Pencil className="size-4" /> Editar cadastro</Link></Button>
+            <Button asChild variant="outline" size="sm">
+              <a href={`/imprimir/cliente/${id}?ano=${new Date().getFullYear()}&mes=${new Date().getMonth() + 1}`} target="_blank" rel="noopener noreferrer">
+                <FileText className="size-4" /> Relatório do mês
+              </a>
+            </Button>
             <Button asChild size="sm"><Link href={`/jobs/novo?cliente=${id}`}><Plus className="size-4" /> Novo job</Link></Button>
           </>
         }
