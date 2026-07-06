@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, ShieldCheck, Lock } from "lucide-react";
+import { LogOut, ShieldCheck, Lock, Accessibility } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +45,12 @@ export function UserMenu({
           <Link href="/configuracoes/seguranca">
             <Lock className="size-4" />
             Minha conta (senha e 2FA)
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/configuracoes/acessibilidade">
+            <Accessibility className="size-4" />
+            Acessibilidade
           </Link>
         </DropdownMenuItem>
         {podeAdmin && (

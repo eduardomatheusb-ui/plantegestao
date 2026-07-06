@@ -121,3 +121,40 @@
 .font-display {
   font-family: var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif;
 }
+
+/* ── Preferências de acessibilidade (Painel por usuário) ─────────────
+   Aplicadas como classe no <html> (script inline no layout + painel). */
+
+/* Texto maior: base 16px → 18px; escala tudo que usa rem */
+html.a11y-texto-grande {
+  font-size: 112.5%;
+}
+
+/* Mais espaçamento (leitura/dislexia) */
+html.a11y-espacado body {
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  word-spacing: 0.06em;
+}
+
+/* Reduzir movimento (independente da preferência do SO) */
+html.a11y-sem-movimento *,
+html.a11y-sem-movimento *::before,
+html.a11y-sem-movimento *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Alto contraste: escurece texto secundário e bordas */
+html.a11y-alto-contraste {
+  --muted-foreground: #3f3f46;
+  --border: #9ca3af;
+  --input: #9ca3af;
+}
+html.dark.a11y-alto-contraste {
+  --muted-foreground: #e4e4e7;
+  --border: #71717a;
+  --input: #71717a;
+}

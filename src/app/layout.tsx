@@ -23,6 +23,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          // Aplica as preferências de acessibilidade antes da 1ª pintura (evita flash).
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var p=JSON.parse(localStorage.getItem('plante-a11y')||'{}');var c=document.documentElement.classList;if(p.texto)c.add('a11y-texto-grande');if(p.espacado)c.add('a11y-espacado');if(p.movimento)c.add('a11y-sem-movimento');if(p.contraste)c.add('a11y-alto-contraste');}catch(e){}})();",
+          }}
+        />
+      </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
