@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Type, AlignJustify, Snowflake, Contrast } from "lucide-react";
+import { Type, AlignJustify, Pause, Contrast } from "lucide-react";
 
 type Prefs = { texto: boolean; espacado: boolean; movimento: boolean; contraste: boolean };
 const PADRAO: Prefs = { texto: false, espacado: false, movimento: false, contraste: false };
@@ -17,7 +17,7 @@ const CLASSES: Record<keyof Prefs, string> = {
 const OPCOES: { chave: keyof Prefs; titulo: string; descricao: string; icon: typeof Type }[] = [
   { chave: "texto", titulo: "Texto maior", descricao: "Aumenta o tamanho das letras em todo o sistema.", icon: Type },
   { chave: "espacado", titulo: "Mais espaçamento", descricao: "Mais espaço entre linhas e letras — ajuda na leitura.", icon: AlignJustify },
-  { chave: "movimento", titulo: "Reduzir movimento", descricao: "Desliga animações e transições.", icon: Snowflake },
+  { chave: "movimento", titulo: "Reduzir movimento", descricao: "Desliga animações e transições.", icon: Pause },
   { chave: "contraste", titulo: "Alto contraste", descricao: "Deixa textos e bordas mais escuros e nítidos.", icon: Contrast },
 ];
 
