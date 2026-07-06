@@ -61,7 +61,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
   const sacadoDe = (l: Lanc) =>
     l.tipo === "TRANSFERENCIA"
       ? `${l.conta?.nome ?? "?"} → ${l.contaDestino?.nome ?? "?"}`
-      : l.cliente?.nome ?? l.fornecedor?.nome ?? "—";
+      : l.cliente?.nome ?? l.fornecedor?.nome ?? l.prestador?.nome ?? l.colaborador?.nome ?? "—";
   const relacionadoDe = (l: Lanc) =>
     l.projeto ? `Proj #${l.projeto.numero}` : l.job ? `Job #${l.job.numero}` : "—";
   const acoesDe = (l: Lanc) => (

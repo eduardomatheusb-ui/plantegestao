@@ -30,6 +30,13 @@ function addMonths(d: Date, n: number): Date {
   x.setMonth(x.getMonth() + n);
   return x;
 }
+/** Beneficiário de uma despesa vem como "tipo:id" (fornecedor|prestador|colaborador). */
+function parseBeneficiario(v: FormDataEntryValue | null): { tipo: string; id: string } | null {
+  const s = v?.toString().trim();
+  if (!s || !s.includes(":")) return null;
+  const [tipo, id] = s.split(":", 2);
+  return id ? { tipo, id } : null;
+}
 
 export async function salvarLancamento(
   id: string | null,
@@ -65,6 +72,7 @@ export async function salvarLancamento(
     }
 
     const quitar = formData.get("quitarAgora") === "on";
+    const benef = tipo === "DESPESA" ? parseBeneficiario(formData.get("beneficiario")) : null;
     const base = {
       tipo,
       titulo: titulo!,
@@ -83,11 +91,12 @@ export async function salvarLancamento(
       jobId: txt(formData.get("jobId")),
       centroCustoId: txt(formData.get("centroCustoId")),
       contaId: txt(formData.get("contaId")),
-      // Beneficiário: a quem o pagamento se destina (só faz sentido em despesa).
-      colaboradorId: tipo === "DESPESA" ? txt(formData.get("colaboradorId")) : null,
       // Por tipo:
       clienteId: tipo === "RECEITA" ? txt(formData.get("sacadoId")) : null,
-      fornecedorId: tipo === "DESPESA" ? txt(formData.get("sacadoId")) : null,
+      // Despesa: beneficiário unificado (fornecedor | prestador | colaborador).
+      fornecedorId: benef?.tipo === "fornecedor" ? benef.id : null,
+      prestadorId: benef?.tipo === "prestador" ? benef.id : null,
+      colaboradorId: benef?.tipo === "colaborador" ? benef.id : null,
       categoriaId: tipo === "TRANSFERENCIA" ? null : txt(formData.get("categoriaId")),
       contaDestinoId: tipo === "TRANSFERENCIA" ? txt(formData.get("contaDestinoId")) : null,
       status: (quitar ? "QUITADO" : "EM_ABERTO") as "QUITADO" | "EM_ABERTO",

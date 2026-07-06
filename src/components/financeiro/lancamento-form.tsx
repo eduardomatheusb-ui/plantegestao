@@ -33,7 +33,7 @@ export type LancamentoInicial = Partial<{
   projetoId: string;
   jobId: string;
   centroCustoId: string;
-  colaboradorId: string;
+  beneficiario: string; // "tipo:id" — fornecedor|prestador|colaborador (despesa)
   contaId: string;
   contaDestinoId: string;
   quitado: boolean;
@@ -57,6 +57,8 @@ export function LancamentoForm({
   contas,
   projetos,
   jobs,
+  fornecedores = [],
+  prestadores = [],
   colaboradores = [],
   cancelHref,
 }: {
@@ -70,6 +72,8 @@ export function LancamentoForm({
   contas: Opt[];
   projetos: ProjetoOpt[];
   jobs: JobOpt[];
+  fornecedores?: Opt[];
+  prestadores?: Opt[];
   colaboradores?: Opt[];
   cancelHref: string;
 }) {
@@ -140,6 +144,38 @@ export function LancamentoForm({
                 {contas.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
               </select>
               {err("contaDestinoId") && <p className="text-xs text-destructive">{err("contaDestinoId")}</p>}
+            </div>
+          </>
+        ) : tipo === "DESPESA" ? (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="beneficiario">Para quem é o pagamento</Label>
+              <select id="beneficiario" name="beneficiario" className={sel} defaultValue={inicial.beneficiario ?? ""}>
+                <option value="">— (nenhum)</option>
+                {fornecedores.length > 0 && (
+                  <optgroup label="Fornecedores">
+                    {fornecedores.map((f) => (<option key={f.id} value={`fornecedor:${f.id}`}>{f.nome}</option>))}
+                  </optgroup>
+                )}
+                {prestadores.length > 0 && (
+                  <optgroup label="Prestadores">
+                    {prestadores.map((p) => (<option key={p.id} value={`prestador:${p.id}`}>{p.nome}</option>))}
+                  </optgroup>
+                )}
+                {colaboradores.length > 0 && (
+                  <optgroup label="Colaboradores">
+                    {colaboradores.map((c) => (<option key={c.id} value={`colaborador:${c.id}`}>{c.nome}</option>))}
+                  </optgroup>
+                )}
+              </select>
+              <p className="text-xs text-muted-foreground">Fornecedor, prestador ou colaborador que vai receber.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="categoriaId">Categoria</Label>
+              <select id="categoriaId" name="categoriaId" className={sel} defaultValue={inicial.categoriaId ?? ""}>
+                <option value="">— (sem categoria)</option>
+                {categorias.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+              </select>
             </div>
           </>
         ) : (
@@ -275,16 +311,6 @@ export function LancamentoForm({
               {centros.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
             </select>
           </div>
-          {tipo === "DESPESA" && (
-            <div className="space-y-2">
-              <Label htmlFor="colaboradorId">Beneficiário (colaborador)</Label>
-              <select id="colaboradorId" name="colaboradorId" className={sel} defaultValue={inicial.colaboradorId ?? ""}>
-                <option value="">— (nenhum)</option>
-                {colaboradores.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
-              </select>
-              <p className="text-xs text-muted-foreground">A quem o pagamento se destina.</p>
-            </div>
-          )}
           <div className="space-y-2">
             <Label htmlFor="docNf">Documento / NF</Label>
             <Input id="docNf" name="docNf" defaultValue={inicial.docNf ?? ""} />

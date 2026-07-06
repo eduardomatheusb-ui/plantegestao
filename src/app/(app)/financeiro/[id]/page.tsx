@@ -67,8 +67,11 @@ export default async function LancamentoDetalhePage({ params }: { params: Promis
           <Info rotulo="Tipo" valor={TIPO_LABEL[l.tipo]} />
           <Info rotulo="Valor" valor={<span className="tabular-nums">{formatBRL(valor)}</span>} />
           <Info rotulo="Categoria" valor={l.categoria?.nome ?? "—"} />
-          <Info rotulo={l.tipo === "DESPESA" ? "Fornecedor" : "Cliente"} valor={l.cliente?.nome ?? l.fornecedor?.nome ?? "—"} />
-          {l.tipo === "DESPESA" && <Info rotulo="Beneficiário" valor={l.colaborador?.nome ?? "—"} />}
+          {l.tipo === "DESPESA" ? (
+            <Info rotulo="Para quem" valor={l.fornecedor?.nome ?? l.prestador?.nome ?? l.colaborador?.nome ?? "—"} />
+          ) : (
+            <Info rotulo="Cliente" valor={l.cliente?.nome ?? "—"} />
+          )}
           <Info rotulo="Vencimento" valor={formatDate(l.dataVencimento)} />
           <Info rotulo="Competência" valor={formatDate(l.dataCompetencia)} />
           <Info rotulo="Pagamento" valor={formatDate(l.dataPagamento)} />

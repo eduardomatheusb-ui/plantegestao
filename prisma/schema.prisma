@@ -467,6 +467,8 @@ model Prestador {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
+  lancamentos  Lancamento[]
+
   @@index([arquivado])
 }
 
@@ -887,9 +889,10 @@ model Lancamento {
   tipo   LancamentoTipo
   titulo String
 
-  // Sacado / Cedente: cliente (receita) ou fornecedor (despesa)
+  // Sacado / Cedente: cliente (receita) ou fornecedor/prestador/colaborador (despesa)
   clienteId    String?
   fornecedorId String?
+  prestadorId  String?
 
   categoriaId    String?
   projetoId      String?
@@ -925,6 +928,7 @@ model Lancamento {
 
   cliente      Cliente?       @relation(fields: [clienteId], references: [id], onDelete: SetNull)
   fornecedor   Fornecedor?    @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
+  prestador    Prestador?     @relation(fields: [prestadorId], references: [id], onDelete: SetNull)
   categoria    Categoria?     @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   projeto      Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
   job          Job?           @relation(fields: [jobId], references: [id], onDelete: SetNull)

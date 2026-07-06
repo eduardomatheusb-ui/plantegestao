@@ -11,6 +11,8 @@ export async function listarLancamentosMes(ano: number, mes: number) {
     include: {
       cliente: { select: { id: true, nome: true } },
       fornecedor: { select: { id: true, nome: true } },
+      prestador: { select: { id: true, nome: true } },
+      colaborador: { select: { id: true, nome: true } },
       categoria: { select: { id: true, nome: true } },
       projeto: { select: { id: true, numero: true, nome: true } },
       job: { select: { id: true, numero: true, titulo: true } },
@@ -77,6 +79,7 @@ export async function obterLancamentoDetalhe(id: string) {
       conta: { select: { id: true, nome: true } },
       contaDestino: { select: { id: true, nome: true } },
       colaborador: { select: { id: true, nome: true } },
+      prestador: { select: { id: true, nome: true } },
     },
   });
 }
