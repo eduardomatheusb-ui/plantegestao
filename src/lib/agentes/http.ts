@@ -19,6 +19,8 @@ export type AgenteGraficaResultado = {
   json?: unknown;
   error?: string;
   status?: number;
+  queued?: boolean;
+  requestId?: string;
   raw?: unknown;
 };
 
@@ -58,6 +60,11 @@ function respostaParaTexto(data: unknown): string {
   return JSON.stringify(data, null, 2);
 }
 
+function criarId(prefixo: string): string {
+  const rand = Math.random().toString(36).slice(2, 10);
+  return `${prefixo}-${Date.now().toString(36)}-${rand}`;
+}
+
 export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGraficaResultado> {
   if (!agenteGraficaConfigurado()) {
     return {
@@ -67,6 +74,7 @@ export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGr
 
   const prompt = montarPromptGrafica(dados);
   const apiKey = normalizarToken(process.env.AGENTE_API_KEY!);
+  const requestId = criarId("grafica");
 
   try {
     const res = await fetch(process.env.AGENTE_API_URL!, {
@@ -74,8 +82,13 @@ export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGr
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
+        "Idempotency-Key": requestId,
       },
       body: JSON.stringify({
+        conversation_key: `plante-${dados.produto || "grafica"}`
+          .toLowerCase()
+          .replace(/[^a-z0-9-]+/g, "-")
+          .slice(0, 80),
         input: prompt,
       }),
       cache: "no-store",
@@ -93,17 +106,30 @@ export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGr
     if (!res.ok) {
       const erro =
         res.status === 401
-          ? "O agente recusou a autenticação. Confira se AGENTE_API_KEY é o token puro, sem aspas, sem espaços e sem repetir 'Bearer'."
+          ? "O agente recusou a autenticação. Gere um ChatGPT Workspace Agent access token com o escopo Workspace Agents e salve em AGENTE_API_KEY."
           : "O agente não respondeu corretamente.";
-      return { error: erro, status: res.status, raw: data };
+      return { error: erro, status: res.status, requestId, raw: data };
+    }
+
+    if (res.status === 202) {
+      return {
+        queued: true,
+        status: res.status,
+        requestId,
+        texto:
+          "Solicitação enviada ao Workspace Agent. A API confirmou o recebimento, mas esse tipo de agente roda de forma assíncrona e não devolve a comparação pronta nesta tela. Verifique o destino configurado no agente ou use uma integração síncrona para exibir a resposta aqui.",
+        json: data,
+      };
     }
 
     return {
       texto: respostaParaTexto(data),
+      status: res.status,
+      requestId,
       json: data,
     };
   } catch (err) {
     const mensagem = err instanceof Error ? err.message : "Falha de rede com o agente.";
-    return { error: mensagem };
+    return { error: mensagem, requestId };
   }
 }
