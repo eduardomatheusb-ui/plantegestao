@@ -157,7 +157,10 @@ export async function estornarLancamento(id: string) {
 
 export async function excluirLancamento(id: string) {
   const user = await assertPapel("SOCIO_DIRETOR");
+  const l = await db.lancamento.findUnique({ where: { id }, select: { dataCompetencia: true } });
   await db.lancamento.delete({ where: { id } });
   await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "excluiu o lançamento" });
   revalidatePath("/financeiro");
+  const d = l?.dataCompetencia ?? new Date();
+  redirect(`/financeiro?ano=${d.getFullYear()}&mes=${d.getMonth() + 1}`);
 }
