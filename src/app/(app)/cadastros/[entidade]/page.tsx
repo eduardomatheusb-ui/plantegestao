@@ -61,9 +61,9 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
         return (
           <div className="flex items-center justify-end gap-1">
             <Button asChild variant="ghost" size="sm">
-              <Link href={`/cadastros/${entidade}/${row.id}`}>
+              <Link href={entidade === "clientes" ? `/clientes/${row.id}` : `/cadastros/${entidade}/${row.id}`}>
                 <Pencil className="size-4" />
-                Editar
+                {entidade === "clientes" ? "Abrir" : "Editar"}
               </Link>
             </Button>
 

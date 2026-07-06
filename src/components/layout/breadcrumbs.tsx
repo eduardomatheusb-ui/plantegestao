@@ -19,6 +19,7 @@ const SECAO: Record<string, string> = {
   trafego: "Tráfego / anúncios",
   producao: "Produção",
   os: "Serviços / OS",
+  clientes: "Clientes",
   reunioes: "Atas de reunião",
   financeiro: "Financeiro",
   relatorios: "Relatórios",
@@ -51,7 +52,7 @@ const SUBPAGINA: Record<string, string> = {
 };
 
 // Seções sem página índice própria (não viram link).
-const SEM_INDICE = new Set(["cadastros"]);
+const SEM_INDICE = new Set(["cadastros", "clientes"]);
 
 /** Barra de navegação: botão "Voltar" + trilha (seção › subpágina › …). */
 export function Breadcrumbs() {
