@@ -10,14 +10,12 @@ import { rotuloTipoJob } from "@/lib/jobs/tipos";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { baseUrl } from "@/lib/email";
-import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { OnboardingPanel } from "@/components/onboarding/onboarding-panel";
 import { PortalPanel } from "@/components/portal/portal-panel";
 import { HistoryPanel } from "@/components/shared/history-panel";
-import { formatBRL } from "@/lib/utils";
+import { iniciais } from "@/lib/format";
+import { formatBRL, cn } from "@/lib/utils";
 
 function dataBR(d: Date | null) {
   return d ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" }).format(new Date(d)) : "—";
@@ -25,12 +23,20 @@ function dataBR(d: Date | null) {
 function statusInfo(s: string) {
   return CLIENTE_STATUS.find((o) => o.value === s);
 }
-function Stat({ icon: Icon, rotulo, valor }: { icon: typeof ListChecks; rotulo: string; valor: React.ReactNode }) {
+const STATUS_COR: Record<string, string> = {
+  ativo: "#34d399", implantacao: "#fbbf24", pausado: "#94a3b8", inadimplente: "#f87171", encerrado: "#9ca3af",
+};
+function Stat({ icon: Icon, rotulo, valor, destaque }: { icon: typeof ListChecks; rotulo: string; valor: React.ReactNode; destaque?: boolean }) {
   return (
-    <Card>
+    <Card className={cn(destaque && "border-brand-yellow/60 bg-brand-yellow/10")}>
       <CardContent className="flex items-center gap-3 pt-6">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"><Icon className="size-4" aria-hidden="true" /></span>
-        <div className="min-w-0"><p className="text-xl font-bold leading-none tabular-nums">{valor}</p><p className="mt-1 text-xs text-muted-foreground">{rotulo}</p></div>
+        <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", destaque ? "bg-brand-yellow text-ink-900" : "bg-muted")}>
+          <Icon className="size-4" aria-hidden="true" />
+        </span>
+        <div className="min-w-0">
+          <p className="font-display text-xl font-bold leading-none tabular-nums">{valor}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{rotulo}</p>
+        </div>
       </CardContent>
     </Card>
   );
@@ -57,24 +63,42 @@ export default async function ClienteVisaoPage({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        titulo={c.nomeFantasia || c.nome}
-        descricao={c.nomeFantasia ? c.nome : undefined}
-        acao={
-          <div className="flex flex-wrap items-center gap-2">
-            {st && <Badge variant={st.value === "ativo" ? "success" : st.value === "implantacao" ? "warning" : "muted"}>{st.label}</Badge>}
-            <Button asChild variant="outline" size="sm"><Link href={`/cadastros/clientes/${id}`}><Pencil className="size-4" /> Editar cadastro</Link></Button>
-            <Button asChild size="sm"><Link href={`/jobs/novo?cliente=${id}`}><Plus className="size-4" /> Novo job</Link></Button>
+      {/* Hero com a identidade da Plante */}
+      <section className="overflow-hidden rounded-2xl bg-chrome text-chrome-foreground shadow-sm">
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand-yellow font-display text-xl font-extrabold text-ink-900">
+              {iniciais(c.nomeFantasia || c.nome)}
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="truncate font-display text-2xl font-bold leading-tight">{c.nomeFantasia || c.nome}</h1>
+                {st && (
+                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ background: `${STATUS_COR[c.status] ?? "#9ca3af"}33`, color: STATUS_COR[c.status] ?? "#cbd5e1" }}>
+                    {st.label}
+                  </span>
+                )}
+              </div>
+              {c.nomeFantasia && <p className="truncate text-sm text-chrome-foreground/60">{c.nome}</p>}
+            </div>
           </div>
-        }
-      />
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/cadastros/clientes/${id}`} className="inline-flex items-center gap-1.5 rounded-md border border-white-a10 px-3 py-2 text-sm font-medium text-chrome-foreground transition-colors hover:bg-white-a10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow">
+              <Pencil className="size-4" aria-hidden="true" /> Editar cadastro
+            </Link>
+            <Link href={`/jobs/novo?cliente=${id}`} className="inline-flex items-center gap-1.5 rounded-md bg-brand-yellow px-3 py-2 text-sm font-semibold text-ink-900 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-chrome">
+              <Plus className="size-4" aria-hidden="true" /> Novo job
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Resumo 360 */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat icon={ListChecks} rotulo="Jobs ativos" valor={resumo.jobsAtivos} />
         <Stat icon={CalendarDays} rotulo="Próximas postagens" valor={resumo.postagens} />
         <Stat icon={Hourglass} rotulo="Aguardando aprovação" valor={resumo.aguardandoAprovacao} />
-        <Stat icon={Repeat} rotulo={resumo.contratosAtivos ? `Contrato mensal (${resumo.contratosAtivos})` : "Contrato mensal"} valor={resumo.mrr > 0 ? formatBRL(resumo.mrr) : "—"} />
+        <Stat icon={Repeat} rotulo={resumo.contratosAtivos ? `Contrato mensal (${resumo.contratosAtivos})` : "Contrato mensal"} valor={resumo.mrr > 0 ? formatBRL(resumo.mrr) : "—"} destaque={resumo.mrr > 0} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
