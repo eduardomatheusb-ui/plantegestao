@@ -7,7 +7,55 @@ import { recarregarSeStale } from "@/lib/stale-action";
 import { formatBRL } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ConfirmButton } from "@/components/shared/confirm-button";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { DespesaForm, type DespesaInicial } from "./despesa-form";
+
+/** Diálogo estilizado para reprovar uma despesa com motivo (opcional). */
+function ReprovarDespesaDialog({ despesaId }: { despesaId: string }) {
+  const [aberto, setAberto] = React.useState(false);
+  const [motivo, setMotivo] = React.useState("");
+  const [pendente, iniciar] = React.useTransition();
+  const [erro, setErro] = React.useState<string | null>(null);
+
+  function confirmar() {
+    setErro(null);
+    iniciar(async () => {
+      try {
+        await avaliarDespesa(despesaId, false, motivo.trim() || undefined);
+        setAberto(false);
+        setMotivo("");
+      } catch (e) {
+        if (!recarregarSeStale(e)) setErro(e instanceof Error ? e.message : "Erro.");
+      }
+    });
+  }
+
+  return (
+    <>
+      <Button type="button" variant="ghost" size="sm" onClick={() => setAberto(true)} className="text-destructive hover:text-destructive"><X className="size-3.5" /> Reprovar</Button>
+      <Dialog open={aberto} onOpenChange={setAberto}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reprovar despesa</DialogTitle>
+            <DialogDescription>Ela não entra no total aprovado. O motivo aparece para o colaborador.</DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Textarea value={motivo} onChange={(e) => setMotivo(e.target.value)} rows={3} placeholder="Motivo (opcional)" autoFocus />
+            {erro && <p className="mt-2 text-sm text-destructive">{erro}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAberto(false)} disabled={pendente}>Cancelar</Button>
+            <Button variant="destructive" onClick={confirmar} disabled={pendente}>{pendente ? "Reprovando…" : "Reprovar"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 type Opt = { id: string; nome: string };
 type ProjetoOpt = { id: string; numero: number; nome: string };
@@ -54,22 +102,10 @@ export function DespesaCard({
     [despesa.id],
   );
 
-  function excluir() {
-    if (!window.confirm("Excluir esta despesa?")) return;
+  function aprovar() {
     setErro(null);
     iniciar(async () => {
-      try { await excluirDespesa(despesa.id); } catch (e) { if (!recarregarSeStale(e)) setErro(e instanceof Error ? e.message : "Erro."); }
-    });
-  }
-  function aprovar() {
-    iniciar(async () => {
       try { await avaliarDespesa(despesa.id, true); } catch (e) { if (!recarregarSeStale(e)) setErro(e instanceof Error ? e.message : "Erro."); }
-    });
-  }
-  function reprovar() {
-    const motivo = window.prompt("Motivo da reprovação desta despesa (opcional):") ?? undefined;
-    iniciar(async () => {
-      try { await avaliarDespesa(despesa.id, false, motivo); } catch (e) { if (!recarregarSeStale(e)) setErro(e instanceof Error ? e.message : "Erro."); }
     });
   }
 
@@ -126,13 +162,21 @@ export function DespesaCard({
           {podeEditar && (
             <>
               <Button type="button" variant="outline" size="sm" onClick={() => setEditando(true)}><Pencil className="size-3.5" /> Editar</Button>
-              <Button type="button" variant="ghost" size="sm" onClick={excluir} disabled={pendente} className="text-destructive hover:text-destructive"><Trash2 className="size-3.5" /> Excluir</Button>
+              <ConfirmButton
+                action={excluirDespesa.bind(null, despesa.id)}
+                titulo="Excluir despesa"
+                descricao="A despesa e seu comprovante serão removidos deste pedido."
+                confirmarLabel="Excluir"
+                triggerLabel="Excluir"
+                triggerIcon={<Trash2 className="size-3.5" />}
+                variant="ghost"
+              />
             </>
           )}
           {podeAvaliar && (
             <>
               <Button type="button" variant="outline" size="sm" onClick={aprovar} disabled={pendente}><Check className="size-3.5" /> Aprovar</Button>
-              <Button type="button" variant="ghost" size="sm" onClick={reprovar} disabled={pendente} className="text-destructive hover:text-destructive"><X className="size-3.5" /> Reprovar</Button>
+              <ReprovarDespesaDialog despesaId={despesa.id} />
             </>
           )}
         </div>

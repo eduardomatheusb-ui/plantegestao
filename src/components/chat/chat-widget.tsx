@@ -27,6 +27,7 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
   const [enviando, setEnviando] = React.useState(false);
   const [editandoId, setEditandoId] = React.useState<string | null>(null);
   const [editTexto, setEditTexto] = React.useState("");
+  const [confirmarId, setConfirmarId] = React.useState<string | null>(null);
   const fimRef = React.useRef<HTMLDivElement>(null);
 
   const conversaAtual = conversas.find((c) => c.canal === canal);
@@ -125,7 +126,7 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
   }
 
   async function excluir(id: string) {
-    if (!window.confirm("Excluir esta mensagem?")) return;
+    setConfirmarId(null);
     const antes = mensagens;
     setMensagens((m) => m.filter((x) => x.id !== id));
     try {
@@ -257,10 +258,18 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
                           )}
                         </div>
                         {meu && editandoId !== m.id && !m.id.startsWith("tmp-") && (
-                          <div className="flex shrink-0 gap-0.5 self-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                            <button type="button" onClick={() => { setEditandoId(m.id); setEditTexto(m.corpo); }} aria-label="Editar mensagem" title="Editar" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"><Pencil className="size-3.5" /></button>
-                            <button type="button" onClick={() => void excluir(m.id)} aria-label="Excluir mensagem" title="Excluir" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"><Trash2 className="size-3.5" /></button>
-                          </div>
+                          confirmarId === m.id ? (
+                            <div className="flex shrink-0 items-center gap-1 self-center rounded-md bg-muted px-1.5 py-1 text-xs">
+                              <span className="text-muted-foreground">Excluir?</span>
+                              <button type="button" onClick={() => void excluir(m.id)} className="rounded px-1 font-medium text-destructive hover:bg-destructive/10">Sim</button>
+                              <button type="button" onClick={() => setConfirmarId(null)} className="rounded px-1 text-muted-foreground hover:bg-background">Não</button>
+                            </div>
+                          ) : (
+                            <div className="flex shrink-0 gap-0.5 self-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                              <button type="button" onClick={() => { setEditandoId(m.id); setEditTexto(m.corpo); }} aria-label="Editar mensagem" title="Editar" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"><Pencil className="size-3.5" /></button>
+                              <button type="button" onClick={() => setConfirmarId(m.id)} aria-label="Excluir mensagem" title="Excluir" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"><Trash2 className="size-3.5" /></button>
+                            </div>
+                          )
                         )}
                       </div>
                     );

@@ -16,6 +16,7 @@ import {
 import { recarregarSeStale } from "@/lib/stale-action";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ConfirmButton } from "@/components/shared/confirm-button";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -27,18 +28,16 @@ function SubmitBtn({ label }: { label: string }) {
 }
 
 function BotaoAcao({
-  action, label, icon, confirmar, variant = "outline",
+  action, label, icon, variant = "outline",
 }: {
   action: () => Promise<unknown>;
   label: string;
   icon: React.ReactNode;
-  confirmar?: string;
   variant?: "default" | "outline" | "ghost";
 }) {
   const [pendente, iniciar] = React.useTransition();
   const [erro, setErro] = React.useState<string | null>(null);
   function clicar() {
-    if (confirmar && !window.confirm(confirmar)) return;
     setErro(null);
     iniciar(async () => {
       try { await action(); } catch (e) { if (!recarregarSeStale(e)) setErro(e instanceof Error ? e.message : "Erro."); }
@@ -128,11 +127,29 @@ export function ReembolsoAcoes({
       )}
 
       {ehFinanceiro && status === "APROVADO" && (
-        <BotaoAcao action={programar} label="Programar pagamento" icon={<CalendarClock className="size-4" />} confirmar="Gerar o lançamento de despesa e programar o pagamento?" variant="default" />
+        <ConfirmButton
+          action={programar}
+          titulo="Programar pagamento"
+          descricao="Vamos gerar um lançamento de despesa no financeiro (vencimento no dia 20) e marcar o reembolso como programado."
+          confirmarLabel="Programar"
+          confirmVariant="default"
+          triggerLabel="Programar pagamento"
+          triggerIcon={<CalendarClock className="size-4" />}
+          variant="default"
+        />
       )}
 
       {ehFinanceiro && status === "PROGRAMADO" && (
-        <BotaoAcao action={pagar} label="Marcar como pago" icon={<BadgeCheck className="size-4" />} confirmar="Confirmar que o reembolso foi pago?" variant="default" />
+        <ConfirmButton
+          action={pagar}
+          titulo="Marcar como pago"
+          descricao="Confirma que o reembolso foi pago ao colaborador? O lançamento de despesa será quitado."
+          confirmarLabel="Marcar como pago"
+          confirmVariant="default"
+          triggerLabel="Marcar como pago"
+          triggerIcon={<BadgeCheck className="size-4" />}
+          variant="default"
+        />
       )}
     </div>
   );
