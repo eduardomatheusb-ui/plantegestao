@@ -15,8 +15,9 @@ export const metadata = { title: "Ajuda — Guia do TREM" };
 const SECAO_MODULO: Record<number, ModuloKey | null> = {
   1: null, 2: null, 3: null, 4: "propostas", 5: "projetos", 6: "jobs", 7: "jobs",
   8: "jobs", 9: "propostas", 10: "midia", 11: "midia", 12: "producao", 13: "projetos",
-  14: "financeiro", 15: "financeiro", 16: "financeiro", 17: "relatorios", 18: "relatorios",
-  19: "cadastros", 20: "cadastros", 21: "admin", 22: "cadastros", 23: null, 24: null,
+  14: "financeiro", 15: null, 16: "financeiro", 17: "financeiro", 18: "relatorios",
+  19: "relatorios", 20: "cadastros", 21: "cadastros", 22: "admin", 23: null, 24: null,
+  25: null,
 };
 
 function lerGuia(): string {

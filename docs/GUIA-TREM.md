@@ -12,7 +12,7 @@ Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas p
 ## Sumário
 1. [Primeiros passos: acesso e conta](#1-primeiros-passos-acesso-e-conta)
 2. [Minha página (dashboard)](#2-minha-página-dashboard)
-3. [Chat da equipe](#3-chat-da-equipe)
+3. [Chat da equipe e comentários](#3-chat-da-equipe-e-comentários)
 4. [Comercial — CRM / funil de leads](#4-comercial--crm--funil-de-leads)
 5. [Projetos](#5-projetos)
 6. [Jobs (tarefas de criação/produção)](#6-jobs)
@@ -24,16 +24,17 @@ Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas p
 12. [Produção e Serviços/OS](#12-produção-e-serviçosos)
 13. [Atas de reunião](#13-atas-de-reunião)
 14. [Financeiro](#14-financeiro)
-15. [Contratos e Saúde Financeira](#15-contratos-e-saúde-financeira)
-16. [Nota fiscal (NFS-e)](#16-nota-fiscal-nfs-e)
-17. [Indicadores e Alertas](#17-indicadores-e-alertas)
-18. [Relatórios](#18-relatórios)
-19. [Clientes: visão 360, brand kit, onboarding, portal](#19-clientes)
-20. [Outros cadastros](#20-outros-cadastros)
-21. [Administração](#21-administração)
-22. [Portal do cliente (o que o cliente vê)](#22-portal-do-cliente)
-23. [Acessibilidade](#23-acessibilidade)
-24. [Boas práticas gerais](#24-boas-práticas-gerais)
+15. [Central de Reembolsos](#15-central-de-reembolsos)
+16. [Contratos e Saúde Financeira](#16-contratos-e-saúde-financeira)
+17. [Nota fiscal (NFS-e)](#17-nota-fiscal-nfs-e)
+18. [Indicadores e Alertas](#18-indicadores-e-alertas)
+19. [Relatórios](#19-relatórios)
+20. [Clientes: visão 360, brand kit, onboarding, portal](#20-clientes)
+21. [Outros cadastros](#21-outros-cadastros)
+22. [Administração](#22-administração)
+23. [Portal do cliente (o que o cliente vê)](#23-portal-do-cliente)
+24. [Acessibilidade](#24-acessibilidade)
+25. [Boas práticas gerais](#25-boas-práticas-gerais)
 
 ---
 
@@ -65,7 +66,7 @@ aniversariantes. Use como ponto de partida da manhã.
 
 ---
 
-## 3. Chat da equipe
+## 3. Chat da equipe e comentários
 
 Conversa interna, sem sair do sistema. Fica no **balão flutuante** (canto inferior direito)
 em qualquer tela, e também em **Chat** no menu.
@@ -74,7 +75,15 @@ em qualquer tela, e também em **Chat** no menu.
 - **Direta:** conversa 1 a 1 com um colega.
 - A bolinha vermelha mostra **mensagens não lidas**. Mensagens no chat também aparecem no
   **sino de notificações** (as diretas mandam e-mail; o Geral só notifica no sino).
-- Mencione um colega com **@nome** dentro de comentários para puxá-lo pro assunto.
+- **Editar / excluir:** passe o mouse (ou toque) sobre **a sua própria** mensagem para
+  **editar** ou **excluir**. Mensagem alterada aparece com "· editado".
+
+**Comentários** (nos projetos, jobs e outras telas):
+- Escreva **@nome** para **mencionar** um colega — ele recebe notificação e a menção fica
+  destacada.
+- **Links** (http/https) viram **clicáveis** automaticamente.
+- Você pode **editar** ou **excluir** os seus comentários (gestores também podem moderar);
+  comentário alterado mostra "· editado".
 
 > **Boas práticas:** use o chat para o dia a dia rápido; decisões importantes registre em
 > **comentário no job/projeto** ou em **ata de reunião** (fica no histórico).
@@ -227,9 +236,16 @@ você **revisa** antes de usar.
 **Para quê:** lançamentos de receita, despesa e transferência.
 
 **Como usar:** **Lançamentos**. Botões **Receita / Despesa / Transferência**. Cada
-lançamento tem **4 datas** (vencimento, competência, pagamento, faturamento), categoria,
-cliente/fornecedor, e status **em aberto / quitado**. Quite com o ✔; estorne com o ↩.
+lançamento tem **4 datas** (vencimento, competência, pagamento, faturamento), categoria e
+status **em aberto / quitado**. Quite com o ✔; estorne com o ↩.
 
+- **Na receita** você informa o **cliente**; **na despesa**, **"para quem é o pagamento"** —
+  um único campo que agrupa **fornecedores, prestadores e colaboradores**.
+- **Parcelado:** na condição de pagamento escolha **Parcelado**, informe o **nº de parcelas**
+  e clique em **Gerar parcelas**. Dá para **editar cada valor e vencimento** (útil quando as
+  parcelas são diferentes) — o sistema cria **um lançamento por parcela**.
+- **Reembolso de colaborador:** use a **Central de Reembolsos** (seção 15), que já gera o
+  lançamento de despesa ao aprovar.
 - Visão **mensal** (navegue pelos meses) + **gráfico**.
 - **Exportar CSV** baixa os lançamentos do mês para Excel/BI.
 - No celular, os lançamentos viram **cards**.
@@ -240,7 +256,47 @@ cliente/fornecedor, e status **em aberto / quitado**. Quite com o ✔; estorne c
 
 ---
 
-## 15. Contratos e Saúde Financeira
+## 15. Central de Reembolsos
+
+**Para quê:** o colaborador pede reembolso de **despesas operacionais** (deslocamento,
+gravação, reunião externa, material, viagem) e acompanha a **aprovação e o pagamento** —
+tudo registrado e com **comprovante**. Fica em **Financeiro → Reembolsos**.
+
+**Como usar (colaborador):**
+1. **Novo reembolso** → escolha o **mês de competência**.
+2. **Adicione cada despesa separada** (uma por vez): data, categoria, valor, forma de
+   pagamento e, se houver, cliente/projeto vinculado.
+3. **Anexe o comprovante** (foto ou PDF: nota, cupom, print do app de transporte) no card
+   da despesa.
+4. Clique em **Enviar para análise**.
+
+- Despesa **acima de R$ 150** exige informar **quem autorizou**.
+- Marque **"repassável ao cliente"** quando o gasto será cobrado do cliente (gravação,
+  viagem, produção externa) — ajuda a separar do que é custo da agência.
+
+**Como usar (financeiro):** na lista, a seção **Aguardando análise** mostra os pedidos
+enviados. Ao abrir você pode **aprovar ou reprovar cada despesa** e, no pedido:
+- **Aprovar** · **Pedir ajuste** (volta ao colaborador para corrigir/anexar) · **Reprovar**
+  (com motivo).
+- **Programar pagamento:** gera automaticamente um **lançamento de despesa** (vencimento no
+  **dia 20**, categoria "Reembolsos", beneficiário = o colaborador).
+- **Marcar como pago:** quita o lançamento.
+- **Recibo:** gera o **recibo interno** com a identidade da Plante (nº, despesas, total
+  aprovado, quem aprovou) para arquivo.
+
+**Fluxo:** Rascunho → Enviado → (Pendente de ajuste) → Aprovado → Programado → Pago
+(ou Reprovado).
+
+**Prazo (política):** pedidos enviados até o **dia 30** são pagos até o **dia 20 do mês
+seguinte**. Enviou depois do dia 30? Entra no ciclo do mês seguinte.
+
+> **Boas práticas:** lance **uma despesa por vez** e **sempre com comprovante** — sem
+> comprovante, o financeiro devolve para ajuste. Vincule ao **cliente/projeto** quando a
+> despesa tiver relação com um trabalho.
+
+---
+
+## 16. Contratos e Saúde Financeira
 
 - **Contratos** (menu Financeiro): cadastre o **fee mensal recorrente** de cada cliente
   (valor, início/fim, dia de cobrança, status). O topo mostra **MRR** (receita recorrente
@@ -253,7 +309,7 @@ cliente/fornecedor, e status **em aberto / quitado**. Quite com o ✔; estorne c
 
 ---
 
-## 16. Nota fiscal (NFS-e)
+## 17. Nota fiscal (NFS-e)
 
 No lançamento de **receita**, o botão **Emitir nota** (ícone de recibo) abre o **portal de
 NFS-e** configurado (Emissor Nacional / prefeitura). O sistema **não emite sozinho** — ele
@@ -261,7 +317,7 @@ te leva ao portal certo para emitir. O link é configurável em **Administraçã
 
 ---
 
-## 17. Indicadores e Alertas
+## 18. Indicadores e Alertas
 
 **Menu Gestão → Indicadores.** Painel de gestão com:
 - Jobs ativos, **atrasados**, **parados +7 dias**, **% concluídos no prazo**.
@@ -277,14 +333,14 @@ e-mail, se o Resend estiver ligado).
 
 ---
 
-## 18. Relatórios
+## 19. Relatórios
 
 **Menu Financeiro → Relatórios.** DRE, Fluxo de Caixa, Lançamentos, por Cliente, Terceiros —
 com navegação por ano. Há também relatórios de trabalho (jobs, projetos, mídia).
 
 ---
 
-## 19. Clientes
+## 20. Clientes
 
 O cliente é o **centro** do sistema. **Cadastros → Clientes → Abrir** abre a **visão 360**:
 
@@ -292,7 +348,7 @@ O cliente é o **centro** do sistema. **Cadastros → Clientes → Abrir** abre 
 - **Trabalho em andamento:** jobs (com status), postagens, projetos.
 - **Brand kit & escopo:** tom de voz, redes sociais, links úteis, escopo.
 - **Dados:** documento, contato, e-mail, telefone, endereço.
-- **Portal do cliente:** gerar/copiar o link do portal (ver seção 22).
+- **Portal do cliente:** gerar/copiar o link do portal (ver seção 23).
 - **Onboarding / implantação:** o checklist de entrada do cliente.
 - **Relatório do mês:** botão que gera o **PDF de prestação de contas** (postagens,
   entregas, tráfego do mês) para enviar ao cliente.
@@ -312,18 +368,20 @@ contato ou brand kit**, com botão "Completar". Use para fechar lacunas.
 
 ---
 
-## 20. Outros cadastros
+## 21. Outros cadastros
 
 **Fornecedores, Colaboradores, Prestadores, Veículos, Centros de custo, Contas bancárias,
 Categorias (plano de contas).** Todos com lista (busca + paginação de 25) e formulário.
 
 - **Colaboradores:** documento, nascimento (vira aniversariante no dashboard), admissão,
   salário/valor-hora (**só Administrador vê**).
+- **Fornecedores e prestadores** aparecem no campo **"para quem é o pagamento"** das despesas
+  e nos reembolsos.
 - **Preferir arquivar a excluir:** arquivar tira das listas mas preserva o histórico.
 
 ---
 
-## 21. Administração
+## 22. Administração
 
 **Menu Administração** (só Administrador):
 - **Usuários:** convidar (a partir de um colaborador), definir **perfil de acesso**,
@@ -336,11 +394,12 @@ Categorias (plano de contas).** Todos com lista (busca + paginação de 25) e fo
   `ANTHROPIC_API_KEY` no Netlify (ver `docs/IA-ANTHROPIC.md`).
 
 > **Boas práticas:** dê a cada pessoa **só o acesso necessário** (perfis). Salário e
-> financeiro são sensíveis — restrinja.
+> financeiro são sensíveis — restrinja. A **aprovação de reembolsos** é de quem tem acesso
+> de edição ao **Financeiro**.
 
 ---
 
-## 22. Portal do cliente
+## 23. Portal do cliente
 
 O que o **seu cliente** vê pelo link (sem login), com a identidade da Plante:
 - **Aguardando aprovação** (peças para ele aprovar).
@@ -354,7 +413,7 @@ O portal **não mostra** nada financeiro. Gere/renove/desative o link na visão 
 
 ---
 
-## 23. Acessibilidade
+## 24. Acessibilidade
 
 Menu do avatar → **Acessibilidade**: cada pessoa liga o que precisa (texto maior, mais
 espaçamento, reduzir movimento, alto contraste). Fica salvo no navegador. Há também **tema
@@ -362,7 +421,7 @@ claro/escuro** e navegação por teclado ("Pular para o conteúdo" ao apertar Ta
 
 ---
 
-## 24. Boas práticas gerais
+## 25. Boas práticas gerais
 
 1. **Cadastro completo = sistema trabalhando por você.** Cliente com contato + brand kit
    destrava portal, relatórios e e-mails.
@@ -371,8 +430,9 @@ claro/escuro** e navegação por teclado ("Pular para o conteúdo" ao apertar Ta
 4. **Arquive, não exclua** (salvo lixo/teste). Preserva histórico.
 5. **Aprovação pelo link**, não pelo WhatsApp. Fica registrado.
 6. **Atas para decisões.** Chat é para o dia a dia.
-7. **Revise o que a IA gera** antes de usar — é sugestão, não texto oficial.
-8. **2FA e acesso mínimo** por perfil. Segurança em primeiro lugar.
+7. **Reembolso sempre com comprovante** e uma despesa por vez.
+8. **Revise o que a IA gera** antes de usar — é sugestão, não texto oficial.
+9. **2FA e acesso mínimo** por perfil. Segurança em primeiro lugar.
 
 ---
 

@@ -7,7 +7,7 @@ import { ArrowLeft, ChevronRight, HelpCircle } from "lucide-react";
 
 // Primeira parte da rota → âncora da seção correspondente no guia (/ajuda).
 const AJUDA_ANCORA: Record<string, string> = {
-  chat: "3-chat-da-equipe",
+  chat: "3-chat-da-equipe-e-comentários",
   crm: "4-comercial--crm--funil-de-leads",
   projetos: "5-projetos",
   jobs: "6-jobs",
@@ -19,14 +19,15 @@ const AJUDA_ANCORA: Record<string, string> = {
   os: "12-produção-e-serviçosos",
   reunioes: "13-atas-de-reunião",
   financeiro: "14-financeiro",
-  contratos: "15-contratos-e-saúde-financeira",
-  "saude-financeira": "15-contratos-e-saúde-financeira",
-  indicadores: "17-indicadores-e-alertas",
-  relatorios: "18-relatórios",
-  clientes: "19-clientes",
-  "clientes-incompletos": "19-clientes",
-  cadastros: "20-outros-cadastros",
-  configuracoes: "21-administração",
+  reembolsos: "15-central-de-reembolsos",
+  contratos: "16-contratos-e-saúde-financeira",
+  "saude-financeira": "16-contratos-e-saúde-financeira",
+  indicadores: "18-indicadores-e-alertas",
+  relatorios: "19-relatórios",
+  clientes: "20-clientes",
+  "clientes-incompletos": "20-clientes",
+  cadastros: "21-outros-cadastros",
+  configuracoes: "22-administração",
 };
 
 const SECAO: Record<string, string> = {
@@ -48,6 +49,7 @@ const SECAO: Record<string, string> = {
   "clientes-incompletos": "Cadastros incompletos",
   reunioes: "Atas de reunião",
   financeiro: "Financeiro",
+  reembolsos: "Reembolsos",
   relatorios: "Relatórios",
   cadastros: "Cadastros",
   configuracoes: "Administração",
