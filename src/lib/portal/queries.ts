@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 export async function obterPortal(token: string) {
   const cliente = await db.cliente.findUnique({
     where: { portalToken: token },
-    select: { id: true, nome: true, nomeFantasia: true },
+    select: { id: true, nome: true, nomeFantasia: true, logoUrl: true },
   });
   if (!cliente) return null;
 

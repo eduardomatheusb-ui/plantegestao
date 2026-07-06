@@ -1,6 +1,5 @@
 import "server-only";
 
-const CANAL_API_AGENTE_GRAFICA = "agtch_6a4b04601e1c8191ab348f2ee08b70a6";
 const TIMEOUT_MS = 45_000;
 
 export type DadosGrafica = {
@@ -19,6 +18,7 @@ export type AgenteGraficaResultado = {
   texto?: string;
   json?: unknown;
   error?: string;
+  status?: number;
   raw?: unknown;
 };
 
@@ -71,9 +71,9 @@ export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGr
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        channel_id: CANAL_API_AGENTE_GRAFICA,
         input: prompt,
       }),
+      cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
@@ -86,7 +86,7 @@ export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGr
     }
 
     if (!res.ok) {
-      return { error: "O agente não respondeu corretamente.", raw: data };
+      return { error: "O agente não respondeu corretamente.", status: res.status, raw: data };
     }
 
     return {

@@ -175,6 +175,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
       { name: "tomDeVoz", label: "Tom de voz da marca", type: "textarea", colSpan: 2, help: "Como a marca fala (formal, descontraída, etc.)." },
       { name: "redesSociais", label: "Redes sociais (links)", type: "textarea", colSpan: 2 },
       { name: "linksUteis", label: "Links úteis (Drive, brand guide…)", type: "textarea", colSpan: 2 },
+      { name: "logoUrl", label: "Logo do cliente (URL da imagem)", type: "text", colSpan: 2, help: "Cole o link de uma imagem (PNG/JPG). Aparece no portal e na página do cliente." },
       {
         name: "condicoesComerciais",
         label: "Condições comerciais",
@@ -199,6 +200,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
       tomDeVoz: textoOpcional,
       redesSociais: textoOpcional,
       linksUteis: textoOpcional,
+      logoUrl: textoOpcional,
       condicoesComerciais: textoOpcional,
     }),
     colunas: [

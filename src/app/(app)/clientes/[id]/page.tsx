@@ -67,9 +67,14 @@ export default async function ClienteVisaoPage({ params }: { params: Promise<{ i
       <section className="overflow-hidden rounded-2xl bg-chrome text-chrome-foreground shadow-sm">
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-4">
-            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand-yellow font-display text-xl font-extrabold text-ink-900">
-              {iniciais(c.nomeFantasia || c.nome)}
-            </span>
+            {c.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={c.logoUrl} alt={c.nomeFantasia || c.nome} className="size-14 shrink-0 rounded-2xl bg-white object-contain p-1" />
+            ) : (
+              <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand-yellow font-display text-xl font-extrabold text-ink-900">
+                {iniciais(c.nomeFantasia || c.nome)}
+              </span>
+            )}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="truncate font-display text-2xl font-bold leading-tight">{c.nomeFantasia || c.nome}</h1>

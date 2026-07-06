@@ -10,7 +10,7 @@ export async function obterClienteVisao(id: string) {
       documento: true, inscricaoEstadual: true, inscricaoMunicipal: true,
       email: true, telefone: true, contatoNome: true, endereco: true, cep: true,
       condicoesComerciais: true, escopo: true, tomDeVoz: true, redesSociais: true,
-      linksUteis: true, portalToken: true,
+      linksUteis: true, logoUrl: true, portalToken: true,
     },
   });
   if (!c) return null;
