@@ -6,8 +6,8 @@ import { db } from "@/lib/db";
  * Expõe só o necessário — nada de valores financeiros, custos ou dados internos.
  */
 export async function obterPortal(token: string) {
-  const cliente = await db.cliente.findUnique({
-    where: { portalToken: token },
+  const cliente = await db.cliente.findFirst({
+    where: { OR: [{ portalSlug: token }, { portalToken: token }] },
     select: { id: true, nome: true, nomeFantasia: true, logoUrl: true },
   });
   if (!cliente) return null;

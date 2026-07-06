@@ -183,7 +183,7 @@ export default async function ClienteVisaoPage({ params }: { params: Promise<{ i
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2 text-base"><ExternalLink className="size-4" /> Portal do cliente</CardTitle></CardHeader>
             <CardContent>
-              <PortalPanel clienteId={id} link={c.portalToken ? `${baseUrl()}/portal/${c.portalToken}` : null} />
+              <PortalPanel clienteId={id} link={(c.portalSlug || c.portalToken) ? `${baseUrl()}/portal/${c.portalSlug || c.portalToken}` : null} />
             </CardContent>
           </Card>
         </div>

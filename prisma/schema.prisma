@@ -306,6 +306,7 @@ model Cliente {
   redesSociais        String? // links das redes
   linksUteis          String? // outros links (Drive, brand guide…)
   logoUrl             String? // URL do logo do cliente (portal e visão)
+  portalSlug          String?  @unique // link amigável do portal (nome + sufixo)
   arquivado           Boolean  @default(false)
   criadoEm            DateTime @default(now())
   atualizadoEm        DateTime @updatedAt
