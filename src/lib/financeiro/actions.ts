@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
@@ -102,7 +103,7 @@ export async function salvarLancamento(
       await db.lancamento.update({ where: { id }, data: base });
       await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "editou o lançamento" });
     } else if (parcelas.length >= 2) {
-      const grupo = crypto.randomUUID();
+      const grupo = randomUUID();
       const total = parcelas.length;
       for (let i = 0; i < total; i++) {
         const p = parcelas[i];
