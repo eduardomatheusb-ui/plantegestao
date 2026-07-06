@@ -44,6 +44,10 @@ Compare pelo menos 5 opções quando possível. Monte uma tabela com gráfica, p
 `.trim();
 }
 
+function normalizarToken(token: string): string {
+  return token.trim().replace(/^["']|["']$/g, "").replace(/^Bearer\s+/i, "");
+}
+
 function respostaParaTexto(data: unknown): string {
   if (typeof data === "string") return data;
   if (data && typeof data === "object") {
@@ -62,12 +66,13 @@ export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGr
   }
 
   const prompt = montarPromptGrafica(dados);
+  const apiKey = normalizarToken(process.env.AGENTE_API_KEY!);
 
   try {
     const res = await fetch(process.env.AGENTE_API_URL!, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.AGENTE_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -86,7 +91,11 @@ export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGr
     }
 
     if (!res.ok) {
-      return { error: "O agente não respondeu corretamente.", status: res.status, raw: data };
+      const erro =
+        res.status === 401
+          ? "O agente recusou a autenticação. Confira se AGENTE_API_KEY é o token puro, sem aspas, sem espaços e sem repetir 'Bearer'."
+          : "O agente não respondeu corretamente.";
+      return { error: erro, status: res.status, raw: data };
     }
 
     return {
