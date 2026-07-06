@@ -26,7 +26,7 @@ export default async function EditarLancamentoPage({ params }: { params: Promise
   if (!lanc) notFound();
 
   const tipo = lanc.tipo;
-  const [categorias, fornecedores, clientes, centros, contas, projetos, jobs] = await Promise.all([
+  const [categorias, fornecedores, clientes, centros, contas, projetos, jobs, colaboradores] = await Promise.all([
     tipo === "TRANSFERENCIA" ? Promise.resolve([]) : listarCategoriasPorTipo(tipo === "RECEITA" ? "RECEITA" : "DESPESA"),
     listarFornecedoresAtivos(),
     listarClientesAtivos(),
@@ -34,6 +34,7 @@ export default async function EditarLancamentoPage({ params }: { params: Promise
     listarContas(),
     listarProjetosParaSelect(),
     db.job.findMany({ where: { arquivado: false }, orderBy: { numero: "desc" }, select: { id: true, numero: true, titulo: true } }),
+    db.colaborador.findMany({ where: { ativo: true }, orderBy: { nome: "asc" }, select: { id: true, nome: true } }),
   ]);
 
   const sacados = tipo === "RECEITA" ? clientes : tipo === "DESPESA" ? fornecedores : [];
@@ -56,6 +57,7 @@ export default async function EditarLancamentoPage({ params }: { params: Promise
     projetoId: lanc.projetoId ?? "",
     jobId: lanc.jobId ?? "",
     centroCustoId: lanc.centroCustoId ?? "",
+    colaboradorId: lanc.colaboradorId ?? "",
     contaId: lanc.contaId ?? "",
     contaDestinoId: lanc.contaDestinoId ?? "",
     quitado: lanc.status === "QUITADO",
@@ -77,6 +79,7 @@ export default async function EditarLancamentoPage({ params }: { params: Promise
             contas={contas}
             projetos={projetos}
             jobs={jobs}
+            colaboradores={colaboradores}
             cancelHref="/financeiro"
           />
         </CardContent>

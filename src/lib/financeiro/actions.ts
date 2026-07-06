@@ -83,6 +83,8 @@ export async function salvarLancamento(
       jobId: txt(formData.get("jobId")),
       centroCustoId: txt(formData.get("centroCustoId")),
       contaId: txt(formData.get("contaId")),
+      // Beneficiário: a quem o pagamento se destina (só faz sentido em despesa).
+      colaboradorId: tipo === "DESPESA" ? txt(formData.get("colaboradorId")) : null,
       // Por tipo:
       clienteId: tipo === "RECEITA" ? txt(formData.get("sacadoId")) : null,
       fornecedorId: tipo === "DESPESA" ? txt(formData.get("sacadoId")) : null,

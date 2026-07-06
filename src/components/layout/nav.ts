@@ -12,6 +12,7 @@ import {
   SearchCheck,
   ReceiptText,
   Wallet,
+  HandCoins,
   BarChart3,
   Gauge,
   HeartPulse,
@@ -87,6 +88,7 @@ export const NAV: NavGroup[] = [
     titulo: "Financeiro",
     itens: [
       { label: "Lançamentos", href: "/financeiro", icon: Wallet, modulo: "financeiro", disponivel: true },
+      { label: "Reembolsos", href: "/reembolsos", icon: HandCoins, disponivel: true },
       { label: "Contratos", href: "/contratos", icon: FileSignature, modulo: "financeiro", disponivel: true },
       { label: "Relatórios", href: "/relatorios", icon: BarChart3, modulo: "relatorios", disponivel: true },
       { label: "Centros de custo", href: "/cadastros/centros-custo", icon: Target, modulo: "cadastros", disponivel: true },

@@ -76,6 +76,7 @@ export async function obterLancamentoDetalhe(id: string) {
       os: { select: { id: true, numero: true } },
       conta: { select: { id: true, nome: true } },
       contaDestino: { select: { id: true, nome: true } },
+      colaborador: { select: { id: true, nome: true } },
     },
   });
 }
@@ -84,6 +85,9 @@ export async function obterLancamentoDetalhe(id: string) {
 
 export function listarCategoriasPorTipo(tipo: "RECEITA" | "DESPESA") {
   return db.categoria.findMany({ where: { ativo: true, tipo }, orderBy: { nome: "asc" }, select: { id: true, nome: true } });
+}
+export function listarColaboradoresAtivos() {
+  return db.colaborador.findMany({ where: { ativo: true }, orderBy: { nome: "asc" }, select: { id: true, nome: true } });
 }
 export function listarFornecedoresAtivos() {
   return db.fornecedor.findMany({ where: { arquivado: false }, orderBy: { nome: "asc" }, select: { id: true, nome: true } });

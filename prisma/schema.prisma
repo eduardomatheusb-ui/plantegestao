@@ -14,7 +14,7 @@ datasource db {
   // Migrações rodam LOCALMENTE, onde o .env aponta DATABASE_URL para o
   // endpoint DIRETO (sem pool). Por isso não declaramos directUrl: o cliente
   // em produção depende só de DATABASE_URL e não quebra se faltar outra var.
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 // ─────────────────────────── Fase 1 — Fundação ───────────────────────────
@@ -28,24 +28,24 @@ enum Papel {
 /// Nível de acesso de um perfil a um módulo do sistema.
 enum NivelAcesso {
   NENHUM // não vê o módulo
-  VER    // somente leitura
+  VER // somente leitura
   EDITAR // cria, edita, arquiva
-  ADMIN  // tudo, incluindo excluir e configurar
+  ADMIN // tudo, incluindo excluir e configurar
 }
 
 /// Perfil de acesso PERSONALIZÁVEL pelo administrador (ex.: Criativo, Atendimento, Mídia…).
 /// As capacidades por módulo ficam em PerfilCapacidade. `sistema` protege os perfis-base
 /// contra exclusão (podem ser editados, não removidos).
 model PerfilAcesso {
-  id           String             @id @default(cuid())
-  nome         String             @unique
+  id           String   @id @default(cuid())
+  nome         String   @unique
   descricao    String?
-  sistema      Boolean            @default(false)
-  criadoEm     DateTime           @default(now())
-  atualizadoEm DateTime           @updatedAt
+  sistema      Boolean  @default(false)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 
-  capacidades  PerfilCapacidade[]
-  usuarios     Usuario[]
+  capacidades PerfilCapacidade[]
+  usuarios    Usuario[]
 }
 
 /// Nível de um perfil em um módulo. `modulo` é uma chave estável (ver lib/permissoes.ts).
@@ -55,72 +55,74 @@ model PerfilCapacidade {
   modulo   String
   nivel    NivelAcesso @default(NENHUM)
 
-  perfil   PerfilAcesso @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  perfil PerfilAcesso @relation(fields: [perfilId], references: [id], onDelete: Cascade)
 
   @@unique([perfilId, modulo])
 }
 
 model Usuario {
-  id           String   @id @default(cuid())
-  nome         String
-  email        String   @unique
-  senhaHash    String?
-  papel        Papel    @default(OPERADOR)
-  perfilId     String?
-  responsavelConta Boolean @default(false)
-  avatarUrl    String?
-  ativo        Boolean  @default(true)
+  id                String    @id @default(cuid())
+  nome              String
+  email             String    @unique
+  senhaHash         String?
+  papel             Papel     @default(OPERADOR)
+  perfilId          String?
+  responsavelConta  Boolean   @default(false)
+  avatarUrl         String?
+  ativo             Boolean   @default(true)
   // Convite por e-mail: token de definição de senha (1º acesso / reset).
-  conviteToken   String?   @unique
-  conviteExpira  DateTime?
+  conviteToken      String?   @unique
+  conviteExpira     DateTime?
   // 2FA (TOTP) — opt-in. recoveryCodes = hashes bcrypt separados por vírgula.
-  totpSecret     String?
-  totpAtivo      Boolean   @default(false)
+  totpSecret        String?
+  totpAtivo         Boolean   @default(false)
   totpRecoveryCodes String?
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  criadoEm          DateTime  @default(now())
+  atualizadoEm      DateTime  @updatedAt
 
-  perfil       PerfilAcesso? @relation(fields: [perfilId], references: [id], onDelete: SetNull)
-  logs         Log[]
-  colaborador  Colaborador?
+  perfil      PerfilAcesso? @relation(fields: [perfilId], references: [id], onDelete: SetNull)
+  logs        Log[]
+  colaborador Colaborador?
 
-  projetosResponsavel Projeto[]          @relation("ProjetoResponsavel")
-  projetosCriados     Projeto[]          @relation("ProjetoCriadoPor")
-  envolvimentos       ProjetoEnvolvido[]
-  comentarios         Comentario[]
-  anexos              Anexo[]
-  apontamentos        Apontamento[]
-  jobsResponsavel     Job[]              @relation("JobResponsavel")
-  jobsCriados         Job[]              @relation("JobCriadoPor")
-  jobsEnvolvido       JobEnvolvido[]
-  tarefasResponsavel  JobTarefa[]
-  propostasResponsavel Proposta[]        @relation("PropostaResponsavel")
-  propostasCriadas    Proposta[]         @relation("PropostaCriadoPor")
-  lancamentosCriados  Lancamento[]       @relation("LancamentoCriadoPor")
-  midiaResponsavel    MidiaPlano[]       @relation("MidiaResponsavel")
-  midiaCriados        MidiaPlano[]       @relation("MidiaCriadoPor")
-  producaoCriadas     ProducaoOrdem[]    @relation("ProducaoCriadoPor")
-  notificacoes        Notificacao[]      @relation("NotificacaoDestino")
-  notificacoesGeradas Notificacao[]      @relation("NotificacaoAtor")
-  osResponsavel       OrdemServico[]     @relation("OsResponsavel")
-  osCriadas           OrdemServico[]     @relation("OsCriadoPor")
-  chatMensagens       ChatMensagem[]     @relation("ChatAutor")
-  chatLeituras        ChatLeitura[]
-  notasFiscais        NotaFiscal[]
-  leadsResponsavel    Lead[]             @relation("LeadResponsavel")
-  onboardingItens     OnboardingItem[]   @relation("OnboardingResponsavel")
+  projetosResponsavel   Projeto[]          @relation("ProjetoResponsavel")
+  projetosCriados       Projeto[]          @relation("ProjetoCriadoPor")
+  envolvimentos         ProjetoEnvolvido[]
+  comentarios           Comentario[]
+  anexos                Anexo[]
+  apontamentos          Apontamento[]
+  jobsResponsavel       Job[]              @relation("JobResponsavel")
+  jobsCriados           Job[]              @relation("JobCriadoPor")
+  jobsEnvolvido         JobEnvolvido[]
+  tarefasResponsavel    JobTarefa[]
+  propostasResponsavel  Proposta[]         @relation("PropostaResponsavel")
+  propostasCriadas      Proposta[]         @relation("PropostaCriadoPor")
+  lancamentosCriados    Lancamento[]       @relation("LancamentoCriadoPor")
+  midiaResponsavel      MidiaPlano[]       @relation("MidiaResponsavel")
+  midiaCriados          MidiaPlano[]       @relation("MidiaCriadoPor")
+  producaoCriadas       ProducaoOrdem[]    @relation("ProducaoCriadoPor")
+  notificacoes          Notificacao[]      @relation("NotificacaoDestino")
+  notificacoesGeradas   Notificacao[]      @relation("NotificacaoAtor")
+  osResponsavel         OrdemServico[]     @relation("OsResponsavel")
+  osCriadas             OrdemServico[]     @relation("OsCriadoPor")
+  chatMensagens         ChatMensagem[]     @relation("ChatAutor")
+  chatLeituras          ChatLeitura[]
+  notasFiscais          NotaFiscal[]
+  leadsResponsavel      Lead[]             @relation("LeadResponsavel")
+  onboardingItens       OnboardingItem[]   @relation("OnboardingResponsavel")
+  reembolsosSolicitados Reembolso[]        @relation("ReembolsoSolicitante")
+  reembolsosAnalisados  Reembolso[]        @relation("ReembolsoAnalisadoPor")
 
   @@index([papel])
 }
 
 /// Chat interno: mural "geral" + conversas diretas. Canal = "geral" ou "dm:<idA>:<idB>" (ids ordenados).
 model ChatMensagem {
-  id       String   @id @default(cuid())
-  canal    String
-  autorId  String
-  autor    Usuario  @relation("ChatAutor", fields: [autorId], references: [id], onDelete: Cascade)
-  corpo    String
-  criadoEm DateTime @default(now())
+  id        String    @id @default(cuid())
+  canal     String
+  autorId   String
+  autor     Usuario   @relation("ChatAutor", fields: [autorId], references: [id], onDelete: Cascade)
+  corpo     String
+  criadoEm  DateTime  @default(now())
   editadoEm DateTime?
 
   @@index([canal, criadoEm])
@@ -146,30 +148,30 @@ enum OsStatus {
 
 /// Ordem de Serviço — documento de SAÍDA (emitido AO cliente). Base p/ Fatura e Recibo.
 model OrdemServico {
-  id                 String   @id @default(cuid())
-  numero             Int      @unique
+  id                 String    @id @default(cuid())
+  numero             Int       @unique
   titulo             String
   clienteId          String
   projetoId          String?
   responsavelId      String?
-  status             OsStatus @default(RASCUNHO)
-  dataEmissao        DateTime @default(now())
+  status             OsStatus  @default(RASCUNHO)
+  dataEmissao        DateTime  @default(now())
   vencimento         DateTime?
   formaPagamento     String?
   condicoesPagamento String?
   observacao         String?
-  valorTotal         Decimal  @default(0) @db.Decimal(14, 2)
+  valorTotal         Decimal   @default(0) @db.Decimal(14, 2)
   criadoPorId        String?
-  criadoEm           DateTime @default(now())
-  atualizadoEm       DateTime @updatedAt
+  criadoEm           DateTime  @default(now())
+  atualizadoEm       DateTime  @updatedAt
 
-  cliente     Cliente            @relation(fields: [clienteId], references: [id])
-  projeto     Projeto?           @relation(fields: [projetoId], references: [id], onDelete: SetNull)
-  responsavel Usuario?           @relation("OsResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
-  criadoPor   Usuario?           @relation("OsCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
-  itens         OrdemServicoItem[]
-  lancamentos   Lancamento[]
-  notasFiscais  NotaFiscal[]
+  cliente      Cliente            @relation(fields: [clienteId], references: [id])
+  projeto      Projeto?           @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  responsavel  Usuario?           @relation("OsResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor    Usuario?           @relation("OsCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  itens        OrdemServicoItem[]
+  lancamentos  Lancamento[]
+  notasFiscais NotaFiscal[]
 
   @@index([clienteId])
   @@index([status])
@@ -280,7 +282,7 @@ model Log {
   para         String?
   criadoEm     DateTime @default(now())
 
-  usuario      Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@index([entidadeTipo, entidadeId])
   @@index([criadoEm])
@@ -312,20 +314,21 @@ model Cliente {
   criadoEm            DateTime @default(now())
   atualizadoEm        DateTime @updatedAt
 
-  projetos            Projeto[]
-  jobs                Job[]
-  propostas           Proposta[]
-  lancamentos         Lancamento[]
-  midiaPlanos         MidiaPlano[]
-  producaoOrdens      ProducaoOrdem[]
-  ordensServico       OrdemServico[]
-  notasFiscais        NotaFiscal[]
-  leads               Lead[]
-  reunioes            Reuniao[]
-  onboarding          OnboardingItem[]
-  campanhas           Campanha[]
-  contratos           Contrato[]
-  portalToken         String?  @unique // link público do portal do cliente
+  projetos          Projeto[]
+  jobs              Job[]
+  propostas         Proposta[]
+  lancamentos       Lancamento[]
+  midiaPlanos       MidiaPlano[]
+  producaoOrdens    ProducaoOrdem[]
+  ordensServico     OrdemServico[]
+  notasFiscais      NotaFiscal[]
+  leads             Lead[]
+  reunioes          Reuniao[]
+  onboarding        OnboardingItem[]
+  campanhas         Campanha[]
+  contratos         Contrato[]
+  reembolsoDespesas ReembolsoDespesa[]
+  portalToken       String?            @unique // link público do portal do cliente
 
   @@index([arquivado])
   @@index([nome])
@@ -353,21 +356,21 @@ model Contrato {
 
 /// Campanha de tráfego pago (Meta, Google, etc.) de um cliente.
 model Campanha {
-  id          String   @id @default(cuid())
-  nome        String
-  clienteId   String
-  plataforma  String   @default("meta") // meta | google | tiktok | linkedin | outro
-  objetivo    String?
-  verba       Decimal? @db.Decimal(14, 2)
-  dataInicio  DateTime?
-  dataFim     DateTime?
-  status      String   @default("ativa") // ativa | pausada | encerrada
-  observacao  String?
-  criadoPorId String?
-  criadoEm    DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  id           String    @id @default(cuid())
+  nome         String
+  clienteId    String
+  plataforma   String    @default("meta") // meta | google | tiktok | linkedin | outro
+  objetivo     String?
+  verba        Decimal?  @db.Decimal(14, 2)
+  dataInicio   DateTime?
+  dataFim      DateTime?
+  status       String    @default("ativa") // ativa | pausada | encerrada
+  observacao   String?
+  criadoPorId  String?
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
 
-  cliente    Cliente              @relation(fields: [clienteId], references: [id])
+  cliente    Cliente             @relation(fields: [clienteId], references: [id])
   resultados CampanhaResultado[]
 
   @@index([clienteId])
@@ -376,16 +379,16 @@ model Campanha {
 
 /// Resultado de uma campanha num período (lançado manual ou importado).
 model CampanhaResultado {
-  id          String   @id @default(cuid())
-  campanhaId  String
-  data        DateTime
-  investido   Decimal  @default(0) @db.Decimal(14, 2)
-  alcance     Int      @default(0)
-  cliques     Int      @default(0)
-  conversoes  Int      @default(0)
-  leads       Int      @default(0)
-  observacao  String?
-  criadoEm    DateTime @default(now())
+  id         String   @id @default(cuid())
+  campanhaId String
+  data       DateTime
+  investido  Decimal  @default(0) @db.Decimal(14, 2)
+  alcance    Int      @default(0)
+  cliques    Int      @default(0)
+  conversoes Int      @default(0)
+  leads      Int      @default(0)
+  observacao String?
+  criadoEm   DateTime @default(now())
 
   campanha Campanha @relation(fields: [campanhaId], references: [id], onDelete: Cascade)
 
@@ -427,7 +430,8 @@ model Colaborador {
   criadoEm       DateTime  @default(now())
   atualizadoEm   DateTime  @updatedAt
 
-  usuario      Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  usuario     Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  lancamentos Lancamento[]
 
   @@index([ativo])
 }
@@ -447,8 +451,8 @@ model Fornecedor {
   criadoEm           DateTime @default(now())
   atualizadoEm       DateTime @updatedAt
 
-  lancamentos        Lancamento[]
-  producaoOrdens     ProducaoOrdem[]
+  lancamentos    Lancamento[]
+  producaoOrdens ProducaoOrdem[]
 
   @@index([arquivado])
 }
@@ -492,8 +496,8 @@ model Veiculo {
   criadoEm           DateTime    @default(now())
   atualizadoEm       DateTime    @updatedAt
 
-  programas          Programa[]
-  midiaPlanos        MidiaPlano[]
+  programas   Programa[]
+  midiaPlanos MidiaPlano[]
 
   @@index([arquivado])
   @@index([tipo])
@@ -507,7 +511,7 @@ model Programa {
   criadoEm      DateTime @default(now())
   atualizadoEm  DateTime @updatedAt
 
-  veiculo       Veiculo  @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
+  veiculo Veiculo @relation(fields: [veiculoId], references: [id], onDelete: Cascade)
 
   @@index([veiculoId])
 }
@@ -549,9 +553,9 @@ model Categoria {
   criadoEm     DateTime      @default(now())
   atualizadoEm DateTime      @updatedAt
 
-  pai          Categoria?    @relation("Plano", fields: [paiId], references: [id], onDelete: SetNull)
-  filhos       Categoria[]   @relation("Plano")
-  lancamentos  Lancamento[]
+  pai         Categoria?   @relation("Plano", fields: [paiId], references: [id], onDelete: SetNull)
+  filhos      Categoria[]  @relation("Plano")
+  lancamentos Lancamento[]
 
   @@index([tipo])
   @@index([paiId])
@@ -564,7 +568,8 @@ model CentroCusto {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  lancamentos  Lancamento[]
+  lancamentos       Lancamento[]
+  reembolsoDespesas ReembolsoDespesa[]
 }
 
 model ContaBancaria {
@@ -590,37 +595,38 @@ enum ProjetoStatus {
 }
 
 model Projeto {
-  id              String        @id @default(cuid())
-  numero          Int           @unique
-  nome            String
-  clienteId       String
-  responsavelId   String?
-  status          ProjetoStatus @default(SEM_STATUS)
-  prazoDesejado   DateTime?
-  prazoEstimado   DateTime?
-  budget          Decimal?      @db.Decimal(14, 2)
+  id               String        @id @default(cuid())
+  numero           Int           @unique
+  nome             String
+  clienteId        String
+  responsavelId    String?
+  status           ProjetoStatus @default(SEM_STATUS)
+  prazoDesejado    DateTime?
+  prazoEstimado    DateTime?
+  budget           Decimal?      @db.Decimal(14, 2)
   tempoEstimadoMin Int?
-  briefing        String?
-  favorito        Boolean       @default(false)
-  arquivado       Boolean       @default(false)
-  projetoPaiId    String?
-  criadoPorId     String?
-  criadoEm        DateTime      @default(now())
-  atualizadoEm    DateTime      @updatedAt
+  briefing         String?
+  favorito         Boolean       @default(false)
+  arquivado        Boolean       @default(false)
+  projetoPaiId     String?
+  criadoPorId      String?
+  criadoEm         DateTime      @default(now())
+  atualizadoEm     DateTime      @updatedAt
 
-  cliente      Cliente            @relation(fields: [clienteId], references: [id])
-  responsavel  Usuario?           @relation("ProjetoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
-  criadoPor    Usuario?           @relation("ProjetoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
-  pai          Projeto?           @relation("Subprojetos", fields: [projetoPaiId], references: [id], onDelete: SetNull)
-  subprojetos  Projeto[]          @relation("Subprojetos")
-  envolvidos   ProjetoEnvolvido[]
-  apontamentos Apontamento[]
-  jobs         Job[]
-  propostas    Proposta[]
-  lancamentos  Lancamento[]
-  midiaPlanos  MidiaPlano[]
-  producaoOrdens ProducaoOrdem[]
-  ordensServico  OrdemServico[]
+  cliente           Cliente            @relation(fields: [clienteId], references: [id])
+  responsavel       Usuario?           @relation("ProjetoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor         Usuario?           @relation("ProjetoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  pai               Projeto?           @relation("Subprojetos", fields: [projetoPaiId], references: [id], onDelete: SetNull)
+  subprojetos       Projeto[]          @relation("Subprojetos")
+  envolvidos        ProjetoEnvolvido[]
+  apontamentos      Apontamento[]
+  jobs              Job[]
+  propostas         Proposta[]
+  lancamentos       Lancamento[]
+  midiaPlanos       MidiaPlano[]
+  producaoOrdens    ProducaoOrdem[]
+  ordensServico     OrdemServico[]
+  reembolsoDespesas ReembolsoDespesa[]
 
   @@index([clienteId])
   @@index([status])
@@ -633,8 +639,8 @@ model ProjetoEnvolvido {
   usuarioId String
   criadoEm  DateTime @default(now())
 
-  projeto   Projeto  @relation(fields: [projetoId], references: [id], onDelete: Cascade)
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  projeto Projeto @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@id([projetoId, usuarioId])
   @@index([usuarioId])
@@ -642,15 +648,15 @@ model ProjetoEnvolvido {
 
 /// Comentário reutilizável por qualquer entidade (entidadeTipo + entidadeId).
 model Comentario {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   entidadeTipo String
   entidadeId   String
   autorId      String?
   texto        String
-  criadoEm     DateTime @default(now())
+  criadoEm     DateTime  @default(now())
   editadoEm    DateTime?
 
-  autor        Usuario? @relation(fields: [autorId], references: [id], onDelete: SetNull)
+  autor Usuario? @relation(fields: [autorId], references: [id], onDelete: SetNull)
 
   @@index([entidadeTipo, entidadeId])
 }
@@ -669,7 +675,7 @@ model Anexo {
   criadoPorId  String?
   criadoEm     DateTime @default(now())
 
-  criadoPor    Usuario? @relation(fields: [criadoPorId], references: [id], onDelete: SetNull)
+  criadoPor Usuario? @relation(fields: [criadoPorId], references: [id], onDelete: SetNull)
 
   @@index([entidadeTipo, entidadeId])
 }
@@ -685,9 +691,9 @@ model Apontamento {
   descricao String?
   criadoEm  DateTime @default(now())
 
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  projeto   Projeto? @relation(fields: [projetoId], references: [id], onDelete: Cascade)
-  job       Job?     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  usuario Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  projeto Projeto? @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  job     Job?     @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([projetoId])
   @@index([jobId])
@@ -707,50 +713,51 @@ model JobStatus {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  jobs         Job[]
+  jobs Job[]
 
   @@index([ordem])
 }
 
 model Job {
-  id           String      @id @default(cuid())
-  numero       Int         @unique
-  tipo         String      @default("outro") // catálogo em lib/jobs/tipos.ts (post_estatico, video, material_grafico…)
-  prioridade   String      @default("normal") // baixa | normal | alta | urgente
-  titulo       String
-  clienteId    String
-  projetoId    String?
-  responsavelId String?
-  statusId     String
-  prazo        DateTime? // p/ postagem = prazo de CRIAÇÃO da arte
-  prazoPostagem DateTime? // só postagem: quando vai ao ar
-  recorrenciaFreq String? // null = não recorrente; "semanal"|"quinzenal"|"mensal" → este job gera cópias
+  id                 String    @id @default(cuid())
+  numero             Int       @unique
+  tipo               String    @default("outro") // catálogo em lib/jobs/tipos.ts (post_estatico, video, material_grafico…)
+  prioridade         String    @default("normal") // baixa | normal | alta | urgente
+  titulo             String
+  clienteId          String
+  projetoId          String?
+  responsavelId      String?
+  statusId           String
+  prazo              DateTime? // p/ postagem = prazo de CRIAÇÃO da arte
+  prazoPostagem      DateTime? // só postagem: quando vai ao ar
+  recorrenciaFreq    String? // null = não recorrente; "semanal"|"quinzenal"|"mensal" → este job gera cópias
   recorrenciaProxima DateTime? // próxima data de geração
-  bloqueadoPorId String? // depende de outro job (não pode começar até ele concluir)
-  legenda      String? // só postagem
-  formatos     String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
-  briefing     String?
-  aprovacaoStatus String   @default("rascunho") // rascunho | enviado | aprovado | ajustes
-  aprovacaoToken String?  @unique // token do link público de aprovação do cliente
-  aprovacaoEm  DateTime? // quando a peça foi enviada para aprovação
-  concluidoEm  DateTime? // setado ao entrar em status isConcluido (para "% no prazo")
-  arquivado    Boolean     @default(false)
-  criadoPorId  String?
-  criadoEm     DateTime    @default(now())
-  atualizadoEm DateTime    @updatedAt
+  bloqueadoPorId     String? // depende de outro job (não pode começar até ele concluir)
+  legenda            String? // só postagem
+  formatos           String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
+  briefing           String?
+  aprovacaoStatus    String    @default("rascunho") // rascunho | enviado | aprovado | ajustes
+  aprovacaoToken     String?   @unique // token do link público de aprovação do cliente
+  aprovacaoEm        DateTime? // quando a peça foi enviada para aprovação
+  concluidoEm        DateTime? // setado ao entrar em status isConcluido (para "% no prazo")
+  arquivado          Boolean   @default(false)
+  criadoPorId        String?
+  criadoEm           DateTime  @default(now())
+  atualizadoEm       DateTime  @updatedAt
 
-  cliente      Cliente     @relation(fields: [clienteId], references: [id])
-  projeto      Projeto?    @relation(fields: [projetoId], references: [id], onDelete: SetNull)
-  responsavel  Usuario?    @relation("JobResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
-  criadoPor    Usuario?    @relation("JobCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
-  status       JobStatus   @relation(fields: [statusId], references: [id])
-  tarefas      JobTarefa[]
-  apontamentos Apontamento[]
-  lancamentos  Lancamento[]
-  envolvidos   JobEnvolvido[]
-  bloqueadoPor Job?        @relation("JobDependencia", fields: [bloqueadoPorId], references: [id], onDelete: SetNull)
-  bloqueia     Job[]       @relation("JobDependencia")
-  aprovacaoEventos AprovacaoEvento[]
+  cliente           Cliente            @relation(fields: [clienteId], references: [id])
+  projeto           Projeto?           @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  responsavel       Usuario?           @relation("JobResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor         Usuario?           @relation("JobCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  status            JobStatus          @relation(fields: [statusId], references: [id])
+  tarefas           JobTarefa[]
+  apontamentos      Apontamento[]
+  lancamentos       Lancamento[]
+  envolvidos        JobEnvolvido[]
+  bloqueadoPor      Job?               @relation("JobDependencia", fields: [bloqueadoPorId], references: [id], onDelete: SetNull)
+  bloqueia          Job[]              @relation("JobDependencia")
+  aprovacaoEventos  AprovacaoEvento[]
+  reembolsoDespesas ReembolsoDespesa[]
 
   @@index([clienteId])
   @@index([projetoId])
@@ -792,8 +799,8 @@ model JobTarefa {
   ordem         Int      @default(0)
   criadoEm      DateTime @default(now())
 
-  job           Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  responsavel   Usuario? @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  responsavel Usuario? @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
 
   @@index([jobId])
 }
@@ -809,22 +816,22 @@ enum PropostaStatus {
 }
 
 model Proposta {
-  id            String         @id @default(cuid())
-  numero        Int            @unique
-  versao        Int            @default(1)
-  titulo        String
-  clienteId     String
-  projetoId     String?
-  responsavelId String?
-  status        PropostaStatus @default(EM_ABERTO)
-  validadeDias  Int            @default(30)
-  prazo         DateTime?
-  introducao    String?
+  id                  String         @id @default(cuid())
+  numero              Int            @unique
+  versao              Int            @default(1)
+  titulo              String
+  clienteId           String
+  projetoId           String?
+  responsavelId       String?
+  status              PropostaStatus @default(EM_ABERTO)
+  validadeDias        Int            @default(30)
+  prazo               DateTime?
+  introducao          String?
   consideracoesFinais String?
-  valorTotal    Decimal        @default(0) @db.Decimal(14, 2)
-  criadoPorId   String?
-  criadoEm      DateTime       @default(now())
-  atualizadoEm  DateTime       @updatedAt
+  valorTotal          Decimal        @default(0) @db.Decimal(14, 2)
+  criadoPorId         String?
+  criadoEm            DateTime       @default(now())
+  atualizadoEm        DateTime       @updatedAt
 
   cliente     Cliente        @relation(fields: [clienteId], references: [id])
   projeto     Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
@@ -850,8 +857,8 @@ model PropostaItem {
   visivel    Boolean  @default(true)
   criadoEm   DateTime @default(now())
 
-  proposta   Proposta @relation(fields: [propostaId], references: [id], onDelete: Cascade)
-  produto    Produto? @relation(fields: [produtoId], references: [id], onDelete: SetNull)
+  proposta Proposta @relation(fields: [propostaId], references: [id], onDelete: Cascade)
+  produto  Produto? @relation(fields: [produtoId], references: [id], onDelete: SetNull)
 
   @@index([propostaId])
 }
@@ -875,57 +882,60 @@ enum CondicaoPagamento {
 }
 
 model Lancamento {
-  id              String            @id @default(cuid())
-  numero          Int               @unique
-  tipo            LancamentoTipo
-  titulo          String
+  id     String         @id @default(cuid())
+  numero Int            @unique
+  tipo   LancamentoTipo
+  titulo String
 
   // Sacado / Cedente: cliente (receita) ou fornecedor (despesa)
-  clienteId       String?
-  fornecedorId    String?
+  clienteId    String?
+  fornecedorId String?
 
-  categoriaId     String?
-  projetoId       String?
-  jobId           String?
-  osId            String?
-  centroCustoId   String?
-  contaId         String? // conta de origem / movimentação
-  contaDestinoId  String? // somente em transferência
+  categoriaId    String?
+  projetoId      String?
+  jobId          String?
+  osId           String?
+  centroCustoId  String?
+  colaboradorId  String? // beneficiário do pagamento (despesa) — a quem o valor se destina
+  contaId        String? // conta de origem / movimentação
+  contaDestinoId String? // somente em transferência
 
-  docNf           String?
+  docNf String?
 
   dataVencimento  DateTime
   dataCompetencia DateTime
   dataPagamento   DateTime?
   dataFaturamento DateTime?
 
-  valor           Decimal           @db.Decimal(14, 2)
-  acrescimos      Decimal           @default(0) @db.Decimal(14, 2)
-  descontos       Decimal           @default(0) @db.Decimal(14, 2)
+  valor      Decimal @db.Decimal(14, 2)
+  acrescimos Decimal @default(0) @db.Decimal(14, 2)
+  descontos  Decimal @default(0) @db.Decimal(14, 2)
 
-  condicao        CondicaoPagamento @default(A_VISTA)
-  status          LancamentoStatus  @default(EM_ABERTO)
-  observacao      String?
+  condicao   CondicaoPagamento @default(A_VISTA)
+  status     LancamentoStatus  @default(EM_ABERTO)
+  observacao String?
 
-  parcelaGrupo    String? // id que liga as parcelas de um mesmo lançamento
-  parcelaNum      Int? // número desta parcela (1..N)
-  parcelaTotal    Int? // total de parcelas
+  parcelaGrupo String? // id que liga as parcelas de um mesmo lançamento
+  parcelaNum   Int? // número desta parcela (1..N)
+  parcelaTotal Int? // total de parcelas
 
-  criadoPorId     String?
-  criadoEm        DateTime          @default(now())
-  atualizadoEm    DateTime          @updatedAt
+  criadoPorId  String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 
-  cliente       Cliente?       @relation(fields: [clienteId], references: [id], onDelete: SetNull)
-  fornecedor    Fornecedor?    @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
-  categoria     Categoria?     @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
-  projeto       Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
-  job           Job?           @relation(fields: [jobId], references: [id], onDelete: SetNull)
-  os            OrdemServico?  @relation(fields: [osId], references: [id], onDelete: SetNull)
-  centroCusto   CentroCusto?   @relation(fields: [centroCustoId], references: [id], onDelete: SetNull)
-  conta         ContaBancaria? @relation("LancamentoConta", fields: [contaId], references: [id], onDelete: SetNull)
-  contaDestino  ContaBancaria? @relation("LancamentoContaDestino", fields: [contaDestinoId], references: [id], onDelete: SetNull)
-  criadoPor     Usuario?       @relation("LancamentoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
-  notasFiscais  NotaFiscal[]
+  cliente      Cliente?       @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  fornecedor   Fornecedor?    @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
+  categoria    Categoria?     @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  projeto      Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  job          Job?           @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  os           OrdemServico?  @relation(fields: [osId], references: [id], onDelete: SetNull)
+  centroCusto  CentroCusto?   @relation(fields: [centroCustoId], references: [id], onDelete: SetNull)
+  colaborador  Colaborador?   @relation(fields: [colaboradorId], references: [id], onDelete: SetNull)
+  conta        ContaBancaria? @relation("LancamentoConta", fields: [contaId], references: [id], onDelete: SetNull)
+  contaDestino ContaBancaria? @relation("LancamentoContaDestino", fields: [contaDestinoId], references: [id], onDelete: SetNull)
+  criadoPor    Usuario?       @relation("LancamentoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  notasFiscais NotaFiscal[]
+  reembolso    Reembolso?     @relation("ReembolsoLancamento")
 
   @@index([tipo])
   @@index([status])
@@ -946,32 +956,32 @@ enum MidiaStatus {
 }
 
 model MidiaPlano {
-  id            String      @id @default(cuid())
-  numero        Int         @unique
-  versao        Int         @default(1)
-  tipo          VeiculoTipo
-  titulo        String
-  clienteId     String
-  projetoId     String?
-  responsavelId String?
-  veiculoId     String?
-  target        String?
-  prazo         DateTime?
-  contatoVeiculo String?
-  rede          String?
-  tipoRede      String?
-  numOrcamento  String?
-  comissaoPct   Decimal     @default(0) @db.Decimal(6, 2)
-  honorarios    Decimal     @default(0) @db.Decimal(14, 2)
-  bonificacao   Decimal     @default(0) @db.Decimal(14, 2)
+  id                    String      @id @default(cuid())
+  numero                Int         @unique
+  versao                Int         @default(1)
+  tipo                  VeiculoTipo
+  titulo                String
+  clienteId             String
+  projetoId             String?
+  responsavelId         String?
+  veiculoId             String?
+  target                String?
+  prazo                 DateTime?
+  contatoVeiculo        String?
+  rede                  String?
+  tipoRede              String?
+  numOrcamento          String?
+  comissaoPct           Decimal     @default(0) @db.Decimal(6, 2)
+  honorarios            Decimal     @default(0) @db.Decimal(14, 2)
+  bonificacao           Decimal     @default(0) @db.Decimal(14, 2)
   instrucoesFaturamento String?
-  vencimento    DateTime?
-  formaPagamento String?
-  valorTotal    Decimal     @default(0) @db.Decimal(14, 2)
-  status        MidiaStatus @default(EM_ABERTO)
-  criadoPorId   String?
-  criadoEm      DateTime    @default(now())
-  atualizadoEm  DateTime    @updatedAt
+  vencimento            DateTime?
+  formaPagamento        String?
+  valorTotal            Decimal     @default(0) @db.Decimal(14, 2)
+  status                MidiaStatus @default(EM_ABERTO)
+  criadoPorId           String?
+  criadoEm              DateTime    @default(now())
+  atualizadoEm          DateTime    @updatedAt
 
   cliente     Cliente      @relation(fields: [clienteId], references: [id])
   projeto     Projeto?     @relation(fields: [projetoId], references: [id], onDelete: SetNull)
@@ -987,48 +997,48 @@ model MidiaPlano {
 }
 
 model MidiaPeca {
-  id       String  @id @default(cuid())
+  id       String   @id @default(cuid())
   planoId  String
   codigo   String // letra/código (A, B, ...)
   nome     String
   criadoEm DateTime @default(now())
 
-  plano    MidiaPlano        @relation(fields: [planoId], references: [id], onDelete: Cascade)
-  linhas   MidiaGradeLinha[]
+  plano  MidiaPlano        @relation(fields: [planoId], references: [id], onDelete: Cascade)
+  linhas MidiaGradeLinha[]
 
   @@index([planoId])
 }
 
 model MidiaGrade {
-  id       String  @id @default(cuid())
-  planoId  String
+  id        String   @id @default(cuid())
+  planoId   String
   pracaNome String?
-  ano      Int
-  mes      Int
-  criadoEm DateTime @default(now())
+  ano       Int
+  mes       Int
+  criadoEm  DateTime @default(now())
 
-  plano    MidiaPlano        @relation(fields: [planoId], references: [id], onDelete: Cascade)
-  linhas   MidiaGradeLinha[]
+  plano  MidiaPlano        @relation(fields: [planoId], references: [id], onDelete: Cascade)
+  linhas MidiaGradeLinha[]
 
   @@index([planoId])
 }
 
 model MidiaGradeLinha {
-  id           String   @id @default(cuid())
-  gradeId      String
-  pecaId       String?
-  programaNome String?
-  formato      String?
+  id            String    @id @default(cuid())
+  gradeId       String
+  pecaId        String?
+  programaNome  String?
+  formato       String?
   // Mídia externa (por período): produto/local/datas + quantidade total de inserções.
-  produto      String?
-  local        String?
+  produto       String?
+  local         String?
   periodoInicio DateTime?
   periodoFim    DateTime?
-  quantidade   Int      @default(0)
-  desconto     Decimal  @default(0) @db.Decimal(12, 2)
-  valorInsercao Decimal @default(0) @db.Decimal(12, 2)
-  ordem        Int      @default(0)
-  criadoEm     DateTime @default(now())
+  quantidade    Int       @default(0)
+  desconto      Decimal   @default(0) @db.Decimal(12, 2)
+  valorInsercao Decimal   @default(0) @db.Decimal(12, 2)
+  ordem         Int       @default(0)
+  criadoEm      DateTime  @default(now())
 
   grade     MidiaGrade      @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   peca      MidiaPeca?      @relation(fields: [pecaId], references: [id], onDelete: SetNull)
@@ -1038,12 +1048,12 @@ model MidiaGradeLinha {
 }
 
 model MidiaInsercao {
-  id          String @id @default(cuid())
+  id           String @id @default(cuid())
   gradeLinhaId String
-  dia         Int // dia do mês (1..31)
-  quantidade  Int
+  dia          Int // dia do mês (1..31)
+  quantidade   Int
 
-  gradeLinha  MidiaGradeLinha @relation(fields: [gradeLinhaId], references: [id], onDelete: Cascade)
+  gradeLinha MidiaGradeLinha @relation(fields: [gradeLinhaId], references: [id], onDelete: Cascade)
 
   @@unique([gradeLinhaId, dia])
   @@index([gradeLinhaId])
@@ -1065,17 +1075,17 @@ model Empresa {
   atualizadoEm    DateTime @updatedAt
 
   // Dados fiscais p/ emissão de NFS-e (preenchidos quando integrar o provedor).
-  inscricaoMunicipal       String?
-  codigoMunicipioIbge      String? // IBGE do município emissor (Betim = 3106705)
-  itemListaServico         String? // LC 116/03 (ex.: 17.06 — propaganda e publicidade)
+  inscricaoMunicipal        String?
+  codigoMunicipioIbge       String? // IBGE do município emissor (Betim = 3106705)
+  itemListaServico          String? // LC 116/03 (ex.: 17.06 — propaganda e publicidade)
   codigoTributarioMunicipio String? // código de serviço / CNAE municipal
-  aliquotaIss              Decimal? @db.Decimal(6, 4) // ex.: 2.0000 (=2%)
-  optanteSimplesNacional   Boolean  @default(true)
-  incentivadorCultural     Boolean  @default(false)
-  regimeTributario         String? // descrição (ex.: "Simples Nacional")
-  urlEmissaoNfse           String? // link do portal onde se emite a NFS-e (botão "Emitir nota")
+  aliquotaIss               Decimal? @db.Decimal(6, 4) // ex.: 2.0000 (=2%)
+  optanteSimplesNacional    Boolean  @default(true)
+  incentivadorCultural      Boolean  @default(false)
+  regimeTributario          String? // descrição (ex.: "Simples Nacional")
+  urlEmissaoNfse            String? // link do portal onde se emite a NFS-e (botão "Emitir nota")
 
-  metaFaturamentoMensal    Decimal? @db.Decimal(14, 2) // meta de receita do mês (indicadores)
+  metaFaturamentoMensal Decimal? @db.Decimal(14, 2) // meta de receita do mês (indicadores)
 }
 
 /// Situação de uma NFS-e junto ao provedor/prefeitura.
@@ -1088,22 +1098,22 @@ enum NfStatus {
 
 /// NFS-e emitida via provedor (Focus NFe). Documento FISCAL — distinto da OS/Fatura (comercial).
 model NotaFiscal {
-  id               String   @id @default(cuid())
-  ref              String   @unique // referência idempotente enviada ao provedor
-  osId             String?
-  lancamentoId     String?
-  clienteId        String
-  status           NfStatus @default(PROCESSANDO)
-  numero           String? // número da NFS-e autorizada
+  id                String   @id @default(cuid())
+  ref               String   @unique // referência idempotente enviada ao provedor
+  osId              String?
+  lancamentoId      String?
+  clienteId         String
+  status            NfStatus @default(PROCESSANDO)
+  numero            String? // número da NFS-e autorizada
   codigoVerificacao String?
-  valor            Decimal  @db.Decimal(14, 2)
-  descricao        String
-  urlPdf           String?
-  urlXml           String?
-  mensagemErro     String?
-  criadoPorId      String?
-  criadoEm         DateTime @default(now())
-  atualizadoEm     DateTime @updatedAt
+  valor             Decimal  @db.Decimal(14, 2)
+  descricao         String
+  urlPdf            String?
+  urlXml            String?
+  mensagemErro      String?
+  criadoPorId       String?
+  criadoEm          DateTime @default(now())
+  atualizadoEm      DateTime @updatedAt
 
   os         OrdemServico? @relation(fields: [osId], references: [id], onDelete: SetNull)
   lancamento Lancamento?   @relation(fields: [lancamentoId], references: [id], onDelete: SetNull)
@@ -1145,11 +1155,11 @@ model ProducaoOrdem {
   criadoEm       DateTime       @default(now())
   atualizadoEm   DateTime       @updatedAt
 
-  cliente     Cliente        @relation(fields: [clienteId], references: [id])
-  projeto     Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
-  fornecedor  Fornecedor?    @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
-  criadoPor   Usuario?       @relation("ProducaoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
-  itens       ProducaoItem[]
+  cliente    Cliente        @relation(fields: [clienteId], references: [id])
+  projeto    Projeto?       @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  fornecedor Fornecedor?    @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
+  criadoPor  Usuario?       @relation("ProducaoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  itens      ProducaoItem[]
 
   @@index([clienteId])
   @@index([status])
@@ -1165,7 +1175,80 @@ model ProducaoItem {
   valorTotal Decimal  @default(0) @db.Decimal(14, 2)
   criadoEm   DateTime @default(now())
 
-  ordemRef   ProducaoOrdem @relation(fields: [ordemId], references: [id], onDelete: Cascade)
+  ordemRef ProducaoOrdem @relation(fields: [ordemId], references: [id], onDelete: Cascade)
 
   @@index([ordemId])
+}
+
+// ─────────────────────────── Central de Reembolsos ───────────────────────────
+
+/// Fluxo de reembolso operacional: colaborador junta despesas do mês num pedido,
+/// envia para o financeiro conferir (aprovar/ajustar/reprovar), que programa e paga.
+enum ReembolsoStatus {
+  RASCUNHO // colaborador ainda montando
+  ENVIADO // enviado para análise do financeiro
+  PENDENTE_AJUSTE // financeiro pediu correção/comprovante
+  APROVADO // validado pelo financeiro
+  REPROVADO // recusado
+  PROGRAMADO // entrou no lote de pagamento (lançamento gerado)
+  PAGO // reembolso realizado
+}
+
+model Reembolso {
+  id                    String          @id @default(cuid())
+  numero                Int             @unique
+  solicitanteId         String
+  competenciaAno        Int
+  competenciaMes        Int // 1..12
+  status                ReembolsoStatus @default(RASCUNHO)
+  observacaoSolicitante String?
+  // Análise do financeiro
+  analisadoPorId        String?
+  analisadoEm           DateTime?
+  parecerFinanceiro     String? // motivo do ajuste/recusa ou observação da análise
+  // Pagamento
+  dataPrevistaPagamento DateTime? // dia 20 do mês seguinte à competência
+  dataPagamento         DateTime?
+  lancamentoId          String?         @unique // despesa gerada no financeiro ao programar
+  criadoEm              DateTime        @default(now())
+  atualizadoEm          DateTime        @updatedAt
+
+  solicitante  Usuario            @relation("ReembolsoSolicitante", fields: [solicitanteId], references: [id])
+  analisadoPor Usuario?           @relation("ReembolsoAnalisadoPor", fields: [analisadoPorId], references: [id], onDelete: SetNull)
+  lancamento   Lancamento?        @relation("ReembolsoLancamento", fields: [lancamentoId], references: [id], onDelete: SetNull)
+  despesas     ReembolsoDespesa[]
+
+  @@index([solicitanteId])
+  @@index([status])
+  @@index([competenciaAno, competenciaMes])
+}
+
+model ReembolsoDespesa {
+  id                String   @id @default(cuid())
+  reembolsoId       String
+  data              DateTime // data em que a despesa ocorreu
+  categoria         String // chave: alimentacao|transporte_app|combustivel|estacionamento|pedagio|hospedagem|material|compra_autorizada|deslocamento|viagem|outros
+  descricao         String
+  valor             Decimal  @db.Decimal(14, 2)
+  formaPagamento    String? // pix|dinheiro|cartao_proprio|cartao_empresa|outro
+  clienteId         String?
+  projetoId         String?
+  jobId             String?
+  centroCustoId     String?
+  repassavelCliente Boolean  @default(false) // despesa que pode ser repassada ao cliente
+  autorizadoPor     String? // quem autorizou (obrigatório acima do limite)
+  aprovada          Boolean? // avaliação individual do financeiro: null=não avaliada, true/false
+  parecerItem       String? // motivo da reprovação do item
+  ordem             Int      @default(0)
+  criadoEm          DateTime @default(now())
+  atualizadoEm      DateTime @updatedAt
+
+  reembolso   Reembolso    @relation(fields: [reembolsoId], references: [id], onDelete: Cascade)
+  cliente     Cliente?     @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  projeto     Projeto?     @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  job         Job?         @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  centroCusto CentroCusto? @relation(fields: [centroCustoId], references: [id], onDelete: SetNull)
+
+  @@index([reembolsoId])
+  @@index([clienteId])
 }

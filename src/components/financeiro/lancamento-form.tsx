@@ -33,6 +33,7 @@ export type LancamentoInicial = Partial<{
   projetoId: string;
   jobId: string;
   centroCustoId: string;
+  colaboradorId: string;
   contaId: string;
   contaDestinoId: string;
   quitado: boolean;
@@ -56,6 +57,7 @@ export function LancamentoForm({
   contas,
   projetos,
   jobs,
+  colaboradores = [],
   cancelHref,
 }: {
   id: string | null;
@@ -68,6 +70,7 @@ export function LancamentoForm({
   contas: Opt[];
   projetos: ProjetoOpt[];
   jobs: JobOpt[];
+  colaboradores?: Opt[];
   cancelHref: string;
 }) {
   const action = salvarLancamento.bind(null, id, tipo);
@@ -272,6 +275,16 @@ export function LancamentoForm({
               {centros.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
             </select>
           </div>
+          {tipo === "DESPESA" && (
+            <div className="space-y-2">
+              <Label htmlFor="colaboradorId">Beneficiário (colaborador)</Label>
+              <select id="colaboradorId" name="colaboradorId" className={sel} defaultValue={inicial.colaboradorId ?? ""}>
+                <option value="">— (nenhum)</option>
+                {colaboradores.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+              </select>
+              <p className="text-xs text-muted-foreground">A quem o pagamento se destina.</p>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="docNf">Documento / NF</Label>
             <Input id="docNf" name="docNf" defaultValue={inicial.docNf ?? ""} />
