@@ -9,7 +9,8 @@ import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
 import { formatDate, cn } from "@/lib/utils";
 import { formatHoras } from "@/lib/projetos/situacao";
-import { PageHeader } from "@/components/shared/page-header";
+import { BrandHero } from "@/components/shared/brand-hero";
+import { ListChecks } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -46,11 +47,14 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        titulo={`#${job.numero} · ${job.titulo}`}
-        descricao={`${rotuloTipoJob(job.tipo)} · ${job.cliente?.nome ?? ""}`}
-        acao={
-          <div className="flex flex-wrap items-center gap-2">
+      <BrandHero
+        titulo={job.titulo}
+        subtitulo={`#${job.numero} · ${rotuloTipoJob(job.tipo)} · ${job.cliente?.nome ?? ""}`}
+        icon={ListChecks}
+        statusLabel={job.status.nome}
+        statusCor={job.status.cor ?? undefined}
+        acoes={
+          <>
             <MoverStatus
               jobId={job.id}
               statusId={job.statusId}
@@ -92,7 +96,7 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
                 confirmarLabel="Excluir definitivamente"
               />
             )}
-          </div>
+          </>
         }
       />
 

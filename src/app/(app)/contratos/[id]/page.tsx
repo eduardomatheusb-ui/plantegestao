@@ -6,11 +6,12 @@ import { podeModulo } from "@/lib/permissoes";
 import { obterContrato } from "@/lib/contratos/queries";
 import { rotuloContratoStatus, corContratoStatus } from "@/lib/contratos/constantes";
 import { excluirContrato } from "@/lib/contratos/actions";
-import { PageHeader } from "@/components/shared/page-header";
+import { BrandHero } from "@/components/shared/brand-hero";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { HistoryPanel } from "@/components/shared/history-panel";
+import { iniciais } from "@/lib/format";
 import { formatBRL } from "@/lib/utils";
 
 function dataBR(d: Date | null) {
@@ -36,20 +37,20 @@ export default async function ContratoDetalhePage({ params }: { params: Promise<
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <BrandHero
         titulo={c.cliente?.nomeFantasia || c.cliente?.nome || "Contrato"}
-        descricao={`${formatBRL(c.valorMensal)}/mês`}
-        acao={
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: `${corContratoStatus(c.status)}22`, color: corContratoStatus(c.status) }}>
-              {rotuloContratoStatus(c.status)}
-            </span>
+        subtitulo={`${formatBRL(c.valorMensal)}/mês`}
+        inicial={iniciais(c.cliente?.nomeFantasia || c.cliente?.nome || "?")}
+        statusLabel={rotuloContratoStatus(c.status)}
+        statusCor={corContratoStatus(c.status)}
+        acoes={
+          <>
             <Button asChild variant="outline" size="sm"><Link href="/contratos"><ArrowLeft className="size-4" /> Contratos</Link></Button>
             {podeEditar && <Button asChild variant="outline" size="sm"><Link href={`/contratos/${c.id}/editar`}><Pencil className="size-4" /> Editar</Link></Button>}
             {podeExcluir && (
               <ConfirmButton action={excluirContrato.bind(null, c.id)} variant="ghost" triggerIcon={<Trash2 className="size-4" />} triggerLabel="Excluir" titulo="Excluir contrato?" descricao="Esta ação não pode ser desfeita." confirmarLabel="Excluir" />
             )}
-          </div>
+          </>
         }
       />
 

@@ -6,7 +6,8 @@ import { podeModulo } from "@/lib/permissoes";
 import { obterCampanha } from "@/lib/trafego/queries";
 import { excluirCampanha } from "@/lib/trafego/actions";
 import { rotuloPlataforma, rotuloStatusCampanha, corStatusCampanha } from "@/lib/trafego/constantes";
-import { PageHeader } from "@/components/shared/page-header";
+import { BrandHero } from "@/components/shared/brand-hero";
+import { Megaphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/shared/confirm-button";
@@ -39,20 +40,20 @@ export default async function CampanhaDetalhePage({ params }: { params: Promise<
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <BrandHero
         titulo={c.nome}
-        descricao={`${c.cliente?.nomeFantasia || c.cliente?.nome} · ${rotuloPlataforma(c.plataforma)}`}
-        acao={
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: `${corStatusCampanha(c.status)}22`, color: corStatusCampanha(c.status) }}>
-              {rotuloStatusCampanha(c.status)}
-            </span>
+        subtitulo={`${c.cliente?.nomeFantasia || c.cliente?.nome} · ${rotuloPlataforma(c.plataforma)}`}
+        icon={Megaphone}
+        statusLabel={rotuloStatusCampanha(c.status)}
+        statusCor={corStatusCampanha(c.status)}
+        acoes={
+          <>
             <Button asChild variant="outline" size="sm"><Link href="/trafego"><ArrowLeft className="size-4" /> Campanhas</Link></Button>
             {podeEditar && <Button asChild variant="outline" size="sm"><Link href={`/trafego/${c.id}/editar`}><Pencil className="size-4" /> Editar</Link></Button>}
             {podeExcluir && (
               <ConfirmButton action={excluirCampanha.bind(null, c.id)} variant="ghost" triggerIcon={<Trash2 className="size-4" />} triggerLabel="Excluir" titulo="Excluir campanha?" descricao="Os resultados lançados também serão removidos. Esta ação não pode ser desfeita." confirmarLabel="Excluir" />
             )}
-          </div>
+          </>
         }
       />
 

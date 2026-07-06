@@ -8,7 +8,8 @@ import { situacaoProjeto, STATUS_LABEL, formatHoras } from "@/lib/projetos/situa
 import { TONE_BADGE } from "@/lib/projetos/estilo";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { iniciais } from "@/lib/format";
-import { PageHeader } from "@/components/shared/page-header";
+import { BrandHero } from "@/components/shared/brand-hero";
+import { FolderKanban } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,11 +52,12 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        titulo={`#${projeto.numero} · ${projeto.nome}`}
-        descricao={projeto.cliente?.nome}
-        acao={
-          <div className="flex flex-wrap items-center gap-2">
+      <BrandHero
+        titulo={projeto.nome}
+        subtitulo={`#${projeto.numero} · ${projeto.cliente?.nome ?? ""}`}
+        icon={FolderKanban}
+        acoes={
+          <>
             <FavoritoButton id={projeto.id} favorito={projeto.favorito} />
             <Badge variant={TONE_BADGE[situacao.tone]}>{situacao.label}</Badge>
             <StatusSelect id={projeto.id} status={projeto.status} disabled={!podeEditar} />
@@ -97,7 +99,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
                 confirmarLabel="Excluir definitivamente"
               />
             )}
-          </div>
+          </>
         }
       />
 

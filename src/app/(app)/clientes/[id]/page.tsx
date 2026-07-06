@@ -11,6 +11,8 @@ import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { baseUrl } from "@/lib/email";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { BrandHero } from "@/components/shared/brand-hero";
 import { OnboardingPanel } from "@/components/onboarding/onboarding-panel";
 import { PortalPanel } from "@/components/portal/portal-panel";
 import { HistoryPanel } from "@/components/shared/history-panel";
@@ -63,40 +65,20 @@ export default async function ClienteVisaoPage({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-6">
-      {/* Hero com a identidade da Plante */}
-      <section className="overflow-hidden rounded-2xl bg-chrome text-chrome-foreground shadow-sm">
-        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            {c.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={c.logoUrl} alt={c.nomeFantasia || c.nome} className="size-14 shrink-0 rounded-2xl bg-white object-contain p-1" />
-            ) : (
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand-yellow font-display text-xl font-extrabold text-ink-900">
-                {iniciais(c.nomeFantasia || c.nome)}
-              </span>
-            )}
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate font-display text-2xl font-bold leading-tight">{c.nomeFantasia || c.nome}</h1>
-                {st && (
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ background: `${STATUS_COR[c.status] ?? "#9ca3af"}33`, color: STATUS_COR[c.status] ?? "#cbd5e1" }}>
-                    {st.label}
-                  </span>
-                )}
-              </div>
-              {c.nomeFantasia && <p className="truncate text-sm text-chrome-foreground/60">{c.nome}</p>}
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/cadastros/clientes/${id}`} className="inline-flex items-center gap-1.5 rounded-md border border-white-a10 px-3 py-2 text-sm font-medium text-chrome-foreground transition-colors hover:bg-white-a10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow">
-              <Pencil className="size-4" aria-hidden="true" /> Editar cadastro
-            </Link>
-            <Link href={`/jobs/novo?cliente=${id}`} className="inline-flex items-center gap-1.5 rounded-md bg-brand-yellow px-3 py-2 text-sm font-semibold text-ink-900 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-chrome">
-              <Plus className="size-4" aria-hidden="true" /> Novo job
-            </Link>
-          </div>
-        </div>
-      </section>
+      <BrandHero
+        titulo={c.nomeFantasia || c.nome}
+        subtitulo={c.nomeFantasia ? c.nome : undefined}
+        inicial={iniciais(c.nomeFantasia || c.nome)}
+        logoUrl={c.logoUrl}
+        statusLabel={st?.label}
+        statusCor={STATUS_COR[c.status]}
+        acoes={
+          <>
+            <Button asChild variant="outline" size="sm"><Link href={`/cadastros/clientes/${id}`}><Pencil className="size-4" /> Editar cadastro</Link></Button>
+            <Button asChild size="sm"><Link href={`/jobs/novo?cliente=${id}`}><Plus className="size-4" /> Novo job</Link></Button>
+          </>
+        }
+      />
 
       {/* Resumo 360 */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
