@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, ShieldCheck, Lock } from "lucide-react";
+import { LogOut, ShieldCheck, Lock, HelpCircle } from "lucide-react";
 import { IconeAcessibilidade } from "@/components/acessibilidade/icone-acessibilidade";
 import {
   DropdownMenu,
@@ -52,6 +52,12 @@ export function UserMenu({
           <Link href="/configuracoes/acessibilidade">
             <IconeAcessibilidade className="size-4" />
             Acessibilidade
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/ajuda">
+            <HelpCircle className="size-4" />
+            Ajuda (guia do TREM)
           </Link>
         </DropdownMenuItem>
         {podeAdmin && (
