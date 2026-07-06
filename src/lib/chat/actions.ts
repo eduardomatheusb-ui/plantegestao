@@ -54,6 +54,24 @@ export async function enviarMensagem(canal: string, corpo: string): Promise<void
   }
 }
 
+/** Edita uma mensagem própria. */
+export async function editarMensagem(id: string, corpo: string): Promise<void> {
+  const user = await userOrThrow();
+  const texto = corpo.trim();
+  if (!texto) return;
+  const m = await db.chatMensagem.findUnique({ where: { id }, select: { autorId: true } });
+  if (!m || m.autorId !== user.id) throw new Error("Você só pode editar suas próprias mensagens.");
+  await db.chatMensagem.update({ where: { id }, data: { corpo: texto.slice(0, 4000), editadoEm: new Date() } });
+}
+
+/** Exclui uma mensagem própria. */
+export async function excluirMensagem(id: string): Promise<void> {
+  const user = await userOrThrow();
+  const m = await db.chatMensagem.findUnique({ where: { id }, select: { autorId: true } });
+  if (!m || m.autorId !== user.id) throw new Error("Você só pode excluir suas próprias mensagens.");
+  await db.chatMensagem.delete({ where: { id } });
+}
+
 /** Conversas do usuário (para o widget flutuante). */
 export async function buscarConversas(): Promise<ConversaView[]> {
   const user = await userOrThrow();

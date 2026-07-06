@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Send, Hash, Loader2 } from "lucide-react";
-import { enviarMensagem, buscarMensagens, marcarCanalLido } from "@/lib/chat/actions";
+import { Send, Hash, Loader2, Pencil, Trash2, Check, X } from "lucide-react";
+import { enviarMensagem, buscarMensagens, marcarCanalLido, editarMensagem, excluirMensagem } from "@/lib/chat/actions";
+import { recarregarSeStale } from "@/lib/stale-action";
 import { iniciais } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ConversaView, ChatMensagemView } from "@/lib/chat/queries";
@@ -37,6 +38,8 @@ export function ChatJanela({
   const [mensagens, setMensagens] = React.useState(mensagensIniciais);
   const [texto, setTexto] = React.useState("");
   const [enviando, setEnviando] = React.useState(false);
+  const [editandoId, setEditandoId] = React.useState<string | null>(null);
+  const [editTexto, setEditTexto] = React.useState("");
   const fimRef = React.useRef<HTMLDivElement>(null);
   const conversaAtual = conversas.find((c) => c.canal === canalAtual);
 
@@ -82,7 +85,7 @@ export function ChatJanela({
     setEnviando(true);
     setTexto("");
     // Otimista
-    const tmp: ChatMensagemView = { id: `tmp-${Date.now()}`, autorId: meuId, autorNome: "Você", autorAvatar: null, corpo: t, criadoEm: new Date() };
+    const tmp: ChatMensagemView = { id: `tmp-${Date.now()}`, autorId: meuId, autorNome: "Você", autorAvatar: null, corpo: t, criadoEm: new Date(), editadoEm: null };
     setMensagens((m) => [...m, tmp]);
     try {
       await enviarMensagem(canalAtual, t);
@@ -93,6 +96,35 @@ export function ChatJanela({
       setTexto(t);
     } finally {
       setEnviando(false);
+    }
+  }
+
+  function abrirEdicao(m: ChatMensagemView) {
+    setEditandoId(m.id);
+    setEditTexto(m.corpo);
+  }
+
+  async function salvarEdicao(id: string) {
+    const t = editTexto.trim();
+    if (!t) return;
+    const antes = mensagens;
+    setMensagens((m) => m.map((x) => (x.id === id ? { ...x, corpo: t, editadoEm: new Date() } : x)));
+    setEditandoId(null);
+    try {
+      await editarMensagem(id, t);
+    } catch (e) {
+      if (!recarregarSeStale(e)) setMensagens(antes);
+    }
+  }
+
+  async function excluir(id: string) {
+    if (!window.confirm("Excluir esta mensagem?")) return;
+    const antes = mensagens;
+    setMensagens((m) => m.filter((x) => x.id !== id));
+    try {
+      await excluirMensagem(id);
+    } catch (e) {
+      if (!recarregarSeStale(e)) setMensagens(antes);
     }
   }
 
@@ -163,7 +195,7 @@ export function ChatJanela({
                       <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">{dia}</span>
                     </div>
                   )}
-                  <div className={cn("flex gap-2", meu && "flex-row-reverse")}>
+                  <div className={cn("group flex items-end gap-2", meu && "flex-row-reverse")}>
                     {!meu && (
                       <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold" title={m.autorNome}>
                         {iniciais(m.autorNome)}
@@ -171,9 +203,39 @@ export function ChatJanela({
                     )}
                     <div className={cn("max-w-[75%] rounded-2xl px-3 py-1.5 text-sm", meu ? "bg-brand-yellow text-ink-900" : "bg-muted")}>
                       {!meu && <span className="mb-0.5 block text-[11px] font-semibold opacity-70">{m.autorNome}</span>}
-                      <span className="whitespace-pre-wrap break-words">{m.corpo}</span>
-                      <span className={cn("mt-0.5 block text-[10px]", meu ? "text-ink-900/60" : "text-muted-foreground")}>{horario(m.criadoEm)}</span>
+                      {editandoId === m.id ? (
+                        <div className="flex flex-col gap-1">
+                          <textarea
+                            value={editTexto}
+                            onChange={(e) => setEditTexto(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void salvarEdicao(m.id); }
+                              if (e.key === "Escape") setEditandoId(null);
+                            }}
+                            rows={2}
+                            autoFocus
+                            className="w-56 max-w-full resize-none rounded-md border border-ink-900/20 bg-white/70 px-2 py-1 text-sm text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/30"
+                          />
+                          <div className="flex justify-end gap-1">
+                            <button type="button" onClick={() => setEditandoId(null)} aria-label="Cancelar edição" className="rounded p-1 text-ink-900/60 hover:bg-ink-900/10"><X className="size-3.5" /></button>
+                            <button type="button" onClick={() => void salvarEdicao(m.id)} disabled={!editTexto.trim()} aria-label="Salvar edição" className="rounded p-1 text-ink-900/80 hover:bg-ink-900/10 disabled:opacity-40"><Check className="size-3.5" /></button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="whitespace-pre-wrap break-words">{m.corpo}</span>
+                          <span className={cn("mt-0.5 block text-[10px]", meu ? "text-ink-900/60" : "text-muted-foreground")}>
+                            {horario(m.criadoEm)}{m.editadoEm ? " · editado" : ""}
+                          </span>
+                        </>
+                      )}
                     </div>
+                    {meu && editandoId !== m.id && !m.id.startsWith("tmp-") && (
+                      <div className="flex shrink-0 gap-0.5 self-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                        <button type="button" onClick={() => abrirEdicao(m)} aria-label="Editar mensagem" title="Editar" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"><Pencil className="size-3.5" /></button>
+                        <button type="button" onClick={() => void excluir(m.id)} aria-label="Excluir mensagem" title="Excluir" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"><Trash2 className="size-3.5" /></button>
+                      </div>
+                    )}
                   </div>
                 </React.Fragment>
               );

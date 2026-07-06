@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { MessageCircle, X, ArrowLeft, Send, Hash, Loader2, Maximize2 } from "lucide-react";
-import { enviarMensagem, buscarMensagens, buscarConversas, buscarChatNaoLidas, marcarCanalLido } from "@/lib/chat/actions";
+import { MessageCircle, X, ArrowLeft, Send, Hash, Loader2, Maximize2, Pencil, Trash2, Check } from "lucide-react";
+import { enviarMensagem, buscarMensagens, buscarConversas, buscarChatNaoLidas, marcarCanalLido, editarMensagem, excluirMensagem } from "@/lib/chat/actions";
 import type { ConversaView, ChatMensagemView } from "@/lib/chat/queries";
 import { iniciais } from "@/lib/format";
 import { recarregarSeStale } from "@/lib/stale-action";
@@ -25,6 +25,8 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
   const [mensagens, setMensagens] = React.useState<ChatMensagemView[]>([]);
   const [texto, setTexto] = React.useState("");
   const [enviando, setEnviando] = React.useState(false);
+  const [editandoId, setEditandoId] = React.useState<string | null>(null);
+  const [editTexto, setEditTexto] = React.useState("");
   const fimRef = React.useRef<HTMLDivElement>(null);
 
   const conversaAtual = conversas.find((c) => c.canal === canal);
@@ -97,7 +99,7 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
     if (!t || enviando || !canal) return;
     setEnviando(true);
     setTexto("");
-    const tmp: ChatMensagemView = { id: `tmp-${meuId}-${mensagens.length}`, autorId: meuId, autorNome: "Você", autorAvatar: null, corpo: t, criadoEm: new Date() };
+    const tmp: ChatMensagemView = { id: `tmp-${meuId}-${mensagens.length}`, autorId: meuId, autorNome: "Você", autorAvatar: null, corpo: t, criadoEm: new Date(), editadoEm: null };
     setMensagens((m) => [...m, tmp]);
     try {
       await enviarMensagem(canal, t);
@@ -106,6 +108,30 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
       if (!recarregarSeStale(e)) { setMensagens((m) => m.filter((x) => x.id !== tmp.id)); setTexto(t); }
     } finally {
       setEnviando(false);
+    }
+  }
+
+  async function salvarEdicao(id: string) {
+    const t = editTexto.trim();
+    if (!t) return;
+    const antes = mensagens;
+    setMensagens((m) => m.map((x) => (x.id === id ? { ...x, corpo: t, editadoEm: new Date() } : x)));
+    setEditandoId(null);
+    try {
+      await editarMensagem(id, t);
+    } catch (e) {
+      if (!recarregarSeStale(e)) setMensagens(antes);
+    }
+  }
+
+  async function excluir(id: string) {
+    if (!window.confirm("Excluir esta mensagem?")) return;
+    const antes = mensagens;
+    setMensagens((m) => m.filter((x) => x.id !== id));
+    try {
+      await excluirMensagem(id);
+    } catch (e) {
+      if (!recarregarSeStale(e)) setMensagens(antes);
     }
   }
 
@@ -195,7 +221,7 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
                   mensagens.map((m) => {
                     const meu = m.autorId === meuId;
                     return (
-                      <div key={m.id} className={cn("flex gap-2", meu && "flex-row-reverse")}>
+                      <div key={m.id} className={cn("group flex items-end gap-2", meu && "flex-row-reverse")}>
                         {!meu && (
                           <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold" title={m.autorNome}>
                             {iniciais(m.autorNome)}
@@ -203,9 +229,39 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
                         )}
                         <div className={cn("max-w-[78%] rounded-2xl px-3 py-1.5 text-sm", meu ? "bg-brand-yellow text-ink-900" : "bg-muted")}>
                           {!meu && <span className="mb-0.5 block text-[11px] font-semibold opacity-70">{m.autorNome}</span>}
-                          <span className="whitespace-pre-wrap break-words">{m.corpo}</span>
-                          <span className={cn("mt-0.5 block text-[10px]", meu ? "text-ink-900/60" : "text-muted-foreground")}>{horario(m.criadoEm)}</span>
+                          {editandoId === m.id ? (
+                            <div className="flex flex-col gap-1">
+                              <textarea
+                                value={editTexto}
+                                onChange={(e) => setEditTexto(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void salvarEdicao(m.id); }
+                                  if (e.key === "Escape") setEditandoId(null);
+                                }}
+                                rows={2}
+                                autoFocus
+                                className="w-48 max-w-full resize-none rounded-md border border-ink-900/20 bg-white/70 px-2 py-1 text-sm text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/30"
+                              />
+                              <div className="flex justify-end gap-1">
+                                <button type="button" onClick={() => setEditandoId(null)} aria-label="Cancelar edição" className="rounded p-1 text-ink-900/60 hover:bg-ink-900/10"><X className="size-3.5" /></button>
+                                <button type="button" onClick={() => void salvarEdicao(m.id)} disabled={!editTexto.trim()} aria-label="Salvar edição" className="rounded p-1 text-ink-900/80 hover:bg-ink-900/10 disabled:opacity-40"><Check className="size-3.5" /></button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="whitespace-pre-wrap break-words">{m.corpo}</span>
+                              <span className={cn("mt-0.5 block text-[10px]", meu ? "text-ink-900/60" : "text-muted-foreground")}>
+                                {horario(m.criadoEm)}{m.editadoEm ? " · editado" : ""}
+                              </span>
+                            </>
+                          )}
                         </div>
+                        {meu && editandoId !== m.id && !m.id.startsWith("tmp-") && (
+                          <div className="flex shrink-0 gap-0.5 self-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                            <button type="button" onClick={() => { setEditandoId(m.id); setEditTexto(m.corpo); }} aria-label="Editar mensagem" title="Editar" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"><Pencil className="size-3.5" /></button>
+                            <button type="button" onClick={() => void excluir(m.id)} aria-label="Excluir mensagem" title="Excluir" className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"><Trash2 className="size-3.5" /></button>
+                          </div>
+                        )}
                       </div>
                     );
                   })

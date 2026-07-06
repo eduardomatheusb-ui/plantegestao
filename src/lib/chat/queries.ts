@@ -28,6 +28,7 @@ export type ChatMensagemView = {
   autorAvatar: string | null;
   corpo: string;
   criadoEm: Date;
+  editadoEm: Date | null;
 };
 
 export async function listarMensagens(canal: string, userId: string, limite = 150): Promise<ChatMensagemView[]> {
@@ -36,11 +37,11 @@ export async function listarMensagens(canal: string, userId: string, limite = 15
     where: { canal },
     orderBy: { criadoEm: "desc" },
     take: limite,
-    select: { id: true, autorId: true, corpo: true, criadoEm: true, autor: { select: { nome: true, avatarUrl: true } } },
+    select: { id: true, autorId: true, corpo: true, criadoEm: true, editadoEm: true, autor: { select: { nome: true, avatarUrl: true } } },
   });
   return msgs
     .reverse()
-    .map((m) => ({ id: m.id, autorId: m.autorId, autorNome: m.autor.nome, autorAvatar: m.autor.avatarUrl, corpo: m.corpo, criadoEm: m.criadoEm }));
+    .map((m) => ({ id: m.id, autorId: m.autorId, autorNome: m.autor.nome, autorAvatar: m.autor.avatarUrl, corpo: m.corpo, criadoEm: m.criadoEm, editadoEm: m.editadoEm }));
 }
 
 export type ConversaView = {

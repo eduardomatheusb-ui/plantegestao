@@ -318,6 +318,21 @@ export async function removerComentario(id: string) {
   if (path) revalidatePath(path);
 }
 
+export async function editarComentario(id: string, texto: string): Promise<{ error?: string }> {
+  const user = await getSessionUserOrThrow();
+  const t = texto.trim();
+  if (!t) return { error: "O comentário não pode ficar vazio." };
+  const c = await db.comentario.findUnique({ where: { id } });
+  if (!c) return { error: "Comentário não encontrado." };
+  if (c.autorId !== user.id && !podePapel(user.papel, EDITAR)) {
+    return { error: "Você só pode editar seus próprios comentários." };
+  }
+  await db.comentario.update({ where: { id }, data: { texto: t.slice(0, 4000), editadoEm: new Date() } });
+  const path = caminhoEntidade(c.entidadeTipo, c.entidadeId);
+  if (path) revalidatePath(path);
+  return {};
+}
+
 const urlSchema = z.string().url("Informe um link válido (http/https).");
 
 export async function adicionarAnexo(

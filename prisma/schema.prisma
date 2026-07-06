@@ -121,6 +121,7 @@ model ChatMensagem {
   autor    Usuario  @relation("ChatAutor", fields: [autorId], references: [id], onDelete: Cascade)
   corpo    String
   criadoEm DateTime @default(now())
+  editadoEm DateTime?
 
   @@index([canal, criadoEm])
 }
@@ -647,6 +648,7 @@ model Comentario {
   autorId      String?
   texto        String
   criadoEm     DateTime @default(now())
+  editadoEm    DateTime?
 
   autor        Usuario? @relation(fields: [autorId], references: [id], onDelete: SetNull)
 
