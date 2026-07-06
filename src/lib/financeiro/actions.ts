@@ -24,6 +24,11 @@ function txt(v: FormDataEntryValue | null): string | null {
   const s = v?.toString().trim();
   return s ? s : null;
 }
+function addMonths(d: Date, n: number): Date {
+  const x = new Date(d);
+  x.setMonth(x.getMonth() + n);
+  return x;
+}
 
 export async function salvarLancamento(
   id: string | null,
@@ -86,9 +91,42 @@ export async function salvarLancamento(
       dataPagamento: quitar ? (data(formData.get("dataPagamento")) ?? new Date()) : data(formData.get("dataPagamento")),
     };
 
+    // Parcelamento: só na criação (não na edição).
+    let parcelas: { valor: number; vencimento: string }[] = [];
+    if (!id && base.condicao === "PARCELADO") {
+      try { parcelas = JSON.parse(formData.get("parcelas")?.toString() || "[]"); } catch { parcelas = []; }
+      parcelas = parcelas.filter((p) => p && p.valor > 0 && p.vencimento);
+    }
+
     if (id) {
       await db.lancamento.update({ where: { id }, data: base });
       await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "editou o lançamento" });
+    } else if (parcelas.length >= 2) {
+      const grupo = crypto.randomUUID();
+      const total = parcelas.length;
+      for (let i = 0; i < total; i++) {
+        const p = parcelas[i];
+        const venc = new Date(`${p.vencimento}T00:00:00`);
+        const comp = addMonths(dataCompetencia!, i);
+        const numero = await proximoNumero("LANCAMENTO");
+        await db.lancamento.create({
+          data: {
+            ...base,
+            titulo: `${titulo} (${i + 1}/${total})`,
+            valor: p.valor,
+            dataVencimento: venc,
+            dataCompetencia: comp,
+            status: "EM_ABERTO",
+            dataPagamento: null,
+            parcelaGrupo: grupo,
+            parcelaNum: i + 1,
+            parcelaTotal: total,
+            numero,
+            criadoPorId: user.id,
+          },
+        });
+      }
+      await registrarLog({ entidadeTipo: "lancamento", entidadeId: grupo, usuarioId: user.id, acao: `criou lançamento parcelado (${total}x)` });
     } else {
       const numero = await proximoNumero("LANCAMENTO");
       await db.lancamento.create({ data: { ...base, numero, criadoPorId: user.id } });

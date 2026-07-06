@@ -905,6 +905,10 @@ model Lancamento {
   status          LancamentoStatus  @default(EM_ABERTO)
   observacao      String?
 
+  parcelaGrupo    String? // id que liga as parcelas de um mesmo lançamento
+  parcelaNum      Int? // número desta parcela (1..N)
+  parcelaTotal    Int? // total de parcelas
+
   criadoPorId     String?
   criadoEm        DateTime          @default(now())
   atualizadoEm    DateTime          @updatedAt

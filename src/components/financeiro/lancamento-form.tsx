@@ -78,6 +78,32 @@ export function LancamentoForm({
   const [completo, setCompleto] = React.useState(false);
   const [quitar, setQuitar] = React.useState(Boolean(inicial.quitado));
 
+  const [condicao, setCondicao] = React.useState(inicial.condicao ?? "A_VISTA");
+  const [valor, setValor] = React.useState(inicial.valor ?? "");
+  const [venc, setVenc] = React.useState(inicial.dataVencimento ?? "");
+  const [nParcelas, setNParcelas] = React.useState(2);
+  const [parcelas, setParcelas] = React.useState<{ valor: string; vencimento: string }[]>([]);
+  const parcelado = condicao === "PARCELADO" && !id;
+
+  function isoAddMonths(iso: string, n: number) {
+    const d = new Date(`${iso}T00:00:00`);
+    d.setMonth(d.getMonth() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function gerarParcelas() {
+    const totalC = Math.round(Number(valor || "0") * 100);
+    const n = Math.max(2, Math.min(60, Math.trunc(nParcelas) || 2));
+    if (!(totalC > 0) || !venc) { setParcelas([]); return; }
+    const baseC = Math.floor(totalC / n);
+    const resto = totalC - baseC * n;
+    const arr = Array.from({ length: n }, (_, i) => ({
+      valor: ((baseC + (i < resto ? 1 : 0)) / 100).toFixed(2),
+      vencimento: isoAddMonths(venc, i),
+    }));
+    setParcelas(arr);
+  }
+  const somaParc = parcelas.reduce((s, p) => s + Number(p.valor || 0), 0);
+
   return (
     <form action={formAction} className="space-y-6" noValidate>
       {state.error && (
@@ -134,7 +160,7 @@ export function LancamentoForm({
 
         <div className="space-y-2">
           <Label htmlFor="dataVencimento">Vencimento <span className="text-destructive">*</span></Label>
-          <Input id="dataVencimento" name="dataVencimento" type="date" defaultValue={inicial.dataVencimento ?? ""} aria-invalid={!!err("dataVencimento")} />
+          <Input id="dataVencimento" name="dataVencimento" type="date" value={venc} onChange={(e) => setVenc(e.target.value)} aria-invalid={!!err("dataVencimento")} />
           {err("dataVencimento") && <p className="text-xs text-destructive">{err("dataVencimento")}</p>}
         </div>
         <div className="space-y-2">
@@ -148,8 +174,8 @@ export function LancamentoForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="valor">Valor (R$) <span className="text-destructive">*</span></Label>
-          <Input id="valor" name="valor" type="number" step="0.01" min="0" defaultValue={inicial.valor ?? ""} aria-invalid={!!err("valor")} />
+          <Label htmlFor="valor">Valor {parcelado ? "total " : ""}(R$) <span className="text-destructive">*</span></Label>
+          <Input id="valor" name="valor" type="number" step="0.01" min="0" value={valor} onChange={(e) => setValor(e.target.value)} aria-invalid={!!err("valor")} />
           {err("valor") && <p className="text-xs text-destructive">{err("valor")}</p>}
         </div>
         <div className="space-y-2">
@@ -163,26 +189,64 @@ export function LancamentoForm({
 
         <div className="space-y-2">
           <Label htmlFor="condicao">Condição</Label>
-          <select id="condicao" name="condicao" className={sel} defaultValue={inicial.condicao ?? "A_VISTA"}>
+          <select id="condicao" name="condicao" className={sel} value={condicao} onChange={(e) => setCondicao(e.target.value)}>
             <option value="A_VISTA">À vista</option>
             <option value="PARCELADO">Parcelado</option>
           </select>
         </div>
       </div>
 
-      {/* Quitação */}
-      <div className="space-y-3 rounded-md border border-border p-3">
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="quitarAgora" checked={quitar} onChange={(e) => setQuitar(e.target.checked)} className="size-4 rounded border-input" />
-          Marcar como quitado
-        </label>
-        {quitar && (
-          <div className="max-w-xs space-y-2">
-            <Label htmlFor="dataPagamento">Data de pagamento</Label>
-            <Input id="dataPagamento" name="dataPagamento" type="date" defaultValue={inicial.dataPagamento ?? ""} />
+      {/* Parcelamento (só na criação) */}
+      {parcelado && (
+        <div className="space-y-3 rounded-md border border-border p-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="nParcelas">Nº de parcelas</Label>
+              <Input id="nParcelas" type="number" min={2} max={60} value={nParcelas} onChange={(e) => setNParcelas(Number(e.target.value))} className="w-28" />
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={gerarParcelas}>Gerar parcelas</Button>
+            {parcelas.length > 0 && (
+              <span className={`text-sm ${Math.abs(somaParc - Number(valor || 0)) > 0.001 ? "font-medium text-destructive" : "text-muted-foreground"}`}>
+                Soma: R$ {somaParc.toFixed(2)} / R$ {Number(valor || 0).toFixed(2)}
+              </span>
+            )}
           </div>
-        )}
-      </div>
+
+          {parcelas.length > 0 && (
+            <>
+              <div className="space-y-2">
+                {parcelas.map((p, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="w-10 shrink-0 text-xs text-muted-foreground tabular-nums">{i + 1}/{parcelas.length}</span>
+                    <Input type="date" value={p.vencimento} onChange={(e) => setParcelas((a) => a.map((x, j) => (j === i ? { ...x, vencimento: e.target.value } : x)))} className="flex-1" />
+                    <Input type="number" step="0.01" min="0" value={p.valor} onChange={(e) => setParcelas((a) => a.map((x, j) => (j === i ? { ...x, valor: e.target.value } : x)))} className="w-32" />
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">Edite datas/valores se as parcelas forem diferentes. A competência avança 1 mês por parcela; as parcelas nascem em aberto.</p>
+            </>
+          )}
+          {parcelas.length === 0 && <p className="text-xs text-muted-foreground">Informe valor total e vencimento acima, escolha o nº de parcelas e clique em <strong>Gerar parcelas</strong>.</p>}
+
+          <input type="hidden" name="parcelas" value={JSON.stringify(parcelas.map((p) => ({ valor: Number(p.valor), vencimento: p.vencimento })))} />
+        </div>
+      )}
+
+      {/* Quitação (não em lançamento parcelado) */}
+      {!parcelado && (
+        <div className="space-y-3 rounded-md border border-border p-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="quitarAgora" checked={quitar} onChange={(e) => setQuitar(e.target.checked)} className="size-4 rounded border-input" />
+            Marcar como quitado
+          </label>
+          {quitar && (
+            <div className="max-w-xs space-y-2">
+              <Label htmlFor="dataPagamento">Data de pagamento</Label>
+              <Input id="dataPagamento" name="dataPagamento" type="date" defaultValue={inicial.dataPagamento ?? ""} />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Completo */}
       <button type="button" onClick={() => setCompleto((v) => !v)} className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
