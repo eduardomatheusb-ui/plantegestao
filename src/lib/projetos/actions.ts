@@ -364,7 +364,8 @@ export async function enviarArquivoAnexo(
     });
   } catch (e) {
     console.error("[anexo] upload falhou:", e);
-    return { error: "Não foi possível enviar o arquivo (o armazenamento só funciona no site publicado)." };
+    const msg = e instanceof Error ? e.message : String(e);
+    return { error: `Não foi possível enviar o arquivo. Detalhe: ${msg}` };
   }
   const path = caminhoEntidade(entidadeTipo, entidadeId);
   if (path) revalidatePath(path);
