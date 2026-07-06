@@ -1,6 +1,8 @@
 import "server-only";
 
 const TIMEOUT_MS = 45_000;
+const OPENAI_RESPONSES_ENDPOINT = "https://api.openai.com/v1/responses";
+const OPENAI_MODEL = process.env.AGENTE_OPENAI_MODEL || "gpt-5.5";
 
 export type DadosGrafica = {
   produto: string;
@@ -50,6 +52,10 @@ function normalizarToken(token: string): string {
   return token.trim().replace(/^["']|["']$/g, "").replace(/^Bearer\s+/i, "");
 }
 
+function isOpenAiPlatformKey(token: string): boolean {
+  return token.startsWith("sk-");
+}
+
 function respostaParaTexto(data: unknown): string {
   if (typeof data === "string") return data;
   if (data && typeof data === "object") {
@@ -65,19 +71,92 @@ function criarId(prefixo: string): string {
   return `${prefixo}-${Date.now().toString(36)}-${rand}`;
 }
 
-export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGraficaResultado> {
-  if (!agenteGraficaConfigurado()) {
+function extrairTextoOpenAi(data: unknown): string | null {
+  if (!data || typeof data !== "object") return null;
+  const obj = data as Record<string, unknown>;
+  if (typeof obj.output_text === "string" && obj.output_text.trim()) return obj.output_text.trim();
+
+  const output = obj.output;
+  if (!Array.isArray(output)) return null;
+
+  const partes: string[] = [];
+  for (const item of output) {
+    if (!item || typeof item !== "object") continue;
+    const content = (item as Record<string, unknown>).content;
+    if (!Array.isArray(content)) continue;
+    for (const bloco of content) {
+      if (!bloco || typeof bloco !== "object") continue;
+      const b = bloco as Record<string, unknown>;
+      const text = b.text ?? b.output_text;
+      if (typeof text === "string" && text.trim()) partes.push(text.trim());
+    }
+  }
+  return partes.length ? partes.join("\n\n") : null;
+}
+
+async function chamarOpenAiResponses(dados: DadosGrafica, apiKey: string, requestId: string): Promise<AgenteGraficaResultado> {
+  const prompt = montarPromptGrafica(dados);
+  try {
+    const res = await fetch(OPENAI_RESPONSES_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        tools: [{ type: "web_search" }],
+        input: prompt,
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+
+    const raw = await res.text();
+    let data: unknown;
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch {
+      data = { texto: raw };
+    }
+
+    if (!res.ok) {
+      const mensagem =
+        data && typeof data === "object" && "error" in data
+          ? JSON.stringify((data as Record<string, unknown>).error)
+          : respostaParaTexto(data);
+      return {
+        error: `A OpenAI não respondeu corretamente. ${mensagem}`,
+        status: res.status,
+        requestId,
+        raw: data,
+      };
+    }
+
     return {
-      error: "Agente de gráfica não configurado. Defina AGENTE_API_URL e AGENTE_API_KEY no ambiente.",
+      texto: extrairTextoOpenAi(data) ?? respostaParaTexto(data),
+      status: res.status,
+      requestId,
+      json: data,
+    };
+  } catch (err) {
+    const mensagem = err instanceof Error ? err.message : "Falha de rede com a OpenAI.";
+    return { error: mensagem, requestId };
+  }
+}
+
+async function chamarWorkspaceAgent(dados: DadosGrafica, apiKey: string, requestId: string): Promise<AgenteGraficaResultado> {
+  if (!process.env.AGENTE_API_URL) {
+    return {
+      error: "Agente de gráfica não configurado. Defina AGENTE_API_URL no ambiente.",
+      requestId,
     };
   }
 
   const prompt = montarPromptGrafica(dados);
-  const apiKey = normalizarToken(process.env.AGENTE_API_KEY!);
-  const requestId = criarId("grafica");
 
   try {
-    const res = await fetch(process.env.AGENTE_API_URL!, {
+    const res = await fetch(process.env.AGENTE_API_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -132,4 +211,19 @@ export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGr
     const mensagem = err instanceof Error ? err.message : "Falha de rede com o agente.";
     return { error: mensagem, requestId };
   }
+}
+
+export async function chamarAgenteGrafica(dados: DadosGrafica): Promise<AgenteGraficaResultado> {
+  if (!process.env.AGENTE_API_KEY) {
+    return {
+      error: "Agente de gráfica não configurado. Defina AGENTE_API_KEY no ambiente.",
+    };
+  }
+
+  const apiKey = normalizarToken(process.env.AGENTE_API_KEY!);
+  const requestId = criarId("grafica");
+
+  return isOpenAiPlatformKey(apiKey)
+    ? chamarOpenAiResponses(dados, apiKey, requestId)
+    : chamarWorkspaceAgent(dados, apiKey, requestId);
 }
