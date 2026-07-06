@@ -41,7 +41,8 @@ export function ComparacaoGraficaForm() {
         setResultado(res);
       } catch (err) {
         if (!recarregarSeStale(err)) {
-          setResultado({ error: "Não foi possível consultar o agente agora." });
+          const mensagem = err instanceof Error ? err.message : "Não foi possível consultar o agente agora.";
+          setResultado({ error: mensagem });
         }
       }
     });

@@ -2,7 +2,7 @@ import "server-only";
 
 const TIMEOUT_MS = 45_000;
 const OPENAI_RESPONSES_ENDPOINT = "https://api.openai.com/v1/responses";
-const OPENAI_MODEL = process.env.AGENTE_OPENAI_MODEL || "gpt-5.5";
+const OPENAI_MODEL = process.env.AGENTE_OPENAI_MODEL || "gpt-4.1-mini";
 
 export type DadosGrafica = {
   produto: string;
