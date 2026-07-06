@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { ChatWidget } from "@/components/chat/chat-widget";
+import { AvisoSessao } from "@/components/layout/aviso-sessao";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
@@ -39,6 +40,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <main id="conteudo" tabIndex={-1} className="flex-1 p-4 focus:outline-none lg:p-8">{children}</main>
       </div>
       <ChatWidget meuId={user.id} naoLidasIniciais={chatNaoLidas} />
+      <AvisoSessao />
     </div>
   );
 }
