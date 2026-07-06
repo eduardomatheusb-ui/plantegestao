@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, ShieldCheck, Lock, Accessibility } from "lucide-react";
+import { LogOut, ShieldCheck, Lock } from "lucide-react";
+import { IconeAcessibilidade } from "@/components/acessibilidade/icone-acessibilidade";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,7 +50,7 @@ export function UserMenu({
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/configuracoes/acessibilidade">
-            <Accessibility className="size-4" />
+            <IconeAcessibilidade className="size-4" />
             Acessibilidade
           </Link>
         </DropdownMenuItem>
