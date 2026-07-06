@@ -7,8 +7,6 @@ import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { Logo } from "@/components/brand/logo";
 import { iniciais } from "@/lib/format";
-import { getEmpresa } from "@/lib/empresa";
-import { Mail, Phone } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Portal do cliente — Plante" };
@@ -27,7 +25,6 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
 
   const { cliente, jobs, postagens, aprovacoes } = dados;
   const nome = cliente.nomeFantasia || cliente.nome;
-  const empresa = await getEmpresa();
 
   return (
     <div className="min-h-screen bg-muted/20">
@@ -131,24 +128,6 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
               ))}
             </ul>
           )}
-        </section>
-
-        {/* Fale com a Plante */}
-        <section className="rounded-2xl bg-chrome p-5 text-chrome-foreground">
-          <p className="font-display text-base font-semibold">Precisa falar com a gente?</p>
-          <p className="mt-1 text-sm text-chrome-foreground/60">A equipe da {empresa.marca} está à disposição.</p>
-          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
-            {empresa.telefone && (
-              <a href={`tel:${empresa.telefone.replace(/[^\d+]/g, "")}`} className="inline-flex items-center gap-2 font-medium hover:text-brand-yellow">
-                <Phone className="size-4" aria-hidden="true" /> {empresa.telefone}
-              </a>
-            )}
-            {empresa.email && (
-              <a href={`mailto:${empresa.email}`} className="inline-flex items-center gap-2 font-medium hover:text-brand-yellow">
-                <Mail className="size-4" aria-hidden="true" /> {empresa.email}
-              </a>
-            )}
-          </div>
         </section>
 
         <footer className="pt-2 text-center text-xs text-muted-foreground">
