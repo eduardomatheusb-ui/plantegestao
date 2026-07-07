@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { HistoryPanel } from "@/components/shared/history-panel";
+import { MarkdownView } from "@/components/shared/markdown-view";
 import { IaAssist } from "@/components/ia/ia-assist";
 import { gerarAtaIA } from "@/lib/ia/actions";
 
@@ -70,7 +71,7 @@ export default async function ReuniaoDetalhePage({ params }: { params: Promise<{
         </CardHeader>
         <CardContent>
           {r.ata ? (
-            <p className="whitespace-pre-wrap text-sm">{r.ata}</p>
+            <MarkdownView texto={r.ata} />
           ) : (
             <p className="text-sm text-muted-foreground">
               Nenhuma ata escrita ainda. Clique em <strong>Editar</strong> para escrever do seu jeito, ou gere um rascunho com a IA abaixo e clique em <strong>Usar como ata</strong>.

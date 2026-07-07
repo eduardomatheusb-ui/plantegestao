@@ -5,6 +5,7 @@ import { getEmpresa } from "@/lib/empresa";
 import { formatDate } from "@/lib/utils";
 import { LogoMark } from "@/components/brand/logo";
 import { PrintButton } from "@/components/propostas/print-button";
+import { MarkdownView } from "@/components/shared/markdown-view";
 
 export const metadata = { title: "Ata de reunião — impressão" };
 
@@ -52,7 +53,12 @@ export default async function ImprimirReuniaoPage({ params }: { params: Promise<
           {r.participantes && <p className="sm:col-span-2"><span className="text-neutral-500">Participantes:</span> {r.participantes}</p>}
         </section>
 
-        <Secao titulo="Ata" texto={r.ata} />
+        {r.ata && (
+          <section className="mt-5">
+            <h2 className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Ata</h2>
+            <MarkdownView texto={r.ata} className="mt-1 prose-p:my-1.5 text-[13px]" />
+          </section>
+        )}
         <Secao titulo="Pauta" texto={r.pauta} />
         <Secao titulo="Decisões" texto={r.decisoes} />
         <Secao titulo="Próximos passos" texto={r.proximosPassos} />
