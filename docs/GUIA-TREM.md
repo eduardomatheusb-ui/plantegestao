@@ -3,7 +3,7 @@
 Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas práticas** e
 **exemplos**. Leia por área conforme sua necessidade.
 
-> **Regra de ouro:** o TREM organiza o trabalho da agência de ponta a ponta — do lead ao
+> **Regra de ouro:** o TREM organiza o trabalho da agência de ponta a ponta, do lead ao
 > pós-venda. Quanto mais completo o cadastro (cliente, contato, brand kit), mais o sistema
 > trabalha por você (portal, relatórios, alertas, e-mails).
 
@@ -40,6 +40,11 @@ Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas p
 
 ## 1. Primeiros passos: acesso e conta
 
+Antes de qualquer coisa, você precisa entrar e deixar a conta segura. Esta seção cobre o
+login, o que acontece quando a senha erra ou a sessão fica parada, e onde estão as
+configurações da sua conta. Vale a leitura no primeiro acesso, principalmente para quem
+vai mexer com dados financeiros.
+
 **Entrar:** acesse `trem.agenciaplante.com.br`, informe **e-mail e senha**. Se você tiver
 verificação em duas etapas (2FA) ligada, o sistema pede o **código do app autenticador**
 depois da senha.
@@ -54,12 +59,15 @@ depois da senha.
 - **Minha conta (senha e 2FA):** troque sua senha e ative a verificação em duas etapas.
 - **Acessibilidade:** texto maior, mais espaçamento, reduzir movimento, alto contraste.
 
-> **Boas práticas:** ative o **2FA** (principalmente quem vê financeiro). Nunca compartilhe
+> **Boas práticas:** ative o **2FA**, principalmente quem vê financeiro. Nunca compartilhe
 > login. Se esquecer a senha, peça a um Administrador para gerar um link de redefinição.
 
 ---
 
 ## 2. Minha página (dashboard)
+
+É por aqui que o dia começa. A dashboard reúne, numa tela só, o que você precisa olhar logo
+cedo antes de sair espalhando a atenção pelo sistema.
 
 É a sua tela inicial. Mostra um resumo do seu dia: sua pauta, indicadores rápidos e
 aniversariantes. Use como ponto de partida da manhã.
@@ -68,71 +76,88 @@ aniversariantes. Use como ponto de partida da manhã.
 
 ## 3. Chat da equipe e comentários
 
+Boa parte da conversa do dia não precisa sair para o WhatsApp nem para o e-mail. O TREM tem
+um chat interno e um sistema de comentários que ficam colados ao trabalho, então a decisão
+sobre um job fica registrada onde o job está. Esta seção mostra as duas coisas e quando usar
+cada uma.
+
 Conversa interna, sem sair do sistema. Fica no **balão flutuante** (canto inferior direito)
 em qualquer tela, e também em **Chat** no menu.
 
 - **Geral:** mural de toda a equipe.
 - **Direta:** conversa 1 a 1 com um colega.
 - A bolinha vermelha mostra **mensagens não lidas**. Mensagens no chat também aparecem no
-  **sino de notificações** (as diretas mandam e-mail; o Geral só notifica no sino).
+  **sino de notificações**. As diretas mandam e-mail; o Geral só notifica no sino.
 - **Editar / excluir:** passe o mouse (ou toque) sobre **a sua própria** mensagem para
   **editar** ou **excluir**. Mensagem alterada aparece com "· editado".
 
 **Comentários** (nos projetos, jobs e outras telas):
-- Escreva **@nome** para **mencionar** um colega — ele recebe notificação e a menção fica
+- Escreva **@nome** para **mencionar** um colega. Ele recebe notificação e a menção fica
   destacada.
 - **Links** (http/https) viram **clicáveis** automaticamente.
 - Você pode **editar** ou **excluir** os seus comentários (gestores também podem moderar);
   comentário alterado mostra "· editado".
 
 > **Boas práticas:** use o chat para o dia a dia rápido; decisões importantes registre em
-> **comentário no job/projeto** ou em **ata de reunião** (fica no histórico).
+> **comentário no job/projeto** ou em **ata de reunião**, que fica no histórico.
 
 ---
 
 ## 4. Comercial — CRM / funil de leads
 
+Todo cliente foi um lead antes. Aqui você acompanha as oportunidades de venda desde o
+primeiro contato até virarem contrato, com a previsão de vendas saindo direto do estágio de
+cada uma.
+
 **Para quê:** acompanhar oportunidades de venda antes de virarem cliente.
 
-**Como usar:** menu **CRM (funil)** → **Novo lead**. Preencha contato, empresa, origem
-(indicação, Instagram…), valor estimado e responsável. O lead anda pelas etapas:
-**novo → contato → proposta → negociação → ganho / perdido** (arraste ou use o seletor).
+**Como usar:** menu **CRM (funil)**, **Novo lead**. Preencha contato, empresa, origem
+(indicação, Instagram e assim por diante), valor estimado e responsável. O lead anda pelas
+etapas: **novo, contato, proposta, negociação, ganho ou perdido** (arraste ou use o seletor).
 
 - Ao marcar **Ganho** ou clicar em **Converter em cliente**, o sistema **cria o cliente**
   já em situação "implantação" e monta o **checklist de onboarding** automaticamente.
-- Em "perdido", registre o **motivo** (preço, prazo, concorrente) — vira aprendizado.
+- Em "perdido", registre o **motivo** (preço, prazo, concorrente). Vira aprendizado.
 
-**Exemplo:** chegou um contato pelo Instagram → crie o lead em "novo", registre a conversa,
-mova para "proposta" quando enviar a proposta, e "ganho" quando fechar → vira cliente.
+**Exemplo:** chegou um contato pelo Instagram. Crie o lead em "novo", registre a conversa,
+mova para "proposta" quando enviar a proposta e "ganho" quando fechar. Vira cliente.
 
-> **Boas práticas:** mantenha o funil **atualizado** — é dele que sai a previsão de vendas.
+> **Boas práticas:** mantenha o funil **atualizado**. É dele que sai a previsão de vendas.
 
 ---
 
 ## 5. Projetos
 
+Quando um trabalho é grande demais para caber num só job (uma campanha, um projeto com várias
+entregas), o Projeto é o guarda-chuva que junta tudo e mantém briefing, prazos e envolvidos
+num lugar só.
+
 **Para quê:** agrupar um trabalho maior (campanha, projeto) que reúne vários jobs.
 
-**Como usar:** **Projetos → Novo**. Escolha o cliente, dê um nome, defina responsável e
-prazos. No detalhe do projeto você tem briefing, envolvidos, e o botão **+ Adicionar** para
-criar jobs/itens filhos. As abas mostram **Comentários, Anexos, Timesheet e Histórico**.
+**Como usar:** **Projetos, Novo**. Escolha o cliente, dê um nome, defina responsável e
+prazos. No detalhe do projeto você tem briefing, envolvidos e o botão **+ Adicionar** para
+criar jobs e itens filhos. As abas mostram **Comentários, Anexos, Timesheet e Histórico**.
 
-> **Boas práticas:** use projeto quando o trabalho tem **várias entregas**; para uma tarefa
+> **Boas práticas:** use projeto quando o trabalho tem **várias entregas**. Para uma tarefa
 > avulsa, crie direto um **job**.
 
 ---
 
 ## 6. Jobs
 
-**Para quê:** cada tarefa de criação/produção (um post, uma arte, um vídeo, um material).
+O job é a unidade de trabalho do TREM: cada post, arte, vídeo ou material é um job. É também
+o que alimenta praticamente todos os indicadores e alertas, então a forma como você preenche
+um job hoje é o que aparece nos painéis depois.
 
-**Como usar:** **Jobs → Novo job**. Campos importantes:
-- **Tipo de job:** post estático, vídeo, material gráfico, etc. (para social, abre campos de
-  **legenda, formatos/canais e prazo de postagem**).
-- **Prioridade:** baixa/normal/alta/urgente (alta e urgente ganham selo no card).
+**Para quê:** cada tarefa de criação ou produção (um post, uma arte, um vídeo, um material).
+
+**Como usar:** **Jobs, Novo job**. Campos importantes:
+- **Tipo de job:** post estático, vídeo, material gráfico e afins. Para social, abre campos de
+  **legenda, formatos/canais e prazo de postagem**.
+- **Prioridade:** baixa, normal, alta ou urgente (alta e urgente ganham selo no card).
 - **Cliente** e **campanha/projeto** (opcional).
 - **Responsável** e **envolvidos**.
-- **Recorrência:** semanal/quinzenal/mensal — o sistema **gera cópias** do job sozinho.
+- **Recorrência:** semanal, quinzenal ou mensal. O sistema **gera cópias** do job sozinho.
 - **Depende de outro job:** o job fica "bloqueado" até o outro concluir (aparece 🔒 no card).
 
 **Visões:** lista, **kanban por status**, kanban por responsável, minha pauta, timeline. No
@@ -141,7 +166,7 @@ kanban dá para **arrastar** o card entre colunas (ou usar o seletor "mover stat
 **No card você vê:** tipo, prioridade, prazo, "parado Xd" (sem movimento), "recorrente",
 "bloqueado por #N".
 
-> **Boas práticas:** sempre preencha **prazo** e **responsável** — é isso que alimenta os
+> **Boas práticas:** sempre preencha **prazo** e **responsável**. É isso que alimenta os
 > indicadores de "no prazo", "carga por pessoa" e os **alertas** de job sem dono.
 >
 > **Anexos:** até **4 MB** por arquivo (upload direto). Arquivos maiores? Cole um **link do
@@ -151,80 +176,105 @@ kanban dá para **arrastar** o card entre colunas (ou usar o seletor "mover stat
 
 ## 7. Aprovação de peça pelo cliente
 
-**Para quê:** o cliente aprova a arte/post **sem precisar de login**, por um link.
+Aprovação por WhatsApp se perde e não fica registrada. Aqui o cliente aprova a arte por um
+link, sem precisar de login, e cada aprovação ou pedido de ajuste fica gravado no job.
 
-**Como usar:** no job, card **Aprovação do cliente** → **Enviar para aprovação**. O sistema
-gera um **link** (copiável) e, opcionalmente, manda por **e-mail** ao cliente. O cliente
-abre o link, vê a arte + legenda e clica em **Aprovar** ou **Solicitar ajustes** (com
-comentário). Você recebe **notificação** e o status muda (aguardando → aprovado / ajustes).
+**Para quê:** o cliente aprova a arte ou post **sem precisar de login**, por um link.
 
-> **Boas práticas:** anexe a arte como **arquivo** (não só link) para o cliente ver a
+**Como usar:** no job, card **Aprovação do cliente**, **Enviar para aprovação**. O sistema
+gera um **link** (copiável) e, se você quiser, manda por **e-mail** ao cliente. O cliente
+abre o link, vê a arte e a legenda e clica em **Aprovar** ou **Solicitar ajustes** (com
+comentário). Você recebe **notificação** e o status muda (aguardando, aprovado, ajustes).
+
+> **Boas práticas:** anexe a arte como **arquivo**, não só link, para o cliente ver a
 > imagem no próprio link. Acompanhe as pendências no **Calendário** e nos **Indicadores**.
 
 ---
 
 ## 8. Calendário editorial
 
+Para enxergar o mês inteiro de publicações de uma vez, sem abrir job por job, o calendário
+mostra cada peça no dia em que vai ao ar, colorida pelo status de aprovação.
+
 **Para quê:** ver todas as **postagens do mês** por data de publicação.
 
 **Como usar:** **Calendário editorial**. Cada peça aparece no dia, **colorida pelo status de
-aprovação**. No celular vira uma **agenda em lista**. Botão **Exportar (.ics)** baixa as
-postagens para importar no **Google/Apple Agenda**.
+aprovação**. No celular vira uma **agenda em lista**. O botão **Exportar (.ics)** baixa as
+postagens para importar no **Google ou Apple Agenda**.
 
 ---
 
 ## 9. Propostas
 
+A proposta é muitas vezes o primeiro documento formal que o cliente recebe da agência. Esta
+seção mostra como montar e enviar propostas já com a identidade da Plante e o total calculado
+sozinho.
+
 **Para quê:** montar e enviar propostas comerciais com a identidade da Plante.
 
-**Como usar:** **Propostas → Nova**. Adicione itens (valor × qtd − desconto = subtotal),
+**Como usar:** **Propostas, Nova**. Adicione itens (valor × qtd − desconto = subtotal),
 introdução e considerações finais. O total é calculado sozinho. **Exportar PDF** gera o
-documento timbrado (cabeçalho da empresa, nº/versão, assinaturas).
+documento timbrado (cabeçalho da empresa, número e versão, assinaturas).
 
 ---
 
 ## 10. Mídia (PI)
 
-**Para quê:** planos de mídia e Pedidos de Inserção (PI) — veículos, programas, inserções.
+Para quem trabalha com veículos e inserções, esta é a área de planejamento de mídia e emissão
+de Pedidos de Inserção. Você monta a grade, o sistema faz as contas de comissão e bonificação
+e gera os PIs.
 
-**Como usar:** **Mídia → Novo plano**. Monte a grade (Programa × Formato × Peça × inserções
-dia a dia) ou o modo por período. O sistema calcula totais com **comissão/bonificação**.
+**Para quê:** planos de mídia e Pedidos de Inserção (PI): veículos, programas, inserções.
+
+**Como usar:** **Mídia, Novo plano**. Monte a grade (Programa × Formato × Peça × inserções
+dia a dia) ou o modo por período. O sistema calcula totais com **comissão e bonificação**.
 Gera **PI do cliente** e **PI do veículo** em PDF.
 
 ---
 
 ## 11. Tráfego / anúncios
 
+Campanha paga sem acompanhamento vira dinheiro no escuro. Aqui você registra verba, período
+e resultados de cada campanha, e o sistema calcula custo por lead e CTR para você acompanhar
+o desempenho ao longo do tempo.
+
 **Para quê:** gerir campanhas pagas (Meta, Google, TikTok, LinkedIn) e resultados.
 
-**Como usar:** **Tráfego / anúncios → Nova campanha**. Defina cliente, plataforma, verba,
+**Como usar:** **Tráfego / anúncios, Nova campanha**. Defina cliente, plataforma, verba,
 período e status. No detalhe, **lance os resultados por data** (investido, alcance, cliques,
 conversões, leads). O sistema calcula **CPL** (custo por lead) e **CTR** automaticamente.
 
-**Exemplo:** campanha "Black Friday" no Meta, verba R$ 3.000 → toda semana lance os números
-do gerenciador de anúncios → acompanhe o CPL caindo.
+**Exemplo:** campanha "Black Friday" no Meta, verba R$ 3.000. Toda semana lance os números
+do gerenciador de anúncios e acompanhe o CPL caindo.
 
-> **Boas práticas:** lance os resultados **com frequência** (semanal) — assim o relatório do
+> **Boas práticas:** lance os resultados **com frequência** (semanal). Assim o relatório do
 > cliente e os indicadores ficam sempre certos.
 
 ---
 
 ## 12. Produção e Serviços/OS
 
-- **Produção:** pedidos de produção (gráfica, brindes, etc.) com itens, valores e PDF.
-- **Serviços / OS:** ordens de serviço para terceiros/prestadores.
+Quando o trabalho sai da agência e vai para uma gráfica, um brinde ou um prestador, é aqui
+que ele é registrado. Produção e Serviços/OS seguem o mesmo padrão e geram o PDF do pedido.
 
-Ambos seguem o mesmo padrão: cadastro → itens → PDF.
+- **Produção:** pedidos de produção (gráfica, brindes e afins) com itens, valores e PDF.
+- **Serviços / OS:** ordens de serviço para terceiros e prestadores.
+
+Ambos seguem o mesmo padrão: cadastro, itens, PDF.
 
 ---
 
 ## 13. Atas de reunião
 
+O que foi combinado numa reunião não pode viver só na memória de quem estava lá. A ata
+registra decisões e próximos passos num lugar buscável, com responsável e prazo, para nada
+se perder no WhatsApp.
+
 **Para quê:** registrar o que foi decidido, para não perder no WhatsApp.
 
-**Como usar:** **Atas de reunião → Nova ata**. Preencha título, data, cliente (ou interna),
+**Como usar:** **Atas de reunião, Nova ata**. Preencha título, data, cliente (ou interna),
 participantes, **pauta, decisões e próximos passos**. Com a **IA ligada** (ver Administração),
-o botão **"Gerar ata com IA"** monta um rascunho organizado a partir das suas anotações — que
+o botão **"Gerar ata com IA"** monta um rascunho organizado a partir das suas anotações, que
 você **revisa** antes de usar.
 
 > **Boas práticas:** registre **próximos passos com responsável** ("Fulano faz X até dia Y").
@@ -233,24 +283,28 @@ você **revisa** antes de usar.
 
 ## 14. Financeiro
 
+O módulo financeiro é onde entra e sai o dinheiro da agência. Cada lançamento bem preenchido,
+com cliente e datas certas, é o que faz margem, inadimplência e relatórios baterem depois.
+Esta seção cobre o dia a dia dos lançamentos.
+
 **Para quê:** lançamentos de receita, despesa e transferência.
 
-**Como usar:** **Lançamentos**. Botões **Receita / Despesa / Transferência**. Cada
-lançamento tem **4 datas** (vencimento, competência, pagamento, faturamento), categoria e
-status **em aberto / quitado**. Quite com o ✔; estorne com o ↩.
+**Como usar:** **Lançamentos**. Botões **Receita, Despesa e Transferência**. Cada lançamento
+tem **4 datas** (vencimento, competência, pagamento, faturamento), categoria e status
+**em aberto ou quitado**. Quite com o ✔; estorne com o ↩.
 
 - **Na receita** você informa o **cliente**; **na despesa**, **"para quem é o pagamento"** —
   um único campo que agrupa **fornecedores, prestadores e colaboradores**.
-- **Parcelado:** na condição de pagamento escolha **Parcelado**, informe o **nº de parcelas**
-  e clique em **Gerar parcelas**. Dá para **editar cada valor e vencimento** (útil quando as
-  parcelas são diferentes) — o sistema cria **um lançamento por parcela**.
+- **Parcelado:** na condição de pagamento escolha **Parcelado**, informe o **número de
+  parcelas** e clique em **Gerar parcelas**. Dá para **editar cada valor e vencimento** (útil
+  quando as parcelas são diferentes). O sistema cria **um lançamento por parcela**.
 - **Reembolso de colaborador:** use a **Central de Reembolsos** (seção 15), que já gera o
   lançamento de despesa ao aprovar.
-- Visão **mensal** (navegue pelos meses) + **gráfico**.
-- **Exportar CSV** baixa os lançamentos do mês para Excel/BI.
+- Visão **mensal** (navegue pelos meses) e **gráfico**.
+- **Exportar CSV** baixa os lançamentos do mês para Excel ou BI.
 - No celular, os lançamentos viram **cards**.
 
-> **Boas práticas:** sempre informe o **cliente** no lançamento de receita — é isso que
+> **Boas práticas:** sempre informe o **cliente** no lançamento de receita. É isso que
 > alimenta **margem por cliente** e **inadimplência**. Mantenha **datas de pagamento**
 > corretas: os indicadores usam elas.
 
@@ -258,51 +312,58 @@ status **em aberto / quitado**. Quite com o ✔; estorne com o ↩.
 
 ## 15. Central de Reembolsos
 
+Quando alguém da equipe gasta do próprio bolso em algo do trabalho, esta é a via oficial para
+pedir de volta, com comprovante, aprovação e pagamento registrados de ponta a ponta. Vale
+para o colaborador que pede e para o financeiro que aprova, e cada um tem seu fluxo abaixo.
+
 **Para quê:** o colaborador pede reembolso de **despesas operacionais** (deslocamento,
-gravação, reunião externa, material, viagem) e acompanha a **aprovação e o pagamento** —
-tudo registrado e com **comprovante**. Fica em **Financeiro → Reembolsos**.
+gravação, reunião externa, material, viagem) e acompanha a **aprovação e o pagamento**, tudo
+registrado e com **comprovante**. Fica em **Financeiro, Reembolsos**.
 
 **Como usar (colaborador):**
-1. **Novo reembolso** → escolha o **mês de competência**.
+1. **Novo reembolso**, escolha o **mês de competência**.
 2. **Adicione cada despesa separada** (uma por vez): data, categoria, valor, forma de
-   pagamento e, se houver, cliente/projeto vinculado.
+   pagamento e, se houver, cliente ou projeto vinculado.
 3. **Anexe o comprovante** (foto ou PDF: nota, cupom, print do app de transporte) no card
    da despesa.
 4. Clique em **Enviar para análise**.
 
 - Despesa **acima de R$ 150** exige informar **quem autorizou**.
 - Marque **"repassável ao cliente"** quando o gasto será cobrado do cliente (gravação,
-  viagem, produção externa) — ajuda a separar do que é custo da agência.
+  viagem, produção externa). Ajuda a separar do que é custo da agência.
 
 **Como usar (financeiro):** na lista, a seção **Aguardando análise** mostra os pedidos
 enviados. Ao abrir você pode **aprovar ou reprovar cada despesa** e, no pedido:
-- **Aprovar** · **Pedir ajuste** (volta ao colaborador para corrigir/anexar) · **Reprovar**
+- **Aprovar**, **Pedir ajuste** (volta ao colaborador para corrigir ou anexar), **Reprovar**
   (com motivo).
 - **Programar pagamento:** gera automaticamente um **lançamento de despesa** (vencimento no
-  **dia 20**, categoria "Reembolsos", beneficiário = o colaborador).
+  **dia 20**, categoria "Reembolsos", beneficiário igual ao colaborador).
 - **Marcar como pago:** quita o lançamento.
-- **Recibo:** gera o **recibo interno** com a identidade da Plante (nº, despesas, total
+- **Recibo:** gera o **recibo interno** com a identidade da Plante (número, despesas, total
   aprovado, quem aprovou) para arquivo.
 
-**Fluxo:** Rascunho → Enviado → (Pendente de ajuste) → Aprovado → Programado → Pago
-(ou Reprovado).
+**Fluxo:** Rascunho, Enviado, (Pendente de ajuste), Aprovado, Programado, Pago (ou Reprovado).
 
 **Prazo (política):** pedidos enviados até o **dia 30** são pagos até o **dia 20 do mês
 seguinte**. Enviou depois do dia 30? Entra no ciclo do mês seguinte.
 
-> **Boas práticas:** lance **uma despesa por vez** e **sempre com comprovante** — sem
-> comprovante, o financeiro devolve para ajuste. Vincule ao **cliente/projeto** quando a
+> **Boas práticas:** lance **uma despesa por vez** e **sempre com comprovante**. Sem
+> comprovante, o financeiro devolve para ajuste. Vincule ao **cliente ou projeto** quando a
 > despesa tiver relação com um trabalho.
 
 ---
 
 ## 16. Contratos e Saúde Financeira
 
+Aqui o financeiro deixa de ser só o mês corrente e vira leitura de médio prazo: quanto de
+receita recorrente a agência tem contratada, quem está em atraso e quanto cada cliente deixa
+de margem. É a visão de sustentação do negócio.
+
 - **Contratos** (menu Financeiro): cadastre o **fee mensal recorrente** de cada cliente
-  (valor, início/fim, dia de cobrança, status). O topo mostra **MRR** (receita recorrente
+  (valor, início e fim, dia de cobrança, status). O topo mostra **MRR** (receita recorrente
   mensal) e **ARR** (anual).
 - **Saúde financeira** (menu Gestão): **MRR, ARR, inadimplência**, **margem por cliente** no
-  ano (receita − despesa atribuída) e a lista de **a receber vencido** com dias de atraso.
+  ano (receita menos despesa atribuída) e a lista de **a receber vencido** com dias de atraso.
 
 > **Nota:** a margem considera lançamentos **quitados** e não rateia despesas de estrutura
 > (sem cliente). É a margem de **contribuição** por cliente.
@@ -311,19 +372,26 @@ seguinte**. Enviou depois do dia 30? Entra no ciclo do mês seguinte.
 
 ## 17. Nota fiscal (NFS-e)
 
+O TREM não emite a nota no seu lugar, mas te leva direto ao portal certo a partir do
+lançamento de receita, evitando aquele vai e volta procurando onde emitir.
+
 No lançamento de **receita**, o botão **Emitir nota** (ícone de recibo) abre o **portal de
-NFS-e** configurado (Emissor Nacional / prefeitura). O sistema **não emite sozinho** — ele
-te leva ao portal certo para emitir. O link é configurável em **Administração → Empresa**.
+NFS-e** configurado (Emissor Nacional ou prefeitura). O sistema **não emite sozinho**; ele
+te leva ao portal certo para emitir. O link é configurável em **Administração, Empresa**.
 
 ---
 
 ## 18. Indicadores e Alertas
 
-**Menu Gestão → Indicadores.** Painel de gestão com:
+Esta é a tela de quem gerencia. Ela transforma tudo o que a equipe preencheu nos jobs e no
+financeiro em um painel de leitura rápida, e ainda avisa sozinha quando algo precisa de
+atenção.
+
+**Menu Gestão, Indicadores.** Painel de gestão com:
 - Jobs ativos, **atrasados**, **parados +7 dias**, **% concluídos no prazo**.
 - **Carga por pessoa** (quem está sobrecarregado).
 - **Jobs por status** (gargalos).
-- **Aprovações** (aguardando cliente / ajustes).
+- **Aprovações** (aguardando cliente ou ajustes).
 - **Financeiro do mês** com barra **receita × meta** (a meta é definida em Empresa).
 - **Alertas:** contratos vencendo (30 dias), clientes parados (sem job +30 dias), jobs sem
   responsável.
@@ -335,46 +403,57 @@ e-mail, se o Resend estiver ligado).
 
 ## 19. Relatórios
 
-**Menu Financeiro → Relatórios.** DRE, Fluxo de Caixa, Lançamentos, por Cliente, Terceiros —
+Quando você precisa fechar números para reunião, contador ou análise, os relatórios reúnem a
+parte financeira e a de trabalho em um só lugar, com navegação por ano.
+
+**Menu Financeiro, Relatórios.** DRE, Fluxo de Caixa, Lançamentos, por Cliente, Terceiros,
 com navegação por ano. Há também relatórios de trabalho (jobs, projetos, mídia).
 
 ---
 
 ## 20. Clientes
 
-O cliente é o **centro** do sistema. **Cadastros → Clientes → Abrir** abre a **visão 360**:
+O cliente é o **centro** do sistema, e esta é a tela que reúne tudo o que se sabe sobre ele
+em um lugar só. Quanto mais completo esse cadastro, mais o TREM entrega em portal, relatórios
+e atendimento. Aqui está a visão 360 e o que cada parte dela destrava.
 
-- **Resumo:** jobs ativos, próximas postagens, aguardando aprovação, contrato/MRR.
+**Cadastros, Clientes, Abrir** abre a **visão 360**:
+
+- **Resumo:** jobs ativos, próximas postagens, aguardando aprovação, contrato e MRR.
 - **Trabalho em andamento:** jobs (com status), postagens, projetos.
-- **Brand kit & escopo:** tom de voz, redes sociais, links úteis, escopo.
+- **Brand kit e escopo:** tom de voz, redes sociais, links úteis, escopo.
 - **Dados:** documento, contato, e-mail, telefone, endereço.
-- **Portal do cliente:** gerar/copiar o link do portal (ver seção 23).
+- **Portal do cliente:** gerar ou copiar o link do portal (ver seção 23).
 - **Onboarding / implantação:** o checklist de entrada do cliente.
 - **Relatório do mês:** botão que gera o **PDF de prestação de contas** (postagens,
   entregas, tráfego do mês) para enviar ao cliente.
 
 **Onboarding (implantação):** quando o cliente entra (status "implantação"), o checklist
-guia a entrada (coletar acessos, brand kit, escopo, primeira reunião…). Ao **concluir todos
-os itens**, o cliente vira **"ativo"** automaticamente.
+guia a entrada (coletar acessos, brand kit, escopo, primeira reunião e afins). Ao **concluir
+todos os itens**, o cliente vira **"ativo"** automaticamente.
 
 **Logo do cliente:** cole a **URL de uma imagem** no campo "Logo do cliente" (edição do
-cadastro) — ela aparece no **portal** e na **visão do cliente**.
+cadastro). Ela aparece no **portal** e na **visão do cliente**.
 
 **Cadastros incompletos** (menu Cadastros): lista os clientes ativos que estão **sem
 contato ou brand kit**, com botão "Completar". Use para fechar lacunas.
 
-> **Boas práticas:** preencha o **brand kit** logo no onboarding — ele destrava portal,
+> **Boas práticas:** preencha o **brand kit** logo no onboarding. Ele destrava portal,
 > relatórios e um atendimento mais consistente.
 
 ---
 
 ## 21. Outros cadastros
 
+Estes são os cadastros de apoio que sustentam o resto do sistema: quem você paga, quem
+trabalha com você, onde o dinheiro entra e como ele é classificado. Todos seguem o mesmo
+formato de lista e formulário.
+
 **Fornecedores, Colaboradores, Prestadores, Veículos, Centros de custo, Contas bancárias,
-Categorias (plano de contas).** Todos com lista (busca + paginação de 25) e formulário.
+Categorias (plano de contas).** Todos com lista (busca e paginação de 25) e formulário.
 
 - **Colaboradores:** documento, nascimento (vira aniversariante no dashboard), admissão,
-  salário/valor-hora (**só Administrador vê**).
+  salário ou valor-hora (**só Administrador vê**).
 - **Fornecedores e prestadores** aparecem no campo **"para quem é o pagamento"** das despesas
   e nos reembolsos.
 - **Preferir arquivar a excluir:** arquivar tira das listas mas preserva o histórico.
@@ -383,55 +462,69 @@ Categorias (plano de contas).** Todos com lista (busca + paginação de 25) e fo
 
 ## 22. Administração
 
+Esta área é só para Administrador. É onde se controla quem entra, o que cada pessoa pode ver
+e mexer, e os dados da empresa que aparecem nos documentos e nas notas. Mexer aqui afeta todo
+mundo, então vale critério.
+
 **Menu Administração** (só Administrador):
 - **Usuários:** convidar (a partir de um colaborador), definir **perfil de acesso**,
-  **editar** (nome/e-mail), **definir senha**, **vincular a um colaborador**, **desativar**
+  **editar** (nome e e-mail), **definir senha**, **vincular a um colaborador**, **desativar**
   ou **excluir**. O responsável da conta e o último admin têm proteção.
-- **Perfis de acesso:** controle fino por módulo (Nenhum / Ver / Editar / Admin).
+- **Perfis de acesso:** controle fino por módulo (Nenhum, Ver, Editar, Admin).
 - **Empresa:** dados da empresa (usados nos PDFs), dados fiscais (NFS-e), link de emissão de
-  nota, e a **meta de faturamento mensal**.
-- **IA (opcional):** para ligar o "Gerar com IA" (ata/briefing), adicione a chave
+  nota e a **meta de faturamento mensal**.
+- **IA (opcional):** para ligar o "Gerar com IA" (ata e briefing), adicione a chave
   `ANTHROPIC_API_KEY` no Netlify (ver `docs/IA-ANTHROPIC.md`).
 
 > **Boas práticas:** dê a cada pessoa **só o acesso necessário** (perfis). Salário e
-> financeiro são sensíveis — restrinja. A **aprovação de reembolsos** é de quem tem acesso
+> financeiro são sensíveis, restrinja. A **aprovação de reembolsos** é de quem tem acesso
 > de edição ao **Financeiro**.
 
 ---
 
 ## 23. Portal do cliente
 
+Do lado de fora, o cliente tem uma visão própria e enxuta do trabalho, acessada por link e
+sem login. Ela mostra o andamento sem expor nada financeiro, e serve como canal oficial de
+acompanhamento no lugar de mensagens soltas.
+
 O que o **seu cliente** vê pelo link (sem login), com a identidade da Plante:
 - **Aguardando aprovação** (peças para ele aprovar).
 - **Próximas postagens** (com status).
 - **Trabalhos em andamento** (com status, sem valores).
 
-O portal **não mostra** nada financeiro. Gere/renove/desative o link na visão do cliente.
+O portal **não mostra** nada financeiro. Gere, renove ou desative o link na visão do cliente.
 
 > **Boas práticas:** mande o link do portal ao cliente como canal oficial de
-> acompanhamento — reduz mensagem solta no WhatsApp.
+> acompanhamento. Reduz mensagem solta no WhatsApp.
 
 ---
 
 ## 24. Acessibilidade
 
-Menu do avatar → **Acessibilidade**: cada pessoa liga o que precisa (texto maior, mais
+O TREM deixa cada pessoa ajustar a interface ao que funciona melhor para ela, e essas
+escolhas ficam salvas no próprio navegador.
+
+Menu do avatar, **Acessibilidade**: cada pessoa liga o que precisa (texto maior, mais
 espaçamento, reduzir movimento, alto contraste). Fica salvo no navegador. Há também **tema
-claro/escuro** e navegação por teclado ("Pular para o conteúdo" ao apertar Tab).
+claro e escuro** e navegação por teclado ("Pular para o conteúdo" ao apertar Tab).
 
 ---
 
 ## 25. Boas práticas gerais
 
-1. **Cadastro completo = sistema trabalhando por você.** Cliente com contato + brand kit
+Se você ler só uma seção, que seja esta. São os hábitos que fazem o sistema trabalhar a favor
+da equipe em vez de virar mais uma tela para preencher.
+
+1. **Cadastro completo = sistema trabalhando por você.** Cliente com contato e brand kit
    destrava portal, relatórios e e-mails.
-2. **Sempre responsável + prazo** nos jobs. Alimenta indicadores e alertas.
+2. **Sempre responsável e prazo** nos jobs. Alimenta indicadores e alertas.
 3. **Cliente no lançamento financeiro.** Sem isso, margem e inadimplência ficam cegas.
-4. **Arquive, não exclua** (salvo lixo/teste). Preserva histórico.
+4. **Arquive, não exclua** (salvo lixo ou teste). Preserva histórico.
 5. **Aprovação pelo link**, não pelo WhatsApp. Fica registrado.
 6. **Atas para decisões.** Chat é para o dia a dia.
 7. **Reembolso sempre com comprovante** e uma despesa por vez.
-8. **Revise o que a IA gera** antes de usar — é sugestão, não texto oficial.
+8. **Revise o que a IA gera** antes de usar. É sugestão, não texto oficial.
 9. **2FA e acesso mínimo** por perfil. Segurança em primeiro lugar.
 
 ---
