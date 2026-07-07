@@ -112,6 +112,7 @@ export default async function ImprimirOsPage({
             <section className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
               <p className="sm:col-span-2"><span className="text-neutral-500">Cliente:</span> {c.nome}</p>
               {os.projeto && <p><span className="text-neutral-500">Projeto:</span> #{os.projeto.numero} {os.projeto.nome}</p>}
+              {os.fornecedor && <p><span className="text-neutral-500">Executado por:</span> {os.fornecedor.nome}</p>}
               <p><span className="text-neutral-500">Emissão:</span> {formatDate(os.dataEmissao)}</p>
               <p><span className="text-neutral-500">Vencimento:</span> {formatDate(os.vencimento)}</p>
             </section>

@@ -72,6 +72,20 @@ export async function salvarProducao(
     } else {
       const numero = await proximoNumero("PRODUCAO");
       const criada = await db.producaoOrdem.create({ data: { ...dados, numero, criadoPorId: user.id } });
+      // Itens montados um a um no formulário chegam como JSON.
+      let itens: { descricao?: string; quantidade?: number; valorUnit?: number }[] = [];
+      try { itens = JSON.parse(formData.get("itens")?.toString() || "[]"); } catch { itens = []; }
+      itens = itens.filter((i) => i && i.descricao && i.descricao.trim());
+      if (itens.length) {
+        await db.producaoItem.createMany({
+          data: itens.map((it, idx) => {
+            const q = Number(it.quantidade) || 0;
+            const v = Number(it.valorUnit) || 0;
+            return { ordemId: criada.id, titulo: it.descricao!.trim(), quantidade: q, valorUnit: v, valorTotal: round2(q * v), ordem: idx + 1 };
+          }),
+        });
+        await recalcular(criada.id);
+      }
       await registrarLog({ entidadeTipo: "producao", entidadeId: criada.id, usuarioId: user.id, acao: `criou a ordem de produção #${numero}` });
       destino = `/producao/${criada.id}`;
     }

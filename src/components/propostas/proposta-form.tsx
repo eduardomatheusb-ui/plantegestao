@@ -9,6 +9,7 @@ import { salvarProposta, type PropostaFormState } from "@/lib/propostas/actions"
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { ItensBuilder } from "@/components/shared/itens-builder";
 
 type Opt = { id: string; nome: string };
 type ProjetoOpt = { id: string; numero: number; nome: string; clienteId: string };
@@ -110,6 +111,15 @@ export function PropostaForm({
           <Input id="prazo" name="prazo" type="date" defaultValue={inicial.prazo ?? ""} />
         </div>
       </div>
+
+      {!id ? (
+        <>
+          <ItensBuilder label="Itens da proposta" descricaoLabel="Item" descricaoPlaceholder="Nome do serviço" comDesconto />
+          <p className="text-xs text-muted-foreground">Entrada rápida. Depois, na tela da proposta, dá para usar o catálogo, adicionar descrição e controlar a visibilidade de cada item no PDF.</p>
+        </>
+      ) : (
+        <p className="rounded-md bg-muted/40 p-3 text-xs text-muted-foreground">Os itens desta proposta são editados na tela da proposta (catálogo, descrição, desconto e visibilidade).</p>
+      )}
 
       <div className="flex items-center gap-2">
         <Salvar />

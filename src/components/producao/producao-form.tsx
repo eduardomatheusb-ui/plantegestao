@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { ItensBuilder } from "@/components/shared/itens-builder";
 
 type Opt = { id: string; nome: string };
 type ProjetoOpt = { id: string; numero: number; nome: string; clienteId: string };
@@ -107,6 +108,13 @@ export function ProducaoForm({
           <Textarea id="observacao" name="observacao" rows={2} defaultValue={inicial.observacao ?? ""} />
         </div>
       </div>
+
+      {!id ? (
+        <ItensBuilder label="Itens da produção" />
+      ) : (
+        <p className="rounded-md bg-muted/40 p-3 text-xs text-muted-foreground">Os itens desta ordem são editados na tela da ordem de produção (adicionar, alterar e remover um a um).</p>
+      )}
+
       <div className="flex items-center gap-2">
         <Salvar />
         <Button asChild variant="outline"><Link href={cancelHref}>Cancelar</Link></Button>

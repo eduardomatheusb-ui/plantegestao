@@ -95,6 +95,28 @@ export async function salvarProposta(
       const numero = await proximoNumero("PROPOSTA");
       const responsavelId = d.responsavelId ?? user.id;
       const criada = await db.proposta.create({ data: { ...data, numero, responsavelId, criadoPorId: user.id } });
+      // Itens montados um a um no formulário chegam como JSON.
+      let itens: { descricao?: string; quantidade?: number; valorUnit?: number; desconto?: number }[] = [];
+      try { itens = JSON.parse(formData.get("itens")?.toString() || "[]"); } catch { itens = []; }
+      itens = itens.filter((i) => i && i.descricao && i.descricao.trim());
+      if (itens.length) {
+        await db.propostaItem.createMany({
+          data: itens.map((it, idx) => {
+            const valorUnit = Number(it.valorUnit) || 0;
+            const quantidade = Number(it.quantidade) || 0;
+            const desconto = Number(it.desconto) || 0;
+            return {
+              propostaId: criada.id,
+              nome: it.descricao!.trim(),
+              valorUnit, quantidade, desconto,
+              subtotal: calcularSubtotal(valorUnit, quantidade, desconto),
+              visivel: true,
+              ordem: idx + 1,
+            };
+          }),
+        });
+        await recalcularTotal(criada.id);
+      }
       await registrarLog({ entidadeTipo: "proposta", entidadeId: criada.id, usuarioId: user.id, acao: `criou a proposta #${numero}` });
       await notificar({ usuarioId: responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pela proposta "${d.titulo}"`, entidadeTipo: "proposta", entidadeId: criada.id, url: `/propostas/${criada.id}` });
       destino = `/propostas/${criada.id}`;
