@@ -6,10 +6,9 @@ import { useFormStatus } from "react-dom";
 import { AlertCircle } from "lucide-react";
 import { salvarReuniao, type ReuniaoFormState } from "@/lib/reunioes/actions";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MarkdownEditor } from "@/components/shared/markdown-editor";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
 
 type Opt = { id: string; nome: string };
 export type ReuniaoInicial = Partial<{
@@ -56,20 +55,20 @@ export function ReuniaoForm({ id, inicial = {}, clientes, cancelHref }: { id: st
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="ata">Ata (texto livre)</Label>
-          <MarkdownEditor id="ata" name="ata" rows={10} defaultValue={inicial.ata ?? ""} placeholder="Escreva a ata da reunião do seu jeito. Use a barra para negrito, itálico, títulos e listas. Você também pode gerar um rascunho com a IA na tela da ata e ajustar aqui." />
-          <p className="text-xs text-muted-foreground">Campo livre para a ata escrita pela equipe (com formatação simples). Os campos abaixo (pauta, decisões, próximos passos) são opcionais e ajudam a organizar e alimentar a IA.</p>
+          <RichTextEditor id="ata" name="ata" minHeight="12rem" defaultValue={inicial.ata ?? ""} placeholder="Escreva a ata da reunião do seu jeito. Use a barra para formatar e alinhar. Você também pode gerar um rascunho com a IA na tela da ata e ajustar aqui." />
+          <p className="text-xs text-muted-foreground">Campo livre para a ata escrita pela equipe. Os campos abaixo (pauta, decisões, próximos passos) são opcionais e ajudam a organizar e alimentar a IA.</p>
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="pauta">Pauta</Label>
-          <Textarea id="pauta" name="pauta" rows={3} defaultValue={inicial.pauta ?? ""} placeholder="O que foi discutido." />
+          <RichTextEditor id="pauta" name="pauta" minHeight="6rem" defaultValue={inicial.pauta ?? ""} placeholder="O que foi discutido." />
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="decisoes">Decisões</Label>
-          <Textarea id="decisoes" name="decisoes" rows={3} defaultValue={inicial.decisoes ?? ""} placeholder="O que ficou decidido." />
+          <RichTextEditor id="decisoes" name="decisoes" minHeight="6rem" defaultValue={inicial.decisoes ?? ""} placeholder="O que ficou decidido." />
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="proximosPassos">Próximos passos</Label>
-          <Textarea id="proximosPassos" name="proximosPassos" rows={3} defaultValue={inicial.proximosPassos ?? ""} placeholder="Quem faz o quê, até quando." />
+          <RichTextEditor id="proximosPassos" name="proximosPassos" minHeight="6rem" defaultValue={inicial.proximosPassos ?? ""} placeholder="Quem faz o quê, até quando." />
         </div>
       </div>
       <div className="flex items-center gap-2">

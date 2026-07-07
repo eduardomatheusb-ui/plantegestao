@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { HistoryPanel } from "@/components/shared/history-panel";
-import { MarkdownView } from "@/components/shared/markdown-view";
+import { RichTextView } from "@/components/shared/rich-text-view";
 import { IaAssist } from "@/components/ia/ia-assist";
 import { gerarAtaIA } from "@/lib/ia/actions";
 
@@ -23,7 +23,7 @@ function Bloco({ titulo, texto }: { titulo: string; texto: string | null }) {
   return (
     <Card>
       <CardHeader><CardTitle>{titulo}</CardTitle></CardHeader>
-      <CardContent><p className="whitespace-pre-wrap text-sm">{texto}</p></CardContent>
+      <CardContent><RichTextView texto={texto} className="text-sm" /></CardContent>
     </Card>
   );
 }
@@ -71,7 +71,7 @@ export default async function ReuniaoDetalhePage({ params }: { params: Promise<{
         </CardHeader>
         <CardContent>
           {r.ata ? (
-            <MarkdownView texto={r.ata} />
+            <RichTextView texto={r.ata} className="text-sm" />
           ) : (
             <p className="text-sm text-muted-foreground">
               Nenhuma ata escrita ainda. Clique em <strong>Editar</strong> para escrever do seu jeito, ou gere um rascunho com a IA abaixo e clique em <strong>Usar como ata</strong>.

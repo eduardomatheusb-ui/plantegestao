@@ -6,6 +6,18 @@ import { iaConfigurada, gerarTextoIA } from "@/lib/ia";
 
 export type IaResultado = { texto?: string; error?: string };
 
+/** Remove tags HTML (campos rich-text) para mandar texto limpo à IA. */
+function semHtml(v: string | null | undefined): string {
+  if (!v) return "";
+  return v
+    .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 const INDISPONIVEL = "Assistente de IA não está configurado. Peça ao administrador para definir a chave da API (ANTHROPIC_API_KEY).";
 
 const SYSTEM_ATA =
@@ -31,10 +43,10 @@ export async function gerarAtaIA(reuniaoId: string): Promise<IaResultado> {
   const ctx = [
     `Título: ${r.titulo}`,
     r.cliente?.nome ? `Cliente: ${r.cliente.nome}` : "Reunião interna",
-    r.participantes ? `Participantes: ${r.participantes}` : "",
-    r.pauta ? `Pauta/discussão:\n${r.pauta}` : "",
-    r.decisoes ? `Decisões (rascunho):\n${r.decisoes}` : "",
-    r.proximosPassos ? `Próximos passos (rascunho):\n${r.proximosPassos}` : "",
+    r.participantes ? `Participantes: ${semHtml(r.participantes)}` : "",
+    semHtml(r.pauta) ? `Pauta/discussão:\n${semHtml(r.pauta)}` : "",
+    semHtml(r.decisoes) ? `Decisões (rascunho):\n${semHtml(r.decisoes)}` : "",
+    semHtml(r.proximosPassos) ? `Próximos passos (rascunho):\n${semHtml(r.proximosPassos)}` : "",
   ].filter(Boolean).join("\n\n");
 
   const texto = await gerarTextoIA(SYSTEM_ATA, `Monte a ata desta reunião a partir das anotações:\n\n${ctx}`, 1200);
