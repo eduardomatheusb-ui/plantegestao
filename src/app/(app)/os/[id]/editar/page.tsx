@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireModulo } from "@/lib/permissoes.server";
 import { obterOs, clientesParaOs, projetosParaOs } from "@/lib/os/queries";
+import { listarFornecedoresAtivos } from "@/lib/financeiro/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { OsForm } from "@/components/os/os-form";
@@ -12,7 +13,7 @@ function paraInput(d: Date | null | undefined) {
 export default async function EditarOsPage({ params }: { params: Promise<{ id: string }> }) {
   await requireModulo("os", "EDITAR");
   const { id } = await params;
-  const [os, clientes, projetos] = await Promise.all([obterOs(id), clientesParaOs(), projetosParaOs()]);
+  const [os, clientes, fornecedores, projetos] = await Promise.all([obterOs(id), clientesParaOs(), listarFornecedoresAtivos(), projetosParaOs()]);
   if (!os) notFound();
 
   return (
@@ -23,11 +24,13 @@ export default async function EditarOsPage({ params }: { params: Promise<{ id: s
           <OsForm
             id={os.id}
             clientes={clientes}
+            fornecedores={fornecedores}
             projetos={projetos}
             cancelHref={`/os/${os.id}`}
             inicial={{
               titulo: os.titulo,
               clienteId: os.clienteId,
+              fornecedorId: os.fornecedorId ?? "",
               projetoId: os.projetoId ?? "",
               vencimento: paraInput(os.vencimento),
               formaPagamento: os.formaPagamento ?? "",

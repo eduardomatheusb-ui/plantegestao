@@ -54,6 +54,7 @@ export async function salvarOs(
     const dados = {
       titulo: titulo!,
       clienteId: clienteId!,
+      fornecedorId: txt(formData.get("fornecedorId")),
       projetoId: txt(formData.get("projetoId")),
       vencimento: data(formData.get("vencimento")),
       formaPagamento: txt(formData.get("formaPagamento")),
@@ -68,6 +69,20 @@ export async function salvarOs(
     } else {
       const numero = await proximoNumero("OS");
       const criada = await db.ordemServico.create({ data: { ...dados, numero, responsavelId: acesso.id, criadoPorId: acesso.id } });
+      // Itens montados no formulário (um a um) chegam como JSON.
+      let itens: { descricao?: string; quantidade?: number; valorUnit?: number }[] = [];
+      try { itens = JSON.parse(formData.get("itens")?.toString() || "[]"); } catch { itens = []; }
+      itens = itens.filter((i) => i && i.descricao && i.descricao.trim());
+      if (itens.length) {
+        await db.ordemServicoItem.createMany({
+          data: itens.map((it, idx) => {
+            const q = Number(it.quantidade) || 0;
+            const v = Number(it.valorUnit) || 0;
+            return { osId: criada.id, descricao: it.descricao!.trim(), quantidade: q, valorUnit: v, valorTotal: round2(q * v), ordem: idx + 1 };
+          }),
+        });
+        await recalcular(criada.id);
+      }
       await registrarLog({ entidadeTipo: "os", entidadeId: criada.id, usuarioId: acesso.id, acao: `criou a ordem de serviço #${numero}` });
       destino = `/os/${criada.id}`;
     }

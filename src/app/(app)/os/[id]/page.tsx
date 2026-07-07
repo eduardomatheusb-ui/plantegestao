@@ -95,6 +95,7 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
       <Card>
         <CardContent className="grid grid-cols-2 gap-6 pt-6 sm:grid-cols-4">
           <Info rotulo="Cliente" valor={os.cliente.nome} />
+          <Info rotulo="Fornecedor / prestador" valor={os.fornecedor?.nome ?? "—"} />
           <Info rotulo="Projeto" valor={os.projeto ? <Link href={`/projetos/${os.projeto.id}`} className="hover:underline">#{os.projeto.numero} {os.projeto.nome}</Link> : "—"} />
           <Info rotulo="Emissão" valor={formatDate(os.dataEmissao)} />
           <Info rotulo="Vencimento" valor={formatDate(os.vencimento)} />

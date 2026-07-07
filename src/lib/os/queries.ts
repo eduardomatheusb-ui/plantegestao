@@ -32,6 +32,7 @@ export async function obterOs(id: string) {
           inscricaoMunicipal: true, email: true, telefone: true, contatoNome: true, endereco: true, cep: true,
         },
       },
+      fornecedor: { select: { id: true, nome: true } },
       projeto: { select: { id: true, numero: true, nome: true } },
       responsavel: { select: { id: true, nome: true } },
       itens: { orderBy: [{ ordem: "asc" }, { criadoEm: "asc" }] },

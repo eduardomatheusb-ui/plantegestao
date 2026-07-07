@@ -152,6 +152,7 @@ model OrdemServico {
   numero             Int       @unique
   titulo             String
   clienteId          String
+  fornecedorId       String? // fornecedor/prestador que executa o serviço (clareza interna)
   projetoId          String?
   responsavelId      String?
   status             OsStatus  @default(RASCUNHO)
@@ -166,6 +167,7 @@ model OrdemServico {
   atualizadoEm       DateTime  @updatedAt
 
   cliente      Cliente            @relation(fields: [clienteId], references: [id])
+  fornecedor   Fornecedor?        @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
   projeto      Projeto?           @relation(fields: [projetoId], references: [id], onDelete: SetNull)
   responsavel  Usuario?           @relation("OsResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
   criadoPor    Usuario?           @relation("OsCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
@@ -456,6 +458,7 @@ model Fornecedor {
 
   lancamentos    Lancamento[]
   producaoOrdens ProducaoOrdem[]
+  ordensServico  OrdemServico[]
 
   @@index([arquivado])
 }
