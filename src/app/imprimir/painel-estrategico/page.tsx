@@ -4,7 +4,6 @@ import { carregarPainel } from "@/lib/painel/queries";
 import { formatarValor, variacaoTexto } from "@/lib/painel/formato";
 import { getEmpresa } from "@/lib/empresa";
 import { formatDate } from "@/lib/utils";
-import { LogoMark } from "@/components/brand/logo";
 import { PrintButton } from "@/components/propostas/print-button";
 
 export const metadata = { title: "Painel Estratégico — relatório" };
@@ -38,9 +37,10 @@ export default async function ImprimirPainelPage({
       <article className="mx-auto w-[210mm] max-w-full bg-white p-12 text-sm shadow-lg print:w-full print:p-0 print:shadow-none">
         <header className="flex items-start justify-between gap-6 border-b-4 border-[#f7ff19] pb-5">
           <div className="flex items-start gap-3">
-            <LogoMark tom="badge" className="h-11 w-auto shrink-0" />
+            {/* logo completo oficial da Plante */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/logo-preto.svg" alt="Plante Comunicação" className="h-11 w-auto shrink-0 object-contain" />
             <div className="space-y-0.5">
-              <p className="font-display text-xl font-bold leading-none">{empresa.marca}</p>
               <p className="text-xs text-neutral-500">{empresa.razaoSocial} · CNPJ {empresa.cnpj}</p>
             </div>
           </div>
