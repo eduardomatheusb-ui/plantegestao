@@ -63,6 +63,33 @@ export async function obterProjeto(id: string) {
   return { ...projeto, apontadoMin: agg._sum.minutos ?? 0 };
 }
 
+/** Jobs (com status, responsável, envolvidos e subtarefas) ligados a um projeto. */
+export async function listarJobsDoProjeto(projetoId: string) {
+  return db.job.findMany({
+    where: { projetoId, arquivado: false },
+    orderBy: [{ prazoPostagem: "asc" }, { prazo: "asc" }, { numero: "asc" }],
+    select: {
+      id: true,
+      numero: true,
+      titulo: true,
+      tipo: true,
+      prioridade: true,
+      prazo: true,
+      prazoPostagem: true,
+      aprovacaoStatus: true,
+      status: { select: { nome: true, cor: true, isConcluido: true } },
+      responsavel: { select: { id: true, nome: true } },
+      envolvidos: { select: { usuario: { select: { id: true, nome: true } } } },
+      tarefas: {
+        orderBy: { ordem: "asc" },
+        select: { id: true, descricao: true, concluida: true, responsavel: { select: { nome: true } } },
+      },
+    },
+  });
+}
+
+export type JobDoProjeto = Awaited<ReturnType<typeof listarJobsDoProjeto>>[number];
+
 /** Usuários ativos para selects de responsável/envolvidos. */
 export async function listarUsuariosAtivos() {
   return db.usuario.findMany({

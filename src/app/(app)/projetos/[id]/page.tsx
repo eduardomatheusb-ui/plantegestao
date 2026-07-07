@@ -2,7 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil, Archive, ArchiveRestore, Trash2, UserPlus, X, FolderTree, Copy } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
-import { obterProjeto, listarUsuariosAtivos } from "@/lib/projetos/queries";
+import { acessoAtual } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
+import { obterProjeto, listarUsuariosAtivos, listarJobsDoProjeto } from "@/lib/projetos/queries";
+import { rotuloTipoJob } from "@/lib/jobs/tipos";
 import { arquivarProjeto, excluirProjeto, adicionarEnvolvido, removerEnvolvido, duplicarProjeto } from "@/lib/projetos/actions";
 import { situacaoProjeto, STATUS_LABEL, formatHoras } from "@/lib/projetos/situacao";
 import { TONE_BADGE } from "@/lib/projetos/estilo";
@@ -45,6 +48,10 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
 
   const situacao = situacaoProjeto(projeto);
   const hoje = new Date().toISOString().slice(0, 10);
+
+  const acesso = await acessoAtual();
+  const podeVerJobs = podeModulo(acesso.caps, "jobs", "VER");
+  const jobs = podeVerJobs ? await listarJobsDoProjeto(id) : [];
 
   const envolvidosIds = new Set(projeto.envolvidos.map((e) => e.usuarioId));
   const usuarios = podeEditar ? await listarUsuariosAtivos() : [];
@@ -140,6 +147,63 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
               )}
             </CardContent>
           </Card>
+
+          {/* Jobs ligados ao projeto (gated pelo acesso ao módulo de jobs) */}
+          {podeVerJobs && (
+            <Card>
+              <CardHeader className="flex-row items-center justify-between">
+                <CardTitle>Jobs ({jobs.length})</CardTitle>
+                {podeModulo(acesso.caps, "jobs", "EDITAR") && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/jobs/novo?projeto=${projeto.id}&cliente=${projeto.clienteId}`}>+ Novo job</Link>
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent>
+                {jobs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhum job ligado a este projeto ainda.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {jobs.map((j) => {
+                      const feitas = j.tarefas.filter((t) => t.concluida).length;
+                      return (
+                        <li key={j.id} className="rounded-lg border border-border p-3">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <Link href={`/jobs/${j.id}`} className="font-medium hover:underline">
+                              <span className="text-muted-foreground tabular-nums">#{j.numero}</span> {j.titulo}
+                            </Link>
+                            <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs">
+                              <span className="size-2 rounded-full" style={{ backgroundColor: j.status.cor ?? "var(--muted-foreground)" }} aria-hidden="true" />
+                              {j.status.nome}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{rotuloTipoJob(j.tipo)}</span>
+                          </div>
+                          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                            <span>Resp.: {j.responsavel?.nome ?? "—"}</span>
+                            {j.envolvidos.length > 0 && <span>Envolvidos: {j.envolvidos.map((e) => e.usuario.nome).join(", ")}</span>}
+                            {j.prazoPostagem && <span>Postagem: {formatDate(j.prazoPostagem)}</span>}
+                            {j.prazo && <span>Arte: {formatDate(j.prazo)}</span>}
+                          </div>
+                          {j.tarefas.length > 0 && (
+                            <ul className="mt-2 space-y-0.5 border-t border-border pt-2">
+                              {j.tarefas.map((t) => (
+                                <li key={t.id} className="flex items-center gap-2 text-xs">
+                                  <span className={t.concluida ? "text-success" : "text-muted-foreground"} aria-hidden="true">{t.concluida ? "✓" : "○"}</span>
+                                  <span className={t.concluida ? "text-muted-foreground line-through" : ""}>{t.descricao}</span>
+                                  {t.responsavel?.nome && <span className="text-muted-foreground">· {t.responsavel.nome}</span>}
+                                </li>
+                              ))}
+                              <li className="pt-1 text-[11px] text-muted-foreground">{feitas}/{j.tarefas.length} subtarefas concluídas</li>
+                            </ul>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Envolvidos */}
           <Card>
