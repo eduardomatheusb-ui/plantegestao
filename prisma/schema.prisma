@@ -84,33 +84,35 @@ model Usuario {
   logs        Log[]
   colaborador Colaborador?
 
-  projetosResponsavel   Projeto[]          @relation("ProjetoResponsavel")
-  projetosCriados       Projeto[]          @relation("ProjetoCriadoPor")
+  projetosResponsavel   Projeto[]                 @relation("ProjetoResponsavel")
+  projetosCriados       Projeto[]                 @relation("ProjetoCriadoPor")
   envolvimentos         ProjetoEnvolvido[]
   comentarios           Comentario[]
   anexos                Anexo[]
   apontamentos          Apontamento[]
-  jobsResponsavel       Job[]              @relation("JobResponsavel")
-  jobsCriados           Job[]              @relation("JobCriadoPor")
+  jobsResponsavel       Job[]                     @relation("JobResponsavel")
+  jobsCriados           Job[]                     @relation("JobCriadoPor")
   jobsEnvolvido         JobEnvolvido[]
   tarefasResponsavel    JobTarefa[]
-  propostasResponsavel  Proposta[]         @relation("PropostaResponsavel")
-  propostasCriadas      Proposta[]         @relation("PropostaCriadoPor")
-  lancamentosCriados    Lancamento[]       @relation("LancamentoCriadoPor")
-  midiaResponsavel      MidiaPlano[]       @relation("MidiaResponsavel")
-  midiaCriados          MidiaPlano[]       @relation("MidiaCriadoPor")
-  producaoCriadas       ProducaoOrdem[]    @relation("ProducaoCriadoPor")
-  notificacoes          Notificacao[]      @relation("NotificacaoDestino")
-  notificacoesGeradas   Notificacao[]      @relation("NotificacaoAtor")
-  osResponsavel         OrdemServico[]     @relation("OsResponsavel")
-  osCriadas             OrdemServico[]     @relation("OsCriadoPor")
-  chatMensagens         ChatMensagem[]     @relation("ChatAutor")
+  propostasResponsavel  Proposta[]                @relation("PropostaResponsavel")
+  propostasCriadas      Proposta[]                @relation("PropostaCriadoPor")
+  lancamentosCriados    Lancamento[]              @relation("LancamentoCriadoPor")
+  midiaResponsavel      MidiaPlano[]              @relation("MidiaResponsavel")
+  midiaCriados          MidiaPlano[]              @relation("MidiaCriadoPor")
+  producaoCriadas       ProducaoOrdem[]           @relation("ProducaoCriadoPor")
+  notificacoes          Notificacao[]             @relation("NotificacaoDestino")
+  notificacoesGeradas   Notificacao[]             @relation("NotificacaoAtor")
+  osResponsavel         OrdemServico[]            @relation("OsResponsavel")
+  osCriadas             OrdemServico[]            @relation("OsCriadoPor")
+  chatMensagens         ChatMensagem[]            @relation("ChatAutor")
   chatLeituras          ChatLeitura[]
   notasFiscais          NotaFiscal[]
-  leadsResponsavel      Lead[]             @relation("LeadResponsavel")
-  onboardingItens       OnboardingItem[]   @relation("OnboardingResponsavel")
-  reembolsosSolicitados Reembolso[]        @relation("ReembolsoSolicitante")
-  reembolsosAnalisados  Reembolso[]        @relation("ReembolsoAnalisadoPor")
+  leadsResponsavel      Lead[]                    @relation("LeadResponsavel")
+  onboardingItens       OnboardingItem[]          @relation("OnboardingResponsavel")
+  reembolsosSolicitados Reembolso[]               @relation("ReembolsoSolicitante")
+  reembolsosAnalisados  Reembolso[]               @relation("ReembolsoAnalisadoPor")
+  compromissosCriados   Compromisso[]             @relation("CompromissoCriadoPor")
+  compromissosParticipa CompromissoParticipante[]
 
   @@index([papel])
 }
@@ -331,6 +333,7 @@ model Cliente {
   campanhas         Campanha[]
   contratos         Contrato[]
   reembolsoDespesas ReembolsoDespesa[]
+  compromissos      Compromisso[]
   portalToken       String?            @unique // link público do portal do cliente
 
   @@index([arquivado])
@@ -1099,6 +1102,42 @@ model Empresa {
   urlEmissaoNfse            String? // link do portal onde se emite a NFS-e (botão "Emitir nota")
 
   metaFaturamentoMensal Decimal? @db.Decimal(14, 2) // meta de receita do mês (indicadores)
+
+  agendaIcsToken String? // token secreto do feed .ics da agenda (assinatura no Google/Apple)
+}
+
+// ─────────────────────────── Agenda compartilhada ───────────────────────────
+
+/// Compromisso/evento da agenda compartilhada da agência (reunião, gravação, visita…).
+model Compromisso {
+  id           String    @id @default(cuid())
+  titulo       String
+  tipo         String    @default("reuniao") // reuniao|gravacao|visita|prazo|financeiro|outro
+  inicio       DateTime
+  fim          DateTime?
+  diaInteiro   Boolean   @default(false)
+  local        String?
+  descricao    String?
+  clienteId    String?
+  criadoPorId  String?
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+
+  cliente       Cliente?                  @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  criadoPor     Usuario?                  @relation("CompromissoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  participantes CompromissoParticipante[]
+
+  @@index([inicio])
+}
+
+model CompromissoParticipante {
+  compromissoId String
+  usuarioId     String
+  compromisso   Compromisso @relation(fields: [compromissoId], references: [id], onDelete: Cascade)
+  usuario       Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([compromissoId, usuarioId])
+  @@index([usuarioId])
 }
 
 /// Situação de uma NFS-e junto ao provedor/prefeitura.

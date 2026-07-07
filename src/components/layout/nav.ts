@@ -7,6 +7,7 @@ import {
   FileText,
   NotebookPen,
   CalendarDays,
+  CalendarClock,
   Megaphone,
   Factory,
   SearchCheck,
@@ -57,6 +58,7 @@ export const NAV: NavGroup[] = [
     itens: [
       { label: "Minha página", href: "/dashboard", icon: LayoutDashboard, disponivel: true },
       { label: "Chat", href: "/chat", icon: MessageCircle, disponivel: true },
+      { label: "Agenda", href: "/agenda", icon: CalendarClock, disponivel: true },
     ],
   },
   {
