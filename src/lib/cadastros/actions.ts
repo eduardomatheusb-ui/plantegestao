@@ -10,6 +10,7 @@ import {
   CADASTRO_EXCLUIR_MINIMO,
 } from "@/lib/rbac";
 import { acessoAtual } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { registrarLog } from "@/lib/log";
 
 export type FormState = {
@@ -18,10 +19,11 @@ export type FormState = {
   fieldErrors?: Record<string, string>;
 };
 
-function montarRaw(config: EntityConfig, formData: FormData, admin: boolean): Record<string, unknown> {
+function montarRaw(config: EntityConfig, formData: FormData, admin: boolean, podeFinanceiro: boolean): Record<string, unknown> {
   const obj: Record<string, unknown> = {};
   for (const campo of config.campos) {
     if (campo.adminOnly && !admin) continue; // campo sensível: ignora para não-admin
+    if (campo.financeiroOnly && !podeFinanceiro) continue; // campo financeiro: ignora para quem não vê financeiro
     if (campo.type === "checkbox") {
       obj[campo.name] = formData.get(campo.name) === "on";
     } else {
@@ -46,8 +48,10 @@ export async function salvarCadastro(
 
   try {
     const user = await assertPapel(CADASTRO_EDITAR_MINIMO);
-    const { admin } = await acessoAtual();
-    const raw = montarRaw(config, formData, admin);
+    const acesso = await acessoAtual();
+    const admin = acesso.admin;
+    const podeFinanceiro = podeModulo(acesso.caps, "financeiro", "VER");
+    const raw = montarRaw(config, formData, admin, podeFinanceiro);
     const parsed = config.schema.safeParse(raw);
 
     if (!parsed.success) {
@@ -67,6 +71,12 @@ export async function salvarCadastro(
     if (!admin) {
       for (const campo of config.campos) {
         if (campo.adminOnly) delete data[campo.name];
+      }
+    }
+    // Sem acesso ao financeiro: preserva os campos financeiros (não sobrescreve).
+    if (!podeFinanceiro) {
+      for (const campo of config.campos) {
+        if (campo.financeiroOnly) delete data[campo.name];
       }
     }
 

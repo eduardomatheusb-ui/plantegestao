@@ -4,6 +4,7 @@ import { carregarOpcoesDinamicas } from "@/lib/cadastros/options";
 import * as repo from "@/lib/cadastros/repo";
 import { requirePapel, CADASTRO_EDITAR_MINIMO } from "@/lib/rbac";
 import { acessoAtual } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { PageHeader } from "@/components/shared/page-header";
 import { CrudForm } from "@/components/shared/crud-form";
 import { HistoryPanel } from "@/components/shared/history-panel";
@@ -19,7 +20,9 @@ export default async function EditarCadastroPage({
   if (!config) notFound();
 
   await requirePapel(CADASTRO_EDITAR_MINIMO);
-  const { admin } = await acessoAtual();
+  const acesso = await acessoAtual();
+  const admin = acesso.admin;
+  const podeFinanceiro = podeModulo(acesso.caps, "financeiro", "VER");
 
   const record = await repo.obter(config, id);
   if (!record) notFound();
@@ -27,10 +30,11 @@ export default async function EditarCadastroPage({
   const dynamicOptions = await carregarOpcoesDinamicas(config, id);
 
   // Monta valores iniciais serializáveis (Decimal → number, null → "").
-  // Campos sensíveis (adminOnly) não saem do servidor para quem não é admin.
+  // Campos sensíveis (adminOnly/financeiroOnly) não saem do servidor sem acesso.
   const initial: Record<string, unknown> = {};
   for (const campo of config.campos) {
     if (campo.adminOnly && !admin) continue;
+    if (campo.financeiroOnly && !podeFinanceiro) continue;
     const v = record[campo.name];
     if (v === null || v === undefined) initial[campo.name] = "";
     else if (campo.type === "currency" || campo.type === "number") initial[campo.name] = Number(v);
@@ -49,7 +53,7 @@ export default async function EditarCadastroPage({
           <CrudForm
             slug={entidade}
             id={id}
-            fields={camposSerializaveis(config)}
+            fields={camposSerializaveis(config, admin, podeFinanceiro)}
             initial={initial}
             dynamicOptions={dynamicOptions}
             cancelHref={`/cadastros/${entidade}`}

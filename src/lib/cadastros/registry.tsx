@@ -30,6 +30,8 @@ export type FieldDef = {
   colSpan?: 1 | 2;
   /** Campo sensível: só Administrador vê/edita (ex.: salário). */
   adminOnly?: boolean;
+  /** Campo financeiro: só quem tem acesso ao módulo Financeiro vê/edita. */
+  financeiroOnly?: boolean;
 };
 
 export type Coluna<T = Registro> = {
@@ -182,6 +184,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
         type: "textarea",
         colSpan: 2,
         help: "Prazos, formas de pagamento, observações.",
+        financeiroOnly: true,
       },
     ],
     schema: z.object({
@@ -500,6 +503,6 @@ export function getEntidade(slug: string): EntityConfig | null {
 }
 
 /** Subconjunto serializável dos campos (para passar ao formulário client). */
-export function camposSerializaveis(config: EntityConfig, admin = false): FieldDef[] {
-  return admin ? config.campos : config.campos.filter((c) => !c.adminOnly);
+export function camposSerializaveis(config: EntityConfig, admin = false, podeFinanceiro = false): FieldDef[] {
+  return config.campos.filter((c) => (admin || !c.adminOnly) && (podeFinanceiro || !c.financeiroOnly));
 }

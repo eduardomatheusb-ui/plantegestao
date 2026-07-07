@@ -3,6 +3,7 @@ import { getEntidade, camposSerializaveis } from "@/lib/cadastros/registry";
 import { carregarOpcoesDinamicas } from "@/lib/cadastros/options";
 import { requirePapel, CADASTRO_EDITAR_MINIMO } from "@/lib/rbac";
 import { acessoAtual } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { PageHeader } from "@/components/shared/page-header";
 import { CrudForm } from "@/components/shared/crud-form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +18,9 @@ export default async function NovoCadastroPage({
   if (!config) notFound();
 
   await requirePapel(CADASTRO_EDITAR_MINIMO);
-  const { admin } = await acessoAtual();
+  const acesso = await acessoAtual();
+  const admin = acesso.admin;
+  const podeFinanceiro = podeModulo(acesso.caps, "financeiro", "VER");
   const dynamicOptions = await carregarOpcoesDinamicas(config);
 
   return (
@@ -28,7 +31,7 @@ export default async function NovoCadastroPage({
           <CrudForm
             slug={entidade}
             id={null}
-            fields={camposSerializaveis(config, admin)}
+            fields={camposSerializaveis(config, admin, podeFinanceiro)}
             dynamicOptions={dynamicOptions}
             cancelHref={`/cadastros/${entidade}`}
           />
