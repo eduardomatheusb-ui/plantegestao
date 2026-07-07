@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock, Copy, Instagram, Send, Lock, LockOpen } from "lucide-react";
+import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock, Copy, Instagram, Send, Lock, LockOpen, CheckCircle2, RotateCcw } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { obterJob, listarStatus } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
-import { arquivarJob, excluirJob, duplicarJob } from "@/lib/jobs/actions";
+import { arquivarJob, excluirJob, duplicarJob, moverJobStatus } from "@/lib/jobs/actions";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
 import { formatDate, cn } from "@/lib/utils";
@@ -41,6 +41,8 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
   if (!job) notFound();
 
   const statusOpts = statuses.map((s) => ({ id: s.id, nome: s.nome }));
+  const statusConcluido = statuses.find((s) => s.isConcluido);
+  const primeiroAberto = statuses.find((s) => !s.isConcluido);
   const hoje = new Date().toISOString().slice(0, 10);
   const atrasado = !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
   const ehSocial = tipoJobSocial(job.tipo);
@@ -56,6 +58,22 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
         statusCor={job.status.cor ?? undefined}
         acoes={
           <>
+            {statusConcluido && !job.status.isConcluido && (
+              <form action={moverJobStatus.bind(null, job.id, statusConcluido.id)}>
+                <Button type="submit" size="sm">
+                  <CheckCircle2 className="size-4" />
+                  Concluir
+                </Button>
+              </form>
+            )}
+            {job.status.isConcluido && primeiroAberto && (
+              <form action={moverJobStatus.bind(null, job.id, primeiroAberto.id)}>
+                <Button type="submit" variant="outline" size="sm">
+                  <RotateCcw className="size-4" />
+                  Reabrir
+                </Button>
+              </form>
+            )}
             <MoverStatus
               jobId={job.id}
               statusId={job.statusId}
