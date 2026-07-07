@@ -51,7 +51,7 @@ export default async function ImprimirReembolsoPage({ params }: { params: Promis
         </header>
 
         <section className="mt-6 grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
-          <p className="sm:col-span-2"><span className="text-neutral-500">Colaborador:</span> {r.solicitante.nome}</p>
+          <p className="sm:col-span-2"><span className="text-neutral-500">Colaborador:</span> {r.solicitante.nome}{r.solicitante.colaborador?.documento ? ` · CPF ${r.solicitante.colaborador.documento}` : ""}{r.solicitante.email ? ` · ${r.solicitante.email}` : ""}</p>
           <p><span className="text-neutral-500">Competência:</span> {rotuloCompetencia(r.competenciaAno, r.competenciaMes)}</p>
           <p><span className="text-neutral-500">Status:</span> {STATUS_LABEL[r.status]}</p>
           <p><span className="text-neutral-500">Solicitado em:</span> {formatDate(r.criadoEm)}</p>

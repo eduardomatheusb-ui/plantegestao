@@ -27,7 +27,7 @@ export async function obterProposta(id: string) {
   return db.proposta.findUnique({
     where: { id },
     include: {
-      cliente: { select: { id: true, nome: true } },
+      cliente: { select: { id: true, nome: true, documento: true, inscricaoEstadual: true, inscricaoMunicipal: true, contatoNome: true, email: true, telefone: true, endereco: true, cep: true } },
       projeto: { select: { id: true, numero: true, nome: true } },
       responsavel: { select: { id: true, nome: true } },
       criadoPor: { select: { id: true, nome: true } },

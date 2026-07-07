@@ -44,23 +44,31 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
           </div>
         </header>
 
-        {/* Dados */}
-        <section className="mt-6 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-neutral-500">Cliente</p>
-            <p className="font-medium">{proposta.cliente?.nome}</p>
+        {/* Cliente (destinatário) */}
+        <section className="mt-6 rounded-md border border-neutral-200 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-neutral-500">Cliente</p>
+          <p className="mt-0.5 font-medium">{proposta.cliente?.nome}</p>
+          <div className="mt-1 grid grid-cols-1 gap-x-6 gap-y-0.5 text-xs text-neutral-600 sm:grid-cols-2">
+            {proposta.cliente?.documento && <p>CNPJ/CPF: {proposta.cliente.documento}</p>}
+            {proposta.cliente?.inscricaoEstadual && <p>Inscr. estadual: {proposta.cliente.inscricaoEstadual}</p>}
+            {proposta.cliente?.contatoNome && <p>Contato: {proposta.cliente.contatoNome}</p>}
+            {(proposta.cliente?.email || proposta.cliente?.telefone) && <p>{[proposta.cliente?.email, proposta.cliente?.telefone].filter(Boolean).join(" · ")}</p>}
+            {(proposta.cliente?.endereco || proposta.cliente?.cep) && <p className="sm:col-span-2">{[proposta.cliente?.endereco, proposta.cliente?.cep ? `CEP ${proposta.cliente.cep}` : null].filter(Boolean).join(" · ")}</p>}
           </div>
-          <div className="text-right">
+        </section>
+
+        {/* Dados da proposta */}
+        <section className="mt-4 grid grid-cols-2 gap-4 text-sm">
+          <div>
             <p className="text-xs uppercase tracking-wide text-neutral-500">Projeto</p>
             <p className="font-medium">{proposta.projeto ? `#${proposta.projeto.numero} ${proposta.projeto.nome}` : "—"}</p>
           </div>
-          <div>
+          <div className="text-right">
             <p className="text-xs uppercase tracking-wide text-neutral-500">Responsável</p>
             <p className="font-medium">{proposta.responsavel?.nome ?? "—"}</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">Validade · Data</p>
-            <p className="font-medium">{proposta.validadeDias} dias (até {formatDate(validadeAte)}) · {formatDate(proposta.criadoEm)}</p>
+          <div className="col-span-2 text-xs text-neutral-500">
+            Validade: {proposta.validadeDias} dias (até {formatDate(validadeAte)}) · Emitida em {formatDate(proposta.criadoEm)}
           </div>
         </section>
 

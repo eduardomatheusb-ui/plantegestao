@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import type { ReembolsoStatus, Prisma } from "@prisma/client";
 
 const detalheInclude = {
-  solicitante: { select: { id: true, nome: true, email: true } },
+  solicitante: { select: { id: true, nome: true, email: true, colaborador: { select: { documento: true } } } },
   analisadoPor: { select: { id: true, nome: true } },
   lancamento: { select: { id: true, numero: true, status: true } },
   despesas: {
