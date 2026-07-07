@@ -138,6 +138,10 @@ num lugar só.
 prazos. No detalhe do projeto você tem briefing, envolvidos e o botão **+ Adicionar** para
 criar jobs e itens filhos. As abas mostram **Comentários, Anexos, Timesheet e Histórico**.
 
+- **Jobs do projeto:** no detalhe, o card **Jobs** lista todos os jobs ligados ao projeto —
+  com status, responsável, envolvidos e as **subtarefas** de cada um. Esse card só aparece
+  para quem tem acesso a **Jobs** (o botão "+ Novo job" exige acesso de edição).
+
 > **Boas práticas:** use projeto quando o trabalho tem **várias entregas**. Para uma tarefa
 > avulsa, crie direto um **job**.
 
@@ -159,6 +163,9 @@ um job hoje é o que aparece nos painéis depois.
 - **Responsável** e **envolvidos**.
 - **Recorrência:** semanal, quinzenal ou mensal. O sistema **gera cópias** do job sozinho.
 - **Depende de outro job:** o job fica "bloqueado" até o outro concluir (aparece 🔒 no card).
+- **Publicação (só postagens):** quando a peça for ao ar, marque **"Publicada"** no job (se
+  não marcar, o sistema assume a publicação ao concluir). Se você **mudar a data de postagem**,
+  conta como **remarcação**. Isso alimenta a **aderência ao calendário** no Painel Estratégico.
 
 **Visões:** lista, **kanban por status**, kanban por responsável, minha pauta, timeline. No
 kanban dá para **arrastar** o card entre colunas (ou usar o seletor "mover status").
@@ -212,9 +219,12 @@ sozinho.
 
 **Para quê:** montar e enviar propostas comerciais com a identidade da Plante.
 
-**Como usar:** **Propostas, Nova**. Adicione itens (valor × qtd − desconto = subtotal),
-introdução e considerações finais. O total é calculado sozinho. **Exportar PDF** gera o
-documento timbrado (cabeçalho da empresa, número e versão, assinaturas).
+**Como usar:** **Propostas, Nova**. Já **na criação** dá para **montar os itens um a um**
+(nome, quantidade, valor e desconto — subtotal = valor × qtd − desconto), com total ao vivo.
+Depois, na tela da proposta, você refina cada item usando o **catálogo de produtos**, a
+**descrição** e a **visibilidade no PDF**. Preencha introdução e considerações finais; o total
+é calculado sozinho. **Exportar PDF** gera o documento timbrado (empresa, número e versão,
+assinaturas).
 
 ---
 
@@ -241,8 +251,10 @@ o desempenho ao longo do tempo.
 **Para quê:** gerir campanhas pagas (Meta, Google, TikTok, LinkedIn) e resultados.
 
 **Como usar:** **Tráfego / anúncios, Nova campanha**. Defina cliente, plataforma, verba,
-período e status. No detalhe, **lance os resultados por data** (investido, alcance, cliques,
-conversões, leads). O sistema calcula **CPL** (custo por lead) e **CTR** automaticamente.
+período e status. Você também pode definir **meta de leads** e **CPL alvo** — usados no
+**Painel Estratégico** para medir o percentual de metas atingidas. No detalhe, **lance os
+resultados por data** (investido, alcance, cliques, conversões, leads). O sistema calcula
+**CPL** (custo por lead) e **CTR** automaticamente.
 
 **Exemplo:** campanha "Black Friday" no Meta, verba R$ 3.000. Toda semana lance os números
 do gerenciador de anúncios e acompanhe o CPL caindo.
@@ -260,6 +272,14 @@ que ele é registrado. Produção e Serviços/OS seguem o mesmo padrão e geram 
 - **Produção:** pedidos de produção (gráfica, brindes e afins) com itens, valores e PDF.
 - **Serviços / OS:** ordens de serviço para terceiros e prestadores.
 
+**Itens um a um na criação:** tanto na **OS** quanto na **Produção**, você já **monta os
+itens um a um no formulário de criação** (descrição, quantidade e valor, com total ao vivo).
+Depois, na tela do documento, dá para adicionar, alterar e remover itens quando precisar.
+
+**Fornecedor / prestador:** a OS tem o campo **Fornecedor / prestador** (quem executa o
+serviço — gráfica, prestador etc.), para ficar claro. Na **fatura** impressa, quando houver,
+aparece **"Executado por"**.
+
 Ambos seguem o mesmo padrão: cadastro, itens, PDF.
 
 ---
@@ -272,10 +292,19 @@ se perder no WhatsApp.
 
 **Para quê:** registrar o que foi decidido, para não perder no WhatsApp.
 
-**Como usar:** **Atas de reunião, Nova ata**. Preencha título, data, cliente (ou interna),
-participantes, **pauta, decisões e próximos passos**. Com a **IA ligada** (ver Administração),
-o botão **"Gerar ata com IA"** monta um rascunho organizado a partir das suas anotações, que
-você **revisa** antes de usar.
+**Como usar:** **Atas de reunião, Nova ata**. Preencha título, data, cliente (ou interna) e
+participantes. Todos os campos de texto (**Ata, Pauta, Decisões e Próximos passos**) têm um
+**editor simples**: barra com **negrito, itálico, sublinhado, listas, link e alinhamento**
+(esquerda, centro, direita, justificar).
+
+- **Ata (texto livre):** escreva a ata do seu jeito, do zero.
+- **IA (opcional):** com a **IA ligada** (ver Administração), o botão **"Gerar ata com IA"**
+  monta um rascunho a partir da pauta/decisões. Você **edita** o texto e clica em **"Usar como
+  ata"** para gravá-lo — ou escreve manualmente. Revise sempre: é sugestão, não texto oficial.
+- **Selo na lista:** cada ata mostra **"Com ata"** ou **"Sem ata"**, para você ver de relance
+  o que já foi finalizado.
+- **Exportar:** o botão **Imprimir / PDF** gera a ata **timbrada** (logo completo da Plante),
+  com fonte 11 e espaçamento 1,5.
 
 > **Boas práticas:** registre **próximos passos com responsável** ("Fulano faz X até dia Y").
 
@@ -399,6 +428,25 @@ atenção.
 **Aviso semanal:** toda segunda, gestores recebem um resumo desses alertas no **sino** (e
 e-mail, se o Resend estiver ligado).
 
+### Painel Estratégico (só Administrador)
+
+Uma visão de alto nível para a direção, em **Gestão, Painel Estratégico** (aparece só para
+**Administrador**). Reúne, numa tela, indicadores de **qualidade do trabalho** e de **saúde
+do negócio**, com **filtro de período** (mês, trimestre, ano ou intervalo) e a **variação de
+cada número contra o período anterior**. Seis blocos:
+
+- **Prazo e fluxo:** % no prazo, tempo de ciclo, jobs parados, postagens no dia planejado e
+  remarcadas.
+- **Retrabalho:** % aprovado na 1ª rodada, rodadas por peça, tempo até aprovação.
+- **Resultado (tráfego):** CPL, CTR e % de metas de campanha atingidas.
+- **Retenção:** tempo médio de contrato, churn, clientes parados e motivos de perda.
+- **Processo e equipe:** carga por pessoa, completude de cadastro e cobertura de aprovação
+  por link.
+- **Saúde financeira:** MRR, ARR, margem média por cliente e a receber vencido.
+
+**Relatório:** dá para escolher quais blocos entram e **exportar em CSV** ou em **PDF
+timbrado**. As comparações são sempre contra o período anterior de mesma duração.
+
 ---
 
 ## 19. Relatórios
@@ -419,14 +467,21 @@ e atendimento. Aqui está a visão 360 e o que cada parte dela destrava.
 
 **Cadastros, Clientes, Abrir** abre a **visão 360**:
 
-- **Resumo:** jobs ativos, próximas postagens, aguardando aprovação, contrato e MRR.
+- **Resumo:** jobs ativos, próximas postagens, aguardando aprovação e **contrato/MRR**.
 - **Trabalho em andamento:** jobs (com status), postagens, projetos.
-- **Brand kit e escopo:** tom de voz, redes sociais, links úteis, escopo.
+- **Brand kit e escopo:** tom de voz, redes sociais, links úteis, escopo (o que está incluso
+  no contrato).
 - **Dados:** documento, contato, e-mail, telefone, endereço.
 - **Portal do cliente:** gerar ou copiar o link do portal (ver seção 23).
 - **Onboarding / implantação:** o checklist de entrada do cliente.
 - **Relatório do mês:** botão que gera o **PDF de prestação de contas** (postagens,
   entregas, tráfego do mês) para enviar ao cliente.
+
+**Informações financeiras protegidas:** o card de **contrato/MRR** e o campo **"Condições
+comerciais"** (na visão 360 e no cadastro) só aparecem para quem tem acesso ao **Financeiro**.
+Quem tem acesso a cadastros vê todo o resto (jobs, postagens, brand kit, escopo, dados,
+portal) sem os valores. Quem não vê financeiro também **não apaga** esse campo ao salvar o
+cadastro — o valor é preservado.
 
 **Onboarding (implantação):** quando o cliente entra (status "implantação"), o checklist
 guia a entrada (coletar acessos, brand kit, escopo, primeira reunião e afins). Ao **concluir
@@ -478,7 +533,9 @@ mundo, então vale critério.
 
 > **Boas práticas:** dê a cada pessoa **só o acesso necessário** (perfis). Salário e
 > financeiro são sensíveis, restrinja. A **aprovação de reembolsos** é de quem tem acesso
-> de edição ao **Financeiro**.
+> de edição ao **Financeiro**; o **Painel Estratégico** (Gestão) é só de Administrador; e os
+> **valores dos clientes** (contrato/MRR e condições comerciais) só aparecem para quem vê o
+> Financeiro.
 
 ---
 
@@ -524,8 +581,10 @@ da equipe em vez de virar mais uma tela para preencher.
 5. **Aprovação pelo link**, não pelo WhatsApp. Fica registrado.
 6. **Atas para decisões.** Chat é para o dia a dia.
 7. **Reembolso sempre com comprovante** e uma despesa por vez.
-8. **Revise o que a IA gera** antes de usar. É sugestão, não texto oficial.
-9. **2FA e acesso mínimo** por perfil. Segurança em primeiro lugar.
+8. **Marque a postagem como publicada** quando ela for ao ar — alimenta a aderência ao
+   calendário no Painel Estratégico.
+9. **Revise o que a IA gera** antes de usar. É sugestão, não texto oficial.
+10. **2FA e acesso mínimo** por perfil. Segurança em primeiro lugar.
 
 ---
 
