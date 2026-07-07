@@ -35,6 +35,7 @@ export function Saudacao({
   }, []);
 
   const hora = agora?.getHours();
+  const madrugada = hora !== undefined && hora < 5; // 0h–5h
   const saudacao =
     hora === undefined ? "Olá" : hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
   const dataFmt = agora
@@ -49,7 +50,7 @@ export function Saudacao({
   return (
     <div className="space-y-1.5">
       <h1 className="font-display text-2xl font-bold tracking-tight">
-        {saudacao}, {nome} 👋
+        {madrugada ? <>Madrugando hoje, ein, {nome}? 🌙</> : <>{saudacao}, {nome} 👋</>}
       </h1>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground" suppressHydrationWarning>
         {dataFmt && <span className="first-letter:uppercase">{dataFmt}</span>}
