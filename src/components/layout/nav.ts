@@ -15,6 +15,7 @@ import {
   HandCoins,
   BarChart3,
   Gauge,
+  TrendingUp,
   HeartPulse,
   FileSignature,
   Users,
@@ -28,7 +29,8 @@ import {
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
-import type { ModuloKey, Capacidades } from "@/lib/permissoes";
+import { nivelAtende, type ModuloKey, type Capacidades } from "@/lib/permissoes";
+import type { NivelAcesso } from "@prisma/client";
 
 export type NavItem = {
   label: string;
@@ -36,6 +38,8 @@ export type NavItem = {
   icon: LucideIcon;
   /** Módulo que controla a visibilidade (perfil de acesso). Sem módulo = sempre visível. */
   modulo?: ModuloKey;
+  /** Nível mínimo exigido no módulo (padrão: qualquer acesso ≠ NENHUM). Ex.: "ADMIN" p/ item só de administrador. */
+  nivelMin?: NivelAcesso;
   /** false = módulo de fase futura, exibido como "em breve" (sem link). */
   disponivel?: boolean;
 };
@@ -80,6 +84,7 @@ export const NAV: NavGroup[] = [
   {
     titulo: "Gestão",
     itens: [
+      { label: "Painel Estratégico", href: "/painel-estrategico", icon: TrendingUp, modulo: "admin", nivelMin: "ADMIN", disponivel: true },
       { label: "Indicadores", href: "/indicadores", icon: Gauge, modulo: "relatorios", disponivel: true },
       { label: "Saúde financeira", href: "/saude-financeira", icon: HeartPulse, modulo: "financeiro", disponivel: true },
     ],
@@ -118,6 +123,10 @@ export const NAV: NavGroup[] = [
 export function filtrarNav(caps: Capacidades): NavGroup[] {
   return NAV.map((g) => ({
     ...g,
-    itens: g.itens.filter((i) => !i.modulo || caps[i.modulo] !== "NENHUM"),
+    itens: g.itens.filter((i) => {
+      if (!i.modulo) return true;
+      if (i.nivelMin) return nivelAtende(caps[i.modulo], i.nivelMin);
+      return caps[i.modulo] !== "NENHUM";
+    }),
   })).filter((g) => g.itens.length > 0);
 }

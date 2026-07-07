@@ -24,6 +24,8 @@ export default async function EditarCampanhaPage({ params }: { params: Promise<{
             inicial={{
               nome: c.nome, clienteId: c.clienteId, plataforma: c.plataforma,
               objetivo: c.objetivo ?? "", verba: c.verba != null ? String(c.verba) : "",
+              metaLeads: c.metaLeads != null ? String(c.metaLeads) : "",
+              metaCpl: c.metaCpl != null ? String(Number(c.metaCpl)) : "",
               dataInicio: dia(c.dataInicio), dataFim: dia(c.dataFim), status: c.status, observacao: c.observacao ?? "",
             }}
             clientes={clientes}

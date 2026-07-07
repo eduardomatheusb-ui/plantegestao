@@ -23,6 +23,9 @@ async function userOrThrow() {
 }
 
 const dataOpt = (v: string | undefined) => (v ? new Date(`${v}T00:00:00`) : null);
+function mesmoDia(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
 
 const jobSchema = z.object({
   tipo: z.string().optional().transform((v) => (v && v.trim() ? v : TIPO_JOB_PADRAO)),
@@ -109,8 +112,19 @@ export async function salvarJob(
 
     let jobId: string;
     if (id) {
-      const anterior = await db.job.findUnique({ where: { id }, select: { responsavelId: true } });
-      await db.job.update({ where: { id }, data });
+      const anterior = await db.job.findUnique({ where: { id }, select: { responsavelId: true, prazoPostagem: true, prazoPostagemOriginal: true, remarcacoesPostagem: true } });
+      // Aderência ao calendário: conta remarcação quando a data de postagem muda de dia.
+      const novoPP = data.prazoPostagem;
+      const remarc: { remarcacoesPostagem?: number; prazoPostagemOriginal?: Date } = {};
+      if (ehSocial && novoPP) {
+        if (anterior?.prazoPostagem && !mesmoDia(novoPP, anterior.prazoPostagem)) {
+          remarc.remarcacoesPostagem = (anterior.remarcacoesPostagem ?? 0) + 1;
+          remarc.prazoPostagemOriginal = anterior.prazoPostagemOriginal ?? anterior.prazoPostagem;
+        } else if (!anterior?.prazoPostagemOriginal) {
+          remarc.prazoPostagemOriginal = novoPP;
+        }
+      }
+      await db.job.update({ where: { id }, data: { ...data, ...remarc } });
       jobId = id;
       await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: "editou o job" });
       if (data.responsavelId && data.responsavelId !== anterior?.responsavelId) {
@@ -119,7 +133,7 @@ export async function salvarJob(
       destino = `/jobs/${id}`;
     } else {
       const numero = await proximoNumero("JOB");
-      const criado = await db.job.create({ data: { ...data, numero, concluidoEm, criadoPorId: user.id } });
+      const criado = await db.job.create({ data: { ...data, numero, concluidoEm, prazoPostagemOriginal: ehSocial ? data.prazoPostagem : null, criadoPorId: user.id } });
       jobId = criado.id;
       await registrarLog({ entidadeTipo: "job", entidadeId: criado.id, usuarioId: user.id, acao: `criou o job #${numero}` });
       await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável por "${d.titulo}"`, entidadeTipo: "job", entidadeId: criado.id, url: `/jobs/${criado.id}` });
@@ -144,14 +158,16 @@ export async function salvarJob(
 export async function moverJobStatus(id: string, statusId: string) {
   const user = await assertPapel(TRABALHAR);
   const [job, status] = await Promise.all([
-    db.job.findUnique({ where: { id }, select: { statusId: true, concluidoEm: true, responsavelId: true, titulo: true, status: { select: { nome: true } } } }),
+    db.job.findUnique({ where: { id }, select: { statusId: true, concluidoEm: true, responsavelId: true, titulo: true, prazoPostagem: true, publicadoEm: true, status: { select: { nome: true } } } }),
     db.jobStatus.findUnique({ where: { id: statusId } }),
   ]);
   if (!status) throw new Error("Status inválido.");
 
   const concluidoEm = status.isConcluido ? (job?.concluidoEm ?? new Date()) : null;
+  // Peça de postagem concluída sem data de publicação: assume publicada agora (pode ser ajustado no job).
+  const publicadoEm = status.isConcluido && job?.prazoPostagem && !job.publicadoEm ? concluidoEm : undefined;
 
-  await db.job.update({ where: { id }, data: { statusId, concluidoEm } });
+  await db.job.update({ where: { id }, data: { statusId, concluidoEm, ...(publicadoEm !== undefined ? { publicadoEm } : {}) } });
   await registrarLog({
     entidadeTipo: "job",
     entidadeId: id,
@@ -225,6 +241,14 @@ export async function duplicarJob(id: string) {
   await registrarLog({ entidadeTipo: "job", entidadeId: novo.id, usuarioId: user.id, acao: `duplicou de #${orig.numero}` });
   revalidatePath("/jobs");
   redirect(`/jobs/${novo.id}`);
+}
+
+/** Marca (ou desmarca) a data em que a peça de postagem foi publicada — alimenta a aderência ao calendário. */
+export async function marcarPublicada(id: string, publicada: boolean) {
+  const user = await assertPapel(TRABALHAR);
+  await db.job.update({ where: { id }, data: { publicadoEm: publicada ? new Date() : null } });
+  await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: publicada ? "marcou como publicada" : "desmarcou a publicação" });
+  revalidatePath(`/jobs/${id}`);
 }
 
 // ── Subtarefas ────────────────────────────────────────────────────────

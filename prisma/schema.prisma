@@ -362,6 +362,8 @@ model Campanha {
   plataforma   String    @default("meta") // meta | google | tiktok | linkedin | outro
   objetivo     String?
   verba        Decimal?  @db.Decimal(14, 2)
+  metaLeads    Int? // meta de leads no período (indicador de metas atingidas)
+  metaCpl      Decimal?  @db.Decimal(14, 2) // CPL alvo (custo por lead máximo)
   dataInicio   DateTime?
   dataFim      DateTime?
   status       String    @default("ativa") // ativa | pausada | encerrada
@@ -467,7 +469,7 @@ model Prestador {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  lancamentos  Lancamento[]
+  lancamentos Lancamento[]
 
   @@index([arquivado])
 }
@@ -721,31 +723,34 @@ model JobStatus {
 }
 
 model Job {
-  id                 String    @id @default(cuid())
-  numero             Int       @unique
-  tipo               String    @default("outro") // catálogo em lib/jobs/tipos.ts (post_estatico, video, material_grafico…)
-  prioridade         String    @default("normal") // baixa | normal | alta | urgente
-  titulo             String
-  clienteId          String
-  projetoId          String?
-  responsavelId      String?
-  statusId           String
-  prazo              DateTime? // p/ postagem = prazo de CRIAÇÃO da arte
-  prazoPostagem      DateTime? // só postagem: quando vai ao ar
-  recorrenciaFreq    String? // null = não recorrente; "semanal"|"quinzenal"|"mensal" → este job gera cópias
-  recorrenciaProxima DateTime? // próxima data de geração
-  bloqueadoPorId     String? // depende de outro job (não pode começar até ele concluir)
-  legenda            String? // só postagem
-  formatos           String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
-  briefing           String?
-  aprovacaoStatus    String    @default("rascunho") // rascunho | enviado | aprovado | ajustes
-  aprovacaoToken     String?   @unique // token do link público de aprovação do cliente
-  aprovacaoEm        DateTime? // quando a peça foi enviada para aprovação
-  concluidoEm        DateTime? // setado ao entrar em status isConcluido (para "% no prazo")
-  arquivado          Boolean   @default(false)
-  criadoPorId        String?
-  criadoEm           DateTime  @default(now())
-  atualizadoEm       DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  numero                Int       @unique
+  tipo                  String    @default("outro") // catálogo em lib/jobs/tipos.ts (post_estatico, video, material_grafico…)
+  prioridade            String    @default("normal") // baixa | normal | alta | urgente
+  titulo                String
+  clienteId             String
+  projetoId             String?
+  responsavelId         String?
+  statusId              String
+  prazo                 DateTime? // p/ postagem = prazo de CRIAÇÃO da arte
+  prazoPostagem         DateTime? // só postagem: quando vai ao ar
+  prazoPostagemOriginal DateTime? // 1ª data de postagem planejada (para medir aderência ao calendário)
+  remarcacoesPostagem   Int       @default(0) // quantas vezes a data de postagem foi remarcada
+  publicadoEm           DateTime? // só postagem: data real em que a peça foi ao ar
+  recorrenciaFreq       String? // null = não recorrente; "semanal"|"quinzenal"|"mensal" → este job gera cópias
+  recorrenciaProxima    DateTime? // próxima data de geração
+  bloqueadoPorId        String? // depende de outro job (não pode começar até ele concluir)
+  legenda               String? // só postagem
+  formatos              String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
+  briefing              String?
+  aprovacaoStatus       String    @default("rascunho") // rascunho | enviado | aprovado | ajustes
+  aprovacaoToken        String?   @unique // token do link público de aprovação do cliente
+  aprovacaoEm           DateTime? // quando a peça foi enviada para aprovação
+  concluidoEm           DateTime? // setado ao entrar em status isConcluido (para "% no prazo")
+  arquivado             Boolean   @default(false)
+  criadoPorId           String?
+  criadoEm              DateTime  @default(now())
+  atualizadoEm          DateTime  @updatedAt
 
   cliente           Cliente            @relation(fields: [clienteId], references: [id])
   projeto           Projeto?           @relation(fields: [projetoId], references: [id], onDelete: SetNull)

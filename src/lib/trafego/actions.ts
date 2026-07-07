@@ -33,9 +33,12 @@ export async function salvarCampanha(id: string | null, _prev: CampanhaFormState
     const parsed = schema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Confira os campos." };
     const d = parsed.data;
+    const metaLeadsRaw = numOpt(formData.get("metaLeads")?.toString());
     const data = {
       ...d,
       verba: numOpt(formData.get("verba")?.toString()),
+      metaLeads: metaLeadsRaw != null ? Math.max(0, Math.trunc(metaLeadsRaw)) : null,
+      metaCpl: numOpt(formData.get("metaCpl")?.toString()),
       dataInicio: dataOpt(formData.get("dataInicio")?.toString()),
       dataFim: dataOpt(formData.get("dataFim")?.toString()),
     };

@@ -22,6 +22,7 @@ import { AttachmentsPanel } from "@/components/shared/attachments-panel";
 import { TimesheetPanel } from "@/components/shared/timesheet-panel";
 import { HistoryPanel } from "@/components/shared/history-panel";
 import { AprovacaoPanel } from "@/components/aprovacao/aprovacao-panel";
+import { PublicadaToggle } from "@/components/jobs/publicada-toggle";
 import { baseUrl } from "@/lib/email";
 import { IaAssist } from "@/components/ia/ia-assist";
 import { gerarBriefingIA } from "@/lib/ia/actions";
@@ -160,6 +161,17 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
                   {job.envolvidos.length ? job.envolvidos.map((e) => e.usuario.nome).join(", ") : "—"}
                 </p>
               </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3">
+              <div className="space-y-0.5">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Publicação</p>
+                <p className="text-sm font-medium">
+                  {job.publicadoEm ? `Publicada em ${formatDate(job.publicadoEm)}` : "Ainda não publicada"}
+                  {job.remarcacoesPostagem > 0 && <span className="text-muted-foreground"> · {job.remarcacoesPostagem} remarcação(ões)</span>}
+                </p>
+              </div>
+              <PublicadaToggle jobId={job.id} publicado={!!job.publicadoEm} />
             </div>
 
             <div className="space-y-1">

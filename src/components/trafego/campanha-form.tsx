@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 type Opt = { id: string; nome: string };
 export type CampanhaInicial = Partial<{
   nome: string; clienteId: string; plataforma: string; objetivo: string;
-  verba: string; dataInicio: string; dataFim: string; status: string; observacao: string;
+  verba: string; metaLeads: string; metaCpl: string; dataInicio: string; dataFim: string; status: string; observacao: string;
 }>;
 
 const sel = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -59,6 +59,16 @@ export function CampanhaForm({ id, inicial = {}, clientes, cancelHref }: { id: s
         <div className="space-y-2">
           <Label htmlFor="verba">Verba total (R$)</Label>
           <Input id="verba" name="verba" inputMode="decimal" defaultValue={inicial.verba ?? ""} placeholder="ex.: 3000" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="metaLeads">Meta de leads</Label>
+          <Input id="metaLeads" name="metaLeads" inputMode="numeric" defaultValue={inicial.metaLeads ?? ""} placeholder="ex.: 50" />
+          <p className="text-xs text-muted-foreground">Usada no Painel Estratégico (metas atingidas).</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="metaCpl">CPL alvo (R$)</Label>
+          <Input id="metaCpl" name="metaCpl" inputMode="decimal" defaultValue={inicial.metaCpl ?? ""} placeholder="ex.: 20" />
+          <p className="text-xs text-muted-foreground">Custo por lead máximo aceitável.</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="dataInicio">Início</Label>
