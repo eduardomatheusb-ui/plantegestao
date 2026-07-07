@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil, Plus, ListChecks, FolderKanban, CalendarDays, Hourglass, Repeat, ExternalLink, FileText } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { obterClienteVisao } from "@/lib/clientes/queries";
 import { listarOnboarding } from "@/lib/onboarding/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
@@ -54,7 +55,8 @@ function Campo({ rotulo, valor }: { rotulo: string; valor?: string | null }) {
 }
 
 export default async function ClienteVisaoPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireModulo("cadastros", "VER");
+  const acesso = await requireModulo("cadastros", "VER");
+  const podeFinanceiro = podeModulo(acesso.caps, "financeiro", "VER");
   const { id } = await params;
   const dados = await obterClienteVisao(id);
   if (!dados) notFound();
@@ -85,12 +87,14 @@ export default async function ClienteVisaoPage({ params }: { params: Promise<{ i
         }
       />
 
-      {/* Resumo 360 */}
+      {/* Resumo 360 (o card de contrato/MRR é financeiro → só quem vê financeiro) */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat icon={ListChecks} rotulo="Jobs ativos" valor={resumo.jobsAtivos} />
         <Stat icon={CalendarDays} rotulo="Próximas postagens" valor={resumo.postagens} />
         <Stat icon={Hourglass} rotulo="Aguardando aprovação" valor={resumo.aguardandoAprovacao} />
-        <Stat icon={Repeat} rotulo={resumo.contratosAtivos ? `Contrato mensal (${resumo.contratosAtivos})` : "Contrato mensal"} valor={resumo.mrr > 0 ? formatBRL(resumo.mrr) : "—"} destaque={resumo.mrr > 0} />
+        {podeFinanceiro && (
+          <Stat icon={Repeat} rotulo={resumo.contratosAtivos ? `Contrato mensal (${resumo.contratosAtivos})` : "Contrato mensal"} valor={resumo.mrr > 0 ? formatBRL(resumo.mrr) : "—"} destaque={resumo.mrr > 0} />
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -176,7 +180,7 @@ export default async function ClienteVisaoPage({ params }: { params: Promise<{ i
               <Campo rotulo="E-mail" valor={c.email} />
               <Campo rotulo="Telefone" valor={c.telefone} />
               <Campo rotulo="Endereço" valor={[c.endereco, c.cep].filter(Boolean).join(" · ") || null} />
-              <Campo rotulo="Condições comerciais" valor={c.condicoesComerciais} />
+              {podeFinanceiro && <Campo rotulo="Condições comerciais" valor={c.condicoesComerciais} />}
             </CardContent>
           </Card>
 
