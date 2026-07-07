@@ -4,6 +4,7 @@ import { requireModulo } from "@/lib/permissoes.server";
 import { listarReunioes } from "@/lib/reunioes/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
 function dataBR(d: Date) {
@@ -30,7 +31,10 @@ export default async function ReunioesPage() {
             <Link key={r.id} href={`/reunioes/${r.id}`} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
               <Card className="h-full transition-colors hover:border-primary/50">
                 <CardContent className="space-y-2 pt-6">
-                  <p className="font-medium leading-tight">{r.titulo}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium leading-tight">{r.titulo}</p>
+                    <Badge variant={r.ata ? "success" : "muted"} className="shrink-0">{r.ata ? "Com ata" : "Sem ata"}</Badge>
+                  </div>
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Calendar className="size-3.5" aria-hidden="true" /> {dataBR(r.data)}
                   </p>

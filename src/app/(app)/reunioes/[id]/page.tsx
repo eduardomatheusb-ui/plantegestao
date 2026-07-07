@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Printer } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterReuniao } from "@/lib/reunioes/queries";
@@ -43,6 +43,7 @@ export default async function ReuniaoDetalhePage({ params }: { params: Promise<{
         acao={
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" size="sm"><Link href="/reunioes"><ArrowLeft className="size-4" /> Atas</Link></Button>
+            <Button asChild variant="outline" size="sm"><a href={`/imprimir/reuniao/${r.id}`} target="_blank" rel="noopener noreferrer"><Printer className="size-4" /> Imprimir / PDF</a></Button>
             {podeEditar && <Button asChild variant="outline" size="sm"><Link href={`/reunioes/${r.id}/editar`}><Pencil className="size-4" /> Editar</Link></Button>}
             {podeExcluir && (
               <ConfirmButton action={excluirReuniao.bind(null, r.id)} variant="ghost" triggerIcon={<Trash2 className="size-4" />} triggerLabel="Excluir" titulo="Excluir ata?" descricao="Esta ação não pode ser desfeita." confirmarLabel="Excluir" />
