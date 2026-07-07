@@ -14,6 +14,7 @@ const schema = z.object({
   data: z.string().min(1, "Informe a data.").transform((v) => new Date(`${v}T12:00:00`)),
   clienteId: z.string().optional().transform((v) => (v ? v : null)),
   participantes: z.string().optional().transform((v) => (v?.trim() ? v : null)),
+  ata: z.string().optional().transform((v) => (v?.trim() ? v : null)),
   pauta: z.string().optional().transform((v) => (v?.trim() ? v : null)),
   decisoes: z.string().optional().transform((v) => (v?.trim() ? v : null)),
   proximosPassos: z.string().optional().transform((v) => (v?.trim() ? v : null)),
@@ -40,6 +41,16 @@ export async function salvarReuniao(id: string | null, _prev: ReuniaoFormState, 
   }
   revalidatePath("/reunioes");
   redirect(destino);
+}
+
+/** Salva um texto como a ata da reunião (ex.: aproveitar o rascunho da IA). */
+export async function salvarAtaTexto(id: string, texto: string): Promise<{ error?: string }> {
+  const acesso = await assertModulo("projetos", "EDITAR");
+  const t = texto.trim();
+  await db.reuniao.update({ where: { id }, data: { ata: t || null } });
+  await registrarLog({ entidadeTipo: "reuniao", entidadeId: id, usuarioId: acesso.id, acao: "atualizou a ata" });
+  revalidatePath(`/reunioes/${id}`);
+  return {};
 }
 
 export async function excluirReuniao(id: string) {

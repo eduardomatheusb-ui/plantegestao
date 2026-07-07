@@ -25,7 +25,7 @@ export default async function EditarReuniaoPage({ params }: { params: Promise<{ 
             id={id}
             inicial={{
               titulo: r.titulo, data: toInput(r.data), clienteId: r.clienteId ?? "",
-              participantes: r.participantes ?? "", pauta: r.pauta ?? "",
+              participantes: r.participantes ?? "", ata: r.ata ?? "", pauta: r.pauta ?? "",
               decisoes: r.decisoes ?? "", proximosPassos: r.proximosPassos ?? "",
             }}
             clientes={clientes}

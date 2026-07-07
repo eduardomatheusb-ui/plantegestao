@@ -4,7 +4,7 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterReuniao } from "@/lib/reunioes/queries";
-import { excluirReuniao } from "@/lib/reunioes/actions";
+import { excluirReuniao, salvarAtaTexto } from "@/lib/reunioes/actions";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,24 @@ export default async function ReuniaoDetalhePage({ params }: { params: Promise<{
         </Card>
       )}
 
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Ata</CardTitle>
+          {podeEditar && (
+            <Button asChild variant="ghost" size="sm"><Link href={`/reunioes/${r.id}/editar`}><Pencil className="size-4" /> Editar</Link></Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {r.ata ? (
+            <p className="whitespace-pre-wrap text-sm">{r.ata}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Nenhuma ata escrita ainda. Clique em <strong>Editar</strong> para escrever do seu jeito, ou gere um rascunho com a IA abaixo e clique em <strong>Usar como ata</strong>.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       <Bloco titulo="Pauta" texto={r.pauta} />
       <Bloco titulo="Decisões" texto={r.decisoes} />
       <Bloco titulo="Próximos passos" texto={r.proximosPassos} />
@@ -67,8 +85,13 @@ export default async function ReuniaoDetalhePage({ params }: { params: Promise<{
       <Card>
         <CardHeader><CardTitle>Assistente de IA</CardTitle></CardHeader>
         <CardContent>
-          <p className="mb-3 text-sm text-muted-foreground">Gere um rascunho de ata organizada a partir da pauta e decisões acima.</p>
-          <IaAssist acao={gerarAtaIA.bind(null, r.id)} rotulo="Gerar ata com IA" />
+          <p className="mb-3 text-sm text-muted-foreground">Gere um rascunho de ata a partir da pauta e decisões acima. Você pode editar o texto e clicar em <strong>Usar como ata</strong> para gravá-lo, ou escrever a ata manualmente pelo botão Editar.</p>
+          <IaAssist
+            acao={gerarAtaIA.bind(null, r.id)}
+            rotulo="Gerar ata com IA"
+            onSalvar={podeEditar ? salvarAtaTexto.bind(null, r.id) : undefined}
+            salvarRotulo="Usar como ata"
+          />
         </CardContent>
       </Card>
 

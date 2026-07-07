@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 type Opt = { id: string; nome: string };
 export type ReuniaoInicial = Partial<{
   titulo: string; data: string; clienteId: string; participantes: string;
-  pauta: string; decisoes: string; proximosPassos: string;
+  ata: string; pauta: string; decisoes: string; proximosPassos: string;
 }>;
 
 const sel = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -52,6 +52,11 @@ export function ReuniaoForm({ id, inicial = {}, clientes, cancelHref }: { id: st
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="participantes">Participantes</Label>
           <Input id="participantes" name="participantes" defaultValue={inicial.participantes ?? ""} placeholder="Nomes separados por vírgula" />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="ata">Ata (texto livre)</Label>
+          <Textarea id="ata" name="ata" rows={8} defaultValue={inicial.ata ?? ""} placeholder="Escreva a ata da reunião do seu jeito. Você também pode gerar um rascunho com a IA na tela da ata e ajustar aqui." />
+          <p className="text-xs text-muted-foreground">Campo livre para a ata escrita pela equipe. Os campos abaixo (pauta, decisões, próximos passos) são opcionais e ajudam a organizar e alimentar a IA.</p>
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="pauta">Pauta</Label>

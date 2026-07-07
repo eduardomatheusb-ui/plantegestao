@@ -227,6 +227,7 @@ model Reuniao {
   data           DateTime
   clienteId      String?
   participantes  String?
+  ata            String? // ata em texto livre, escrita pela equipe (ou colada da IA)
   pauta          String?
   decisoes       String?
   proximosPassos String?
