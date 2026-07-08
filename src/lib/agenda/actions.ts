@@ -22,6 +22,7 @@ function parseEmails(bruto: string | null | undefined): string[] {
 /** Envia (quando o Resend estiver configurado) o convite/atualização por e-mail. */
 async function avisarPorEmail(params: {
   emails: string[];
+  participantes: string[];
   novo: boolean;
   titulo: string; tipo: string; inicio: Date; diaInteiro: boolean;
   local: string | null; descricao: string | null; recorrenciaDias: number | null;
@@ -38,13 +39,16 @@ async function avisarPorEmail(params: {
     params.local ? `<strong>Local:</strong> ${params.local}` : "",
     params.descricao ? `<br/>${params.descricao.replace(/\n/g, "<br/>")}` : "",
   ].filter(Boolean).join("<br/>");
-  const corpo = `<p><strong>${rotuloTipo(params.tipo)}:</strong> ${params.titulo}</p><p>${linhas}</p>`;
+  const listaParticipantes = params.participantes.length
+    ? `<p style="margin:14px 0 4px"><strong>Participantes</strong></p><ul style="margin:0;padding-left:18px">${params.participantes.map((p) => `<li>${p}</li>`).join("")}</ul>`
+    : "";
+  const corpo = `<p style="margin:0 0 8px"><strong>${rotuloTipo(params.tipo)}:</strong> ${params.titulo}</p><p style="margin:0">${linhas}</p>${listaParticipantes}`;
   const html = layoutEmail({
     titulo: params.novo ? "Novo compromisso na agenda" : "Compromisso atualizado",
     corpo, linkUrl: `${baseUrl()}/agenda`, linkTexto: "Ver na agenda",
   });
   const subject = `${params.novo ? "Convite" : "Atualização"} · ${params.titulo}`;
-  // Um e-mail por destinatário (não expõe a lista entre externos).
+  // Um e-mail por destinatário (não expõe a lista de e-mails entre externos).
   await Promise.all(emails.map((to) => enviarEmail({ to, subject, html })));
 }
 
@@ -157,11 +161,12 @@ export async function salvarCompromisso(id: string | null, _prev: CompromissoFor
     // E-mail para todos os envolvidos (participantes internos + externos), se pedido.
     if (notificarEmail) {
       const internos = participantes.length
-        ? (await db.usuario.findMany({ where: { id: { in: participantes }, ativo: true }, select: { email: true } })).map((u) => u.email)
+        ? await db.usuario.findMany({ where: { id: { in: participantes }, ativo: true }, select: { email: true, nome: true } })
         : [];
-      const emails = [...new Set([...internos, ...externos].map((e) => e.toLowerCase()).filter(Boolean))];
+      const emails = [...new Set([...internos.map((u) => u.email), ...externos].map((e) => e.toLowerCase()).filter(Boolean))];
+      const nomes = [...internos.map((u) => u.nome), ...externos];
       await avisarPorEmail({
-        emails, novo: !id,
+        emails, participantes: nomes, novo: !id,
         titulo: dados.titulo, tipo: dados.tipo, inicio: dados.inicio,
         diaInteiro: dados.diaInteiro, local: dados.local, descricao: dados.descricao,
         recorrenciaDias: dados.recorrenciaDias,
