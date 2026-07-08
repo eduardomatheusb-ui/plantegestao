@@ -8,7 +8,45 @@ import { getSessionUser, podePapel } from "@/lib/rbac";
 import { registrarLog } from "@/lib/log";
 import { notificarMuitos } from "@/lib/notificacoes";
 import { EMPRESA_PADRAO } from "@/lib/empresa";
-import { rotuloTipo, TIPO_COMPROMISSO_PADRAO, TIPOS_COMPROMISSO, RECORRENCIAS_VALIDAS } from "./constants";
+import { enviarEmail, layoutEmail, baseUrl } from "@/lib/email";
+import { rotuloTipo, rotuloRecorrencia, TIPO_COMPROMISSO_PADRAO, TIPOS_COMPROMISSO, RECORRENCIAS_VALIDAS } from "./constants";
+
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Normaliza uma lista de e-mails colada (vírgula/;/quebra de linha) e valida. */
+function parseEmails(bruto: string | null | undefined): string[] {
+  if (!bruto) return [];
+  return [...new Set(bruto.split(/[,;\n]/).map((s) => s.trim().toLowerCase()).filter((s) => RE_EMAIL.test(s)))];
+}
+
+/** Envia (quando o Resend estiver configurado) o convite/atualização por e-mail. */
+async function avisarPorEmail(params: {
+  emails: string[];
+  novo: boolean;
+  titulo: string; tipo: string; inicio: Date; diaInteiro: boolean;
+  local: string | null; descricao: string | null; recorrenciaDias: number | null;
+}) {
+  const { emails } = params;
+  if (!emails.length) return;
+  const quando = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long", day: "2-digit", month: "long", year: "numeric",
+    ...(params.diaInteiro ? {} : { hour: "2-digit", minute: "2-digit" }),
+  }).format(params.inicio);
+  const linhas = [
+    `<strong>Quando:</strong> ${quando}${params.diaInteiro ? " (dia inteiro)" : ""}`,
+    params.recorrenciaDias ? `<strong>Repete:</strong> ${rotuloRecorrencia(params.recorrenciaDias)}` : "",
+    params.local ? `<strong>Local:</strong> ${params.local}` : "",
+    params.descricao ? `<br/>${params.descricao.replace(/\n/g, "<br/>")}` : "",
+  ].filter(Boolean).join("<br/>");
+  const corpo = `<p><strong>${rotuloTipo(params.tipo)}:</strong> ${params.titulo}</p><p>${linhas}</p>`;
+  const html = layoutEmail({
+    titulo: params.novo ? "Novo compromisso na agenda" : "Compromisso atualizado",
+    corpo, linkUrl: `${baseUrl()}/agenda`, linkTexto: "Ver na agenda",
+  });
+  const subject = `${params.novo ? "Convite" : "Atualização"} · ${params.titulo}`;
+  // Um e-mail por destinatário (não expõe a lista entre externos).
+  await Promise.all(emails.map((to) => enviarEmail({ to, subject, html })));
+}
 
 const P = EMPRESA_PADRAO;
 // Dados mínimos para criar o singleton da Empresa (preserva o timbre padrão).
@@ -68,6 +106,9 @@ export async function salvarCompromisso(id: string | null, _prev: CompromissoFor
     const recAte = recorrenciaDias ? formData.get("recorrenciaAte")?.toString() : "";
     const recorrenciaAte = recAte && /^\d{4}-\d{2}-\d{2}$/.test(recAte) ? new Date(`${recAte}T23:59:59`) : null;
 
+    const externos = parseEmails(formData.get("emailsExternos")?.toString());
+    const notificarEmail = formData.get("notificarEmail") === "on";
+
     const dados = {
       titulo: titulo!,
       tipo: TIPOS.has(tipo) ? tipo : TIPO_COMPROMISSO_PADRAO,
@@ -79,6 +120,7 @@ export async function salvarCompromisso(id: string | null, _prev: CompromissoFor
       clienteId: txt(formData.get("clienteId")),
       recorrenciaDias,
       recorrenciaAte,
+      emailsExternos: externos.length ? externos.join(", ") : null,
     };
 
     let compromissoId: string;
@@ -109,6 +151,20 @@ export async function salvarCompromisso(id: string | null, _prev: CompromissoFor
         titulo: `${rotuloTipo(dados.tipo)}: ${dados.titulo}`,
         descricao: `${quando}${dados.local ? ` · ${dados.local}` : ""}`,
         entidadeTipo: "compromisso", entidadeId: compromissoId, url: "/agenda",
+      });
+    }
+
+    // E-mail para todos os envolvidos (participantes internos + externos), se pedido.
+    if (notificarEmail) {
+      const internos = participantes.length
+        ? (await db.usuario.findMany({ where: { id: { in: participantes }, ativo: true }, select: { email: true } })).map((u) => u.email)
+        : [];
+      const emails = [...new Set([...internos, ...externos].map((e) => e.toLowerCase()).filter(Boolean))];
+      await avisarPorEmail({
+        emails, novo: !id,
+        titulo: dados.titulo, tipo: dados.tipo, inicio: dados.inicio,
+        diaInteiro: dados.diaInteiro, local: dados.local, descricao: dados.descricao,
+        recorrenciaDias: dados.recorrenciaDias,
       });
     }
     destino = "/agenda";

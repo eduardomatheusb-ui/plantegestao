@@ -235,11 +235,13 @@ model Reuniao {
   pauta          String?
   decisoes       String?
   proximosPassos String?
+  compromissoId  String?  @unique // reunião de origem na agenda (se criada a partir dela)
   criadoPorId    String?
   criadoEm       DateTime @default(now())
   atualizadoEm   DateTime @updatedAt
 
-  cliente Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  cliente     Cliente?     @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  compromisso Compromisso? @relation(fields: [compromissoId], references: [id], onDelete: SetNull)
 
   @@index([data])
 }
@@ -1120,6 +1122,7 @@ model Compromisso {
   descricao       String?
   recorrenciaDias Int? // null = não se repete; 7/15/30 = repete a cada N dias
   recorrenciaAte  DateTime? // opcional: repete até esta data (senão, indefinidamente)
+  emailsExternos  String? // e-mails avulsos (fora do time) a notificar, separados por vírgula
   clienteId       String?
   criadoPorId     String?
   criadoEm        DateTime  @default(now())
@@ -1128,6 +1131,7 @@ model Compromisso {
   cliente       Cliente?                  @relation(fields: [clienteId], references: [id], onDelete: SetNull)
   criadoPor     Usuario?                  @relation("CompromissoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
   participantes CompromissoParticipante[]
+  reuniao       Reuniao?
 
   @@index([inicio])
 }

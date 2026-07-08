@@ -53,6 +53,35 @@ export async function salvarAtaTexto(id: string, texto: string): Promise<{ error
   return {};
 }
 
+/** Cria (ou abre, se já existir) a ata a partir de uma reunião da agenda. */
+export async function criarAtaDeCompromisso(compromissoId: string) {
+  const acesso = await assertModulo("projetos", "EDITAR");
+  const existente = await db.reuniao.findUnique({ where: { compromissoId }, select: { id: true } });
+  if (existente) redirect(`/reunioes/${existente.id}/editar`);
+
+  const c = await db.compromisso.findUnique({
+    where: { id: compromissoId },
+    include: { participantes: { select: { usuario: { select: { nome: true } } } } },
+  });
+  if (!c) throw new Error("Reunião não encontrada.");
+
+  const participantes = c.participantes.map((p) => p.usuario.nome).join(", ") || null;
+  const criado = await db.reuniao.create({
+    data: {
+      titulo: c.titulo,
+      data: c.inicio,
+      clienteId: c.clienteId,
+      participantes,
+      compromissoId: c.id,
+      criadoPorId: acesso.id,
+    },
+  });
+  await registrarLog({ entidadeTipo: "reuniao", entidadeId: criado.id, usuarioId: acesso.id, acao: "criou a ata a partir da agenda" });
+  revalidatePath("/reunioes");
+  revalidatePath(`/agenda/${compromissoId}/editar`);
+  redirect(`/reunioes/${criado.id}/editar`);
+}
+
 export async function excluirReuniao(id: string) {
   const acesso = await assertModulo("projetos", "ADMIN");
   await db.reuniao.delete({ where: { id } });

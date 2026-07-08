@@ -7,6 +7,7 @@ const detalheInclude = {
   cliente: { select: { id: true, nome: true, nomeFantasia: true } },
   criadoPor: { select: { id: true, nome: true } },
   participantes: { select: { usuario: { select: { id: true, nome: true } } } },
+  reuniao: { select: { id: true } },
 } satisfies Prisma.CompromissoInclude;
 
 export type CompromissoDetalhe = Prisma.CompromissoGetPayload<{ include: typeof detalheInclude }>;
@@ -121,6 +122,17 @@ export async function compromissosParaFeed() {
     include: {
       cliente: { select: { nome: true, nomeFantasia: true } },
     },
+  });
+}
+
+/** Reuniões da agenda que ainda não têm ata vinculada (para a tela de Atas). */
+export async function reunioesSemAta(limite = 12) {
+  const limiteInicio = new Date(new Date().getTime() - 90 * 24 * 3600 * 1000); // até 90 dias atrás
+  return db.compromisso.findMany({
+    where: { tipo: "reuniao", reuniao: null, inicio: { gte: limiteInicio } },
+    orderBy: [{ inicio: "desc" }],
+    take: limite,
+    include: { cliente: { select: { nome: true, nomeFantasia: true } } },
   });
 }
 

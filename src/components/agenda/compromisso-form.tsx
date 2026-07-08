@@ -16,7 +16,7 @@ type Opt = { id: string; nome: string };
 export type CompromissoInicial = Partial<{
   titulo: string; tipo: string; data: string; diaInteiro: boolean;
   horaInicio: string; horaFim: string; clienteId: string; local: string; descricao: string;
-  participantes: string[]; recorrenciaDias: string; recorrenciaAte: string;
+  participantes: string[]; recorrenciaDias: string; recorrenciaAte: string; emailsExternos: string;
 }>;
 
 const sel = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -39,7 +39,19 @@ export function CompromissoForm({
   const err = (k: string) => state.fieldErrors?.[k];
   const [diaInteiro, setDiaInteiro] = React.useState(Boolean(inicial.diaInteiro));
   const [recorrencia, setRecorrencia] = React.useState(inicial.recorrenciaDias ?? "");
-  const participantes = new Set(inicial.participantes ?? []);
+  const [selecionados, setSelecionados] = React.useState<Set<string>>(() => new Set(inicial.participantes ?? []));
+  const todosMarcados = usuarios.length > 0 && usuarios.every((u) => selecionados.has(u.id));
+
+  function toggle(uid: string) {
+    setSelecionados((prev) => {
+      const p = new Set(prev);
+      if (p.has(uid)) p.delete(uid); else p.add(uid);
+      return p;
+    });
+  }
+  function alternarTodos() {
+    setSelecionados(todosMarcados ? new Set() : new Set(usuarios.map((u) => u.id)));
+  }
 
   return (
     <form action={formAction} className="space-y-6" noValidate>
@@ -115,11 +127,16 @@ export function CompromissoForm({
         )}
 
         <div className="space-y-2 sm:col-span-2">
-          <Label>Participantes</Label>
+          <div className="flex items-center justify-between">
+            <Label>Participantes (equipe)</Label>
+            <button type="button" onClick={alternarTodos} className="text-xs font-medium text-brand-yellow underline-offset-2 hover:underline">
+              {todosMarcados ? "Limpar todos" : "Marcar todos"}
+            </button>
+          </div>
           <div className="flex flex-wrap gap-x-4 gap-y-2 rounded-md border border-border p-3">
             {usuarios.map((u) => (
               <label key={u.id} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" name="participantes" value={u.id} defaultChecked={participantes.has(u.id)} className="size-4 rounded border-input" />
+                <input type="checkbox" name="participantes" value={u.id} checked={selecionados.has(u.id)} onChange={() => toggle(u.id)} className="size-4 rounded border-input" />
                 {u.nome}
               </label>
             ))}
@@ -127,9 +144,20 @@ export function CompromissoForm({
         </div>
 
         <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="emailsExternos">Convidados externos (e-mails)</Label>
+          <Textarea id="emailsExternos" name="emailsExternos" rows={2} defaultValue={inicial.emailsExternos ?? ""} placeholder="cliente@empresa.com, fornecedor@exemplo.com" />
+          <p className="text-xs text-muted-foreground">Pessoas de fora do time. Separe por vírgula ou quebra de linha — recebem o convite por e-mail.</p>
+        </div>
+
+        <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="descricao">Descrição</Label>
           <Textarea id="descricao" name="descricao" rows={3} defaultValue={inicial.descricao ?? ""} />
         </div>
+
+        <label className="flex items-start gap-2 text-sm sm:col-span-2">
+          <input type="checkbox" name="notificarEmail" defaultChecked className="mt-0.5 size-4 rounded border-input" />
+          <span>Avisar os envolvidos por e-mail (participantes do time + convidados externos)</span>
+        </label>
       </div>
 
       <div className="flex items-center gap-2">

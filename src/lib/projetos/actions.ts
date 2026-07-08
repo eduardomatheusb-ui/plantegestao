@@ -257,6 +257,7 @@ function caminhoEntidade(entidadeTipo: string, entidadeId: string): string | nul
   if (entidadeTipo === "proposta") return `/propostas/${entidadeId}`;
   if (entidadeTipo === "midia") return `/midia/${entidadeId}`;
   if (entidadeTipo === "producao") return `/producao/${entidadeId}`;
+  if (entidadeTipo === "compromisso") return `/agenda/${entidadeId}/editar`;
   return null;
 }
 
