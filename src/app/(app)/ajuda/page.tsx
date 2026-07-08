@@ -14,10 +14,10 @@ export const metadata = { title: "Ajuda — Guia do TREM" };
 // Seção (nº do "## N.") → módulo que controla a visibilidade. null = sempre visível.
 const SECAO_MODULO: Record<number, ModuloKey | null> = {
   1: null, 2: null, 3: null, 4: "propostas", 5: "projetos", 6: "jobs", 7: "jobs",
-  8: "jobs", 9: "propostas", 10: "midia", 11: "midia", 12: "producao", 13: "projetos",
-  14: "financeiro", 15: null, 16: "financeiro", 17: "financeiro", 18: "relatorios",
-  19: "relatorios", 20: "cadastros", 21: "cadastros", 22: "admin", 23: null, 24: null,
-  25: null,
+  8: "jobs", 9: null, 10: "propostas", 11: "midia", 12: "midia", 13: "producao",
+  14: "projetos", 15: "financeiro", 16: null, 17: "financeiro", 18: "financeiro",
+  19: "relatorios", 20: "relatorios", 21: "cadastros", 22: "cadastros", 23: "admin",
+  24: null, 25: null, 26: null,
 };
 
 function lerGuia(): string {
