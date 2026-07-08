@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { AuthError } from "next-auth";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -8,6 +9,7 @@ import { signIn } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { loginBloqueadoMin, registrarFalhaLogin, limparFalhasLogin } from "@/lib/login-throttle";
 import { verificarToken, consumirRecovery } from "@/lib/totp";
+import { COOKIE_DISPOSITIVO_CONFIAVEL, MAX_AGE_CONFIAVEL, criarTokenDispositivo, validarTokenDispositivo } from "@/lib/trusted-device";
 
 const schema = z.object({
   email: z.string().email("Informe um e-mail válido."),
@@ -47,17 +49,26 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     return { error: "E-mail ou senha inválidos." };
   }
 
-  // 2FA (se ativo): exige código TOTP ou de recuperação.
+  // 2FA (se ativo): exige código TOTP ou de recuperação — a menos que este
+  // dispositivo já tenha sido confiado nos últimos 30 dias.
+  let gravarConfianca = false;
   if (u!.totpAtivo) {
-    if (!codigo) return { need2fa: true };
-    const totpOk = u!.totpSecret ? verificarToken(u!.totpSecret, codigo) : false;
-    if (!totpOk) {
-      const restantes = await consumirRecovery(codigo, u!.totpRecoveryCodes);
-      if (restantes === null) {
-        await registrarFalhaLogin(email);
-        return { error: "Código de verificação inválido.", need2fa: true };
+    const jar = await cookies();
+    const dispositivoConfiavel = validarTokenDispositivo(jar.get(COOKIE_DISPOSITIVO_CONFIAVEL)?.value, u!.id, u!.totpSecret);
+    if (dispositivoConfiavel) {
+      gravarConfianca = true; // pula o código e renova a validade (janela deslizante)
+    } else {
+      if (!codigo) return { need2fa: true };
+      const totpOk = u!.totpSecret ? verificarToken(u!.totpSecret, codigo) : false;
+      if (!totpOk) {
+        const restantes = await consumirRecovery(codigo, u!.totpRecoveryCodes);
+        if (restantes === null) {
+          await registrarFalhaLogin(email);
+          return { error: "Código de verificação inválido.", need2fa: true };
+        }
+        await db.usuario.update({ where: { id: u!.id }, data: { totpRecoveryCodes: restantes } });
       }
-      await db.usuario.update({ where: { id: u!.id }, data: { totpRecoveryCodes: restantes } });
+      gravarConfianca = formData.get("lembrar") === "on"; // só se o usuário marcou
     }
   }
 
@@ -71,5 +82,16 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     throw error;
   }
   await limparFalhasLogin(email);
+
+  if (gravarConfianca && u!.totpSecret) {
+    const jar = await cookies();
+    jar.set(COOKIE_DISPOSITIVO_CONFIAVEL, criarTokenDispositivo(u!.id, u!.totpSecret), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: MAX_AGE_CONFIAVEL,
+    });
+  }
   redirect("/dashboard");
 }

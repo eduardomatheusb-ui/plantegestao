@@ -64,10 +64,16 @@ export function LoginForm() {
       </div>
 
       {precisa2fa && (
-        <div className="space-y-2">
-          <Label htmlFor="codigo">Código de verificação</Label>
-          <Input id="codigo" name="codigo" inputMode="numeric" autoComplete="one-time-code" placeholder="000000" autoFocus required />
-        </div>
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="codigo">Código de verificação</Label>
+            <Input id="codigo" name="codigo" inputMode="numeric" autoComplete="one-time-code" placeholder="000000" autoFocus required />
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="lembrar" defaultChecked className="size-4 rounded border-input" />
+            Confiar neste dispositivo por 30 dias
+          </label>
+        </>
       )}
 
       <SubmitButton label={precisa2fa ? "Verificar" : "Entrar"} />
