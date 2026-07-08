@@ -6,7 +6,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertCircle } from "lucide-react";
 import { salvarCompromisso, type CompromissoFormState } from "@/lib/agenda/actions";
-import { TIPOS_COMPROMISSO } from "@/lib/agenda/constants";
+import { TIPOS_COMPROMISSO, OPCOES_RECORRENCIA } from "@/lib/agenda/constants";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,7 @@ type Opt = { id: string; nome: string };
 export type CompromissoInicial = Partial<{
   titulo: string; tipo: string; data: string; diaInteiro: boolean;
   horaInicio: string; horaFim: string; clienteId: string; local: string; descricao: string;
-  participantes: string[];
+  participantes: string[]; recorrenciaDias: string; recorrenciaAte: string;
 }>;
 
 const sel = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -38,6 +38,7 @@ export function CompromissoForm({
   const [state, formAction] = useActionState<CompromissoFormState, FormData>(salvarCompromisso.bind(null, id), {});
   const err = (k: string) => state.fieldErrors?.[k];
   const [diaInteiro, setDiaInteiro] = React.useState(Boolean(inicial.diaInteiro));
+  const [recorrencia, setRecorrencia] = React.useState(inicial.recorrenciaDias ?? "");
   const participantes = new Set(inicial.participantes ?? []);
 
   return (
@@ -98,6 +99,20 @@ export function CompromissoForm({
           <Label htmlFor="local">Local</Label>
           <Input id="local" name="local" defaultValue={inicial.local ?? ""} placeholder="Escritório, Google Meet, endereço do cliente…" />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="recorrenciaDias">Recorrência</Label>
+          <select id="recorrenciaDias" name="recorrenciaDias" className={sel} value={recorrencia} onChange={(e) => setRecorrencia(e.target.value)}>
+            {OPCOES_RECORRENCIA.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
+          </select>
+        </div>
+        {recorrencia && (
+          <div className="space-y-2">
+            <Label htmlFor="recorrenciaAte">Repetir até (opcional)</Label>
+            <Input id="recorrenciaAte" name="recorrenciaAte" type="date" defaultValue={inicial.recorrenciaAte ?? ""} />
+            <p className="text-xs text-muted-foreground">Deixe em branco para repetir sem data final.</p>
+          </div>
+        )}
 
         <div className="space-y-2 sm:col-span-2">
           <Label>Participantes</Label>

@@ -8,7 +8,7 @@ import { getSessionUser, podePapel } from "@/lib/rbac";
 import { registrarLog } from "@/lib/log";
 import { notificarMuitos } from "@/lib/notificacoes";
 import { EMPRESA_PADRAO } from "@/lib/empresa";
-import { rotuloTipo, TIPO_COMPROMISSO_PADRAO, TIPOS_COMPROMISSO } from "./constants";
+import { rotuloTipo, TIPO_COMPROMISSO_PADRAO, TIPOS_COMPROMISSO, RECORRENCIAS_VALIDAS } from "./constants";
 
 const P = EMPRESA_PADRAO;
 // Dados mínimos para criar o singleton da Empresa (preserva o timbre padrão).
@@ -61,6 +61,13 @@ export async function salvarCompromisso(id: string | null, _prev: CompromissoFor
 
     const tipo = formData.get("tipo")?.toString() ?? TIPO_COMPROMISSO_PADRAO;
     const participantes = [...new Set(formData.getAll("participantes").map(String).filter(Boolean))];
+
+    // Recorrência: a cada N dias (7/15/30) até uma data opcional.
+    const recNum = parseInt(formData.get("recorrenciaDias")?.toString() ?? "", 10);
+    const recorrenciaDias = RECORRENCIAS_VALIDAS.has(recNum) ? recNum : null;
+    const recAte = recorrenciaDias ? formData.get("recorrenciaAte")?.toString() : "";
+    const recorrenciaAte = recAte && /^\d{4}-\d{2}-\d{2}$/.test(recAte) ? new Date(`${recAte}T23:59:59`) : null;
+
     const dados = {
       titulo: titulo!,
       tipo: TIPOS.has(tipo) ? tipo : TIPO_COMPROMISSO_PADRAO,
@@ -70,6 +77,8 @@ export async function salvarCompromisso(id: string | null, _prev: CompromissoFor
       local: txt(formData.get("local")),
       descricao: txt(formData.get("descricao")),
       clienteId: txt(formData.get("clienteId")),
+      recorrenciaDias,
+      recorrenciaAte,
     };
 
     let compromissoId: string;

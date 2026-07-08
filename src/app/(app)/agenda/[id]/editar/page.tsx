@@ -34,6 +34,8 @@ export default async function EditarCompromissoPage({ params }: { params: Promis
     local: compromisso.local ?? "",
     descricao: compromisso.descricao ?? "",
     participantes: compromisso.participantes.map((p) => p.usuario.id),
+    recorrenciaDias: compromisso.recorrenciaDias ? String(compromisso.recorrenciaDias) : "",
+    recorrenciaAte: compromisso.recorrenciaAte ? ymd(compromisso.recorrenciaAte) : "",
   };
 
   return (

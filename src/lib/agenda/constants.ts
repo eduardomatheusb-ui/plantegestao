@@ -25,3 +25,18 @@ export const MESES = [
   "janeiro", "fevereiro", "março", "abril", "maio", "junho",
   "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
 ];
+
+/** Opções de recorrência (a cada N dias). value "" = não se repete. */
+export const OPCOES_RECORRENCIA: { value: string; label: string }[] = [
+  { value: "", label: "Não se repete" },
+  { value: "7", label: "A cada 7 dias (semanal)" },
+  { value: "15", label: "A cada 15 dias (quinzenal)" },
+  { value: "30", label: "A cada 30 dias (mensal)" },
+];
+
+export const RECORRENCIAS_VALIDAS = new Set([7, 15, 30]);
+
+export function rotuloRecorrencia(dias: number | null | undefined): string | null {
+  if (!dias) return null;
+  return OPCOES_RECORRENCIA.find((o) => o.value === String(dias))?.label ?? `A cada ${dias} dias`;
+}

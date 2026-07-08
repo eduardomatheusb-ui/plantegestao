@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { corTipo } from "@/lib/agenda/constants";
-import type { CompromissoDetalhe } from "@/lib/agenda/queries";
+import type { CompromissoOcorrencia } from "@/lib/agenda/queries";
+import { Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -13,7 +14,7 @@ function mesmoDia(a: Date, b: Date) {
 }
 
 /** Grade mensal (6 semanas, começando no domingo). */
-export function CalendarioMes({ ano, mes, compromissos }: { ano: number; mes: number; compromissos: CompromissoDetalhe[] }) {
+export function CalendarioMes({ ano, mes, compromissos }: { ano: number; mes: number; compromissos: CompromissoOcorrencia[] }) {
   const primeiro = new Date(ano, mes - 1, 1);
   const inicioGrade = new Date(primeiro);
   inicioGrade.setDate(1 - primeiro.getDay()); // volta até o domingo
@@ -60,9 +61,9 @@ export function CalendarioMes({ ano, mes, compromissos }: { ano: number; mes: nu
               <div className="space-y-0.5">
                 {eventos.map((c) => (
                   <Link
-                    key={c.id}
+                    key={c.ocorrenciaKey}
                     href={`/agenda/${c.id}/editar`}
-                    title={`${c.titulo}${c.cliente ? ` · ${c.cliente.nome}` : ""}`}
+                    title={`${c.titulo}${c.cliente ? ` · ${c.cliente.nome}` : ""}${c.recorrenciaDias ? " · repete" : ""}`}
                     className="flex items-center gap-1 rounded px-1 py-0.5 text-[11px] leading-tight hover:opacity-80"
                     style={{ backgroundColor: `${corTipo(c.tipo)}22` }}
                   >
@@ -71,6 +72,7 @@ export function CalendarioMes({ ano, mes, compromissos }: { ano: number; mes: nu
                       {!c.diaInteiro && <span className="tabular-nums text-muted-foreground">{hora(c.inicio)} </span>}
                       {c.titulo}
                     </span>
+                    {c.recorrenciaDias ? <Repeat className="ml-auto size-2.5 shrink-0 text-muted-foreground" aria-hidden="true" /> : null}
                   </Link>
                 ))}
               </div>

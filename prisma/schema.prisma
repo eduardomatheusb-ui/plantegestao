@@ -1110,18 +1110,20 @@ model Empresa {
 
 /// Compromisso/evento da agenda compartilhada da agência (reunião, gravação, visita…).
 model Compromisso {
-  id           String    @id @default(cuid())
-  titulo       String
-  tipo         String    @default("reuniao") // reuniao|gravacao|visita|prazo|financeiro|outro
-  inicio       DateTime
-  fim          DateTime?
-  diaInteiro   Boolean   @default(false)
-  local        String?
-  descricao    String?
-  clienteId    String?
-  criadoPorId  String?
-  criadoEm     DateTime  @default(now())
-  atualizadoEm DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  titulo          String
+  tipo            String    @default("reuniao") // reuniao|gravacao|visita|prazo|financeiro|outro
+  inicio          DateTime
+  fim             DateTime?
+  diaInteiro      Boolean   @default(false)
+  local           String?
+  descricao       String?
+  recorrenciaDias Int? // null = não se repete; 7/15/30 = repete a cada N dias
+  recorrenciaAte  DateTime? // opcional: repete até esta data (senão, indefinidamente)
+  clienteId       String?
+  criadoPorId     String?
+  criadoEm        DateTime  @default(now())
+  atualizadoEm    DateTime  @updatedAt
 
   cliente       Cliente?                  @relation(fields: [clienteId], references: [id], onDelete: SetNull)
   criadoPor     Usuario?                  @relation("CompromissoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)

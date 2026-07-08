@@ -48,6 +48,11 @@ export async function GET(req: Request) {
       const fim = e.fim ?? new Date(new Date(e.inicio).getTime() + 60 * 60 * 1000);
       linhas.push(`DTSTART:${utc(e.inicio)}`, `DTEND:${utc(fim)}`);
     }
+    if (e.recorrenciaDias) {
+      let rrule = `RRULE:FREQ=DAILY;INTERVAL=${e.recorrenciaDias}`;
+      if (e.recorrenciaAte) rrule += `;UNTIL=${e.diaInteiro ? diaLocal(e.recorrenciaAte) : utc(e.recorrenciaAte)}`;
+      linhas.push(rrule);
+    }
     linhas.push(`SUMMARY:${esc(resumo)}`);
     const desc = [rotuloTipo(e.tipo), e.descricao].filter(Boolean).join(" — ");
     if (desc) linhas.push(`DESCRIPTION:${esc(desc)}`);
