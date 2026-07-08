@@ -180,7 +180,8 @@ um job hoje é o que aparece nos painéis depois.
 kanban dá para **arrastar** o card entre colunas (ou usar o seletor "mover status").
 
 **No card você vê:** tipo, prioridade, prazo, "parado Xd" (sem movimento), "recorrente",
-"bloqueado por #N".
+"bloqueado por #N". Job **concluído** fica em **destaque verde** (borda, fundo e selo
+**✓ Concluído**), para bater o olho e saber o que já fechou.
 
 > **Boas práticas:** sempre preencha **prazo** e **responsável**. É isso que alimenta os
 > indicadores de "no prazo", "carga por pessoa" e os **alertas** de job sem dono.

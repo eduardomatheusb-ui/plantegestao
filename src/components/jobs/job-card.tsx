@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, ListTodo, Send, Flame, PauseCircle, Repeat, Lock } from "lucide-react";
+import { CalendarClock, ListTodo, Send, Flame, PauseCircle, Repeat, Lock, CheckCircle2 } from "lucide-react";
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
@@ -23,12 +23,14 @@ export function JobCard({
   const formatos = social ? rotulosFormatos(job.formatos) : [];
   const destaque = prioridadeDestaque(job.prioridade);
   const parado = diasParado(job.atualizadoEm, job.status.isConcluido);
+  const concluido = job.status.isConcluido;
 
   return (
     <div
       className={cn(
         "space-y-2 rounded-lg border border-border bg-card p-3 shadow-sm",
         social && "border-l-4 border-l-fuchsia-400",
+        concluido && "border-emerald-500/50 bg-emerald-50/70 ring-1 ring-emerald-500/30 dark:bg-emerald-950/20",
       )}
     >
       <div className="flex items-start justify-between gap-2">
@@ -41,6 +43,11 @@ export function JobCard({
               {rotuloTipoJob(job.tipo)}
             </span>
             <span className="text-[11px] font-medium text-muted-foreground tabular-nums">#{job.numero}</span>
+            {concluido && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                <CheckCircle2 className="size-3" aria-hidden="true" /> Concluído
+              </span>
+            )}
             {destaque && (
               <span className={cn(
                 "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
