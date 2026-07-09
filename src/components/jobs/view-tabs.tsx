@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const VIEWS = [
   { key: "minha-pauta", label: "Minha pauta" },
   { key: "lista", label: "Lista" },
-  { key: "kanban-status", label: "Kanban por status" },
+  { key: "kanban-status", label: "Pauta por status" },
   { key: "kanban-resp", label: "Por responsável" },
   { key: "timeline", label: "Timeline" },
 ];

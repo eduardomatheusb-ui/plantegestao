@@ -176,8 +176,10 @@ um job hoje é o que aparece nos painéis depois.
   **libera** os jobs que dependiam dele. Depois de concluído, o botão vira **Reabrir**. (Dá
   para fazer o mesmo pelo seletor de status ou arrastando no kanban.)
 
-**Visões:** lista, **kanban por status**, kanban por responsável, minha pauta, timeline. No
-kanban dá para **arrastar** o card entre colunas (ou usar o seletor "mover status").
+**Visões:** lista, **pauta por status**, por responsável, minha pauta, timeline. Na pauta por
+status dá para **arrastar** o card entre colunas (ou usar o seletor "mover status"). Quando há
+muitos jobs, **cada coluna rola por dentro** e o quadro cabe na tela — a **rolagem lateral**
+(esquerda/direita) fica sempre à mão, sem ter que descer a página inteira.
 
 **No card você vê:** tipo, prioridade, prazo, "parado Xd" (sem movimento), "recorrente",
 "bloqueado por #N". Job **concluído** fica em **destaque verde** (borda, fundo e selo

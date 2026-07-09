@@ -72,7 +72,7 @@ export function KanbanColumns({
             onDragLeave={arrastavel ? () => setSobre((s) => (s === col.id ? null : s)) : undefined}
             onDrop={arrastavel ? () => soltarNaColuna(col.id) : undefined}
             className={cn(
-              "flex w-[85vw] max-w-xs shrink-0 snap-start flex-col rounded-lg bg-muted/40 p-2 transition-colors sm:w-72 sm:max-w-none",
+              "flex w-[85vw] max-w-xs shrink-0 snap-start flex-col rounded-lg bg-muted/40 p-2 transition-colors sm:w-72 sm:max-w-none sm:max-h-[calc(100dvh-15rem)] sm:overflow-hidden",
               alvo && "bg-brand-yellow/15 ring-2 ring-brand-yellow",
             )}
           >
@@ -89,7 +89,7 @@ export function KanbanColumns({
                 {col.jobs.length}
               </span>
             </header>
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 space-y-2 overflow-y-auto pr-0.5">
               {col.jobs.length === 0 ? (
                 <p className="px-1 py-3 text-xs text-muted-foreground">
                   {alvo ? "Solte aqui" : "Vazio"}
