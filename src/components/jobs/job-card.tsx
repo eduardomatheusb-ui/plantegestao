@@ -3,7 +3,7 @@ import { CalendarClock, ListTodo, Send, Flame, PauseCircle, Repeat, Lock, CheckC
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
-import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
+import { rotuloTipoJob, tipoJobSocial, corTipoJob } from "@/lib/jobs/tipos";
 import { prioridadeDestaque, diasParado } from "@/lib/jobs/prioridade";
 import { formatDate, cn } from "@/lib/utils";
 import type { JobListItem } from "@/lib/jobs/queries";
@@ -24,22 +24,23 @@ export function JobCard({
   const destaque = prioridadeDestaque(job.prioridade);
   const parado = diasParado(job.atualizadoEm, job.status.isConcluido);
   const concluido = job.status.isConcluido;
+  const cor = corTipoJob(job.tipo);
 
   return (
     <div
+      style={{ borderLeftColor: cor }}
       className={cn(
-        "space-y-2 rounded-lg border border-border bg-card p-3 shadow-sm",
-        social && "border-l-4 border-l-fuchsia-400",
-        concluido && "border-emerald-500/50 bg-emerald-50/70 ring-1 ring-emerald-500/30 dark:bg-emerald-950/20",
+        "space-y-2 rounded-lg border border-l-4 border-border bg-card p-3 shadow-sm",
+        concluido && "bg-emerald-50/70 ring-1 ring-emerald-500/40 dark:bg-emerald-950/20",
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <Link href={`/jobs/${job.id}`} className="min-w-0 flex-1 hover:underline">
           <span className="flex flex-wrap items-center gap-1.5">
-            <span className={cn(
-              "inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-              social ? "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300" : "bg-muted text-muted-foreground",
-            )}>
+            <span
+              className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+              style={{ backgroundColor: `${cor}1f`, color: cor }}
+            >
               {rotuloTipoJob(job.tipo)}
             </span>
             <span className="text-[11px] font-medium text-muted-foreground tabular-nums">#{job.numero}</span>

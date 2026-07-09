@@ -181,9 +181,10 @@ status dá para **arrastar** o card entre colunas (ou usar o seletor "mover stat
 muitos jobs, **cada coluna rola por dentro** e o quadro cabe na tela — a **rolagem lateral**
 (esquerda/direita) fica sempre à mão, sem ter que descer a página inteira.
 
-**No card você vê:** tipo, prioridade, prazo, "parado Xd" (sem movimento), "recorrente",
-"bloqueado por #N". Job **concluído** fica em **destaque verde** (borda, fundo e selo
-**✓ Concluído**), para bater o olho e saber o que já fechou.
+**No card você vê:** o **tipo** (cada tipo tem uma **cor própria** na borda esquerda e na
+etiqueta — reels, carrossel, post estático e afins), prioridade, prazo, "parado Xd" (sem
+movimento), "recorrente", "bloqueado por #N". Job **concluído** fica em **destaque verde**
+(fundo, anel e selo **✓ Concluído**), para bater o olho e saber o que já fechou.
 
 > **Boas práticas:** sempre preencha **prazo** e **responsável**. É isso que alimenta os
 > indicadores de "no prazo", "carga por pessoa" e os **alertas** de job sem dono.

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
-import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
+import { rotuloTipoJob, corTipoJob } from "@/lib/jobs/tipos";
 import { formatDate, cn } from "@/lib/utils";
 import type { JobListItem } from "@/lib/jobs/queries";
 
@@ -35,10 +35,10 @@ export function JobsTable({
                 <TableCell className="text-muted-foreground tabular-nums">#{job.numero}</TableCell>
                 <TableCell className="font-medium">
                   <Link href={`/jobs/${job.id}`} className="hover:underline">{job.titulo}</Link>
-                  <span className={cn(
-                    "ml-2 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold align-middle",
-                    tipoJobSocial(job.tipo) ? "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300" : "bg-muted text-muted-foreground",
-                  )}>
+                  <span
+                    className="ml-2 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold align-middle"
+                    style={{ backgroundColor: `${corTipoJob(job.tipo)}1f`, color: corTipoJob(job.tipo) }}
+                  >
                     {rotuloTipoJob(job.tipo)}
                   </span>
                 </TableCell>
