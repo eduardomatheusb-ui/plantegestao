@@ -813,6 +813,7 @@ model JobTarefa {
   descricao     String
   responsavelId String?
   concluida     Boolean   @default(false)
+  concluidaEm   DateTime? // quando a etapa foi concluída (para métricas de fluxo)
   ordem         Int       @default(0)
   prazo         DateTime? // prazo próprio da etapa (opcional)
   criadoEm      DateTime  @default(now())

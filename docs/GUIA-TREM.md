@@ -514,6 +514,20 @@ atenção.
 **Aviso semanal:** toda segunda, gestores recebem um resumo desses alertas no **sino** (e
 e-mail, se o Resend estiver ligado).
 
+### Produtividade e fluxo
+
+Em **Gestão, Produtividade**, um painel que lê os jobs e o **fluxo de tarefas** para mostrar,
+com filtro de período (30 dias a 12 meses), três blocos:
+- **Operação:** concluídos, em andamento, atrasados, **% no prazo**, **tempo médio de execução**
+  e **tempo médio por tipo**; além dos **gargalos** — as etapas com mais tarefas atrasadas.
+- **Equipe:** por colaborador — **jobs ativos, tarefas concluídas no período e tarefas
+  pendentes** (volume e produtividade).
+- **Clientes:** **tempo médio de aprovação externa** (do envio ao aceite do cliente),
+  **revisões** (pedidos de ajuste) e **% entregue no prazo**.
+
+> Quanto mais o time usar o **fluxo de tarefas** e a **aprovação pelo link**, mais ricas ficam
+> essas métricas (tempo por etapa, gargalos, aprovação do cliente).
+
 ### Painel Estratégico (só Administrador)
 
 Uma visão de alto nível para a direção, em **Gestão, Painel Estratégico** (aparece só para

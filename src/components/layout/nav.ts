@@ -16,6 +16,7 @@ import {
   HandCoins,
   BarChart3,
   Gauge,
+  Activity,
   TrendingUp,
   HeartPulse,
   FileSignature,
@@ -91,6 +92,7 @@ export const NAV: NavGroup[] = [
     itens: [
       { label: "Painel Estratégico", href: "/painel-estrategico", icon: TrendingUp, modulo: "admin", nivelMin: "ADMIN", disponivel: true },
       { label: "Indicadores", href: "/indicadores", icon: Gauge, modulo: "relatorios", disponivel: true },
+      { label: "Produtividade", href: "/indicadores/produtividade", icon: Activity, modulo: "relatorios", disponivel: true },
       { label: "Saúde financeira", href: "/saude-financeira", icon: HeartPulse, modulo: "financeiro", disponivel: true },
     ],
   },

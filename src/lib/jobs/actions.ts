@@ -312,7 +312,8 @@ export async function toggleTarefa(id: string) {
     }
   }
 
-  await db.jobTarefa.update({ where: { id }, data: { concluida: !t.concluida } });
+  const concluida = !t.concluida;
+  await db.jobTarefa.update({ where: { id }, data: { concluida, concluidaEm: concluida ? new Date() : null } });
   revalidatePath(`/jobs/${t.jobId}`);
 }
 
