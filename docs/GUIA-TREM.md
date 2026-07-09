@@ -176,6 +176,17 @@ um job hoje é o que aparece nos painéis depois.
   **libera** os jobs que dependiam dele. Depois de concluído, o botão vira **Reabrir**. (Dá
   para fazer o mesmo pelo seletor de status ou arrastando no kanban.)
 
+**Tarefas por tipo (o job já nasce com o checklist):** ao criar, o job recebe automaticamente
+as **subtarefas padrão do tipo** (ex.: Post estático → Briefing, Criação, Revisão, Aprovação
+Interna, Aprovação Externa, Entrega). É ponto de partida: **edite, exclua ou acrescente** à
+vontade. **Tráfego, Vídeo, Carrossel, Site, Identidade** têm fluxos próprios; **"Outro"** nasce
+sem tarefas. As tarefas são um **checklist dentro do job** — não confundir com as **colunas de
+status** do quadro.
+
+**Workflow (tarefas em sequência):** no card **Tarefas** do job, ligue **"Workflow em
+sequência"**. Com ele ativo, **cada etapa só é concluída depois da anterior** (as travadas
+aparecem com 🔒). Desligado, as tarefas ficam **independentes**.
+
 **Visões:** lista, **pauta por status**, por responsável, minha pauta, timeline. Na pauta por
 status dá para **arrastar** o card entre colunas (ou usar o seletor "mover status"). Quando há
 muitos jobs, **cada coluna rola por dentro** e o quadro cabe na tela — a **rolagem lateral**

@@ -749,6 +749,7 @@ model Job {
   recorrenciaFreq       String? // null = não recorrente; "semanal"|"quinzenal"|"mensal" → este job gera cópias
   recorrenciaProxima    DateTime? // próxima data de geração
   bloqueadoPorId        String? // depende de outro job (não pode começar até ele concluir)
+  workflowAtivo         Boolean   @default(false) // tarefas em sequência: cada uma só conclui após a anterior
   legenda               String? // só postagem
   formatos              String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
   briefing              String?

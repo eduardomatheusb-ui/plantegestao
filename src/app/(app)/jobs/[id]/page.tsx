@@ -281,7 +281,7 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
               <CardTitle>Subtarefas</CardTitle>
             </CardHeader>
             <CardContent>
-              <TarefasPanel jobId={job.id} usuarios={usuarios} />
+              <TarefasPanel jobId={job.id} usuarios={usuarios} workflowAtivo={job.workflowAtivo} />
             </CardContent>
           </Card>
         </div>

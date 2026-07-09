@@ -8,6 +8,7 @@ import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
 import { notificar, notificarMuitos } from "@/lib/notificacoes";
 import { TIPO_JOB_PADRAO, tipoJobSocial } from "./tipos";
+import { fluxoDoTipo } from "./fluxos";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
 
 // Qualquer usuário autenticado trabalha em jobs (rotina diária da equipe).
@@ -133,7 +134,16 @@ export async function salvarJob(
       destino = `/jobs/${id}`;
     } else {
       const numero = await proximoNumero("JOB");
-      const criado = await db.job.create({ data: { ...data, numero, concluidoEm, prazoPostagemOriginal: ehSocial ? data.prazoPostagem : null, criadoPorId: user.id } });
+      // Fluxo padrão do tipo: já nasce com as tarefas da operação (editável depois).
+      const fluxo = fluxoDoTipo(d.tipo);
+      const criado = await db.job.create({
+        data: {
+          ...data, numero, concluidoEm,
+          prazoPostagemOriginal: ehSocial ? data.prazoPostagem : null,
+          criadoPorId: user.id,
+          ...(fluxo.length ? { tarefas: { create: fluxo.map((descricao, i) => ({ descricao, ordem: i })) } } : {}),
+        },
+      });
       jobId = criado.id;
       await registrarLog({ entidadeTipo: "job", entidadeId: criado.id, usuarioId: user.id, acao: `criou o job #${numero}` });
       await notificar({ usuarioId: data.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável por "${d.titulo}"`, entidadeTipo: "job", entidadeId: criado.id, url: `/jobs/${criado.id}` });
@@ -270,10 +280,34 @@ export async function adicionarTarefa(jobId: string, formData: FormData) {
 
 export async function toggleTarefa(id: string) {
   await userOrThrow();
-  const t = await db.jobTarefa.findUnique({ where: { id }, select: { concluida: true, jobId: true } });
+  const t = await db.jobTarefa.findUnique({ where: { id }, select: { concluida: true, ordem: true, jobId: true } });
   if (!t) return;
+
+  // Workflow ativo: mantém o prefixo concluído (não pula etapa nem abre buraco).
+  const job = await db.job.findUnique({ where: { id: t.jobId }, select: { workflowAtivo: true } });
+  if (job?.workflowAtivo) {
+    const irmas = await db.jobTarefa.findMany({ where: { jobId: t.jobId }, select: { ordem: true, concluida: true } });
+    if (!t.concluida) {
+      // concluir: exige todas as anteriores concluídas
+      const anteriorPendente = irmas.some((x) => x.ordem < t.ordem && !x.concluida);
+      if (anteriorPendente) throw new Error("Conclua a etapa anterior primeiro (workflow ativo).");
+    } else {
+      // reabrir: só se nenhuma posterior estiver concluída
+      const posteriorConcluida = irmas.some((x) => x.ordem > t.ordem && x.concluida);
+      if (posteriorConcluida) throw new Error("Reabra a etapa seguinte primeiro (workflow ativo).");
+    }
+  }
+
   await db.jobTarefa.update({ where: { id }, data: { concluida: !t.concluida } });
   revalidatePath(`/jobs/${t.jobId}`);
+}
+
+/** Liga/desliga o workflow (tarefas em sequência) do job. */
+export async function definirWorkflow(jobId: string, ativo: boolean) {
+  const user = await assertPapel(TRABALHAR);
+  await db.job.update({ where: { id: jobId }, data: { workflowAtivo: ativo } });
+  await registrarLog({ entidadeTipo: "job", entidadeId: jobId, usuarioId: user.id, acao: ativo ? "ativou o workflow" : "desativou o workflow" });
+  revalidatePath(`/jobs/${jobId}`);
 }
 
 export async function removerTarefa(id: string) {
