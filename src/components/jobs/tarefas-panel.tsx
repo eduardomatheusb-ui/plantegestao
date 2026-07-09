@@ -2,9 +2,12 @@ import { Square, CheckSquare, Trash2, Lock, ToggleLeft, ToggleRight } from "luci
 import { db } from "@/lib/db";
 import { adicionarTarefa, toggleTarefa, removerTarefa, definirWorkflow } from "@/lib/jobs/actions";
 import { TarefaAddForm } from "./tarefa-add-form";
+import { TarefaPrazo } from "./tarefa-prazo";
 import { InlineAction } from "@/components/shared/inline-action";
 import { iniciais } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 export async function TarefasPanel({
   jobId,
@@ -75,6 +78,11 @@ export async function TarefasPanel({
                 <span className={cn("min-w-0 flex-1 text-sm", t.concluida && "text-muted-foreground line-through", bloqueada && "text-muted-foreground")}>
                   {t.descricao}
                 </span>
+                <TarefaPrazo
+                  id={t.id}
+                  prazo={t.prazo ? ymd(t.prazo) : ""}
+                  atrasada={!!t.prazo && !t.concluida && t.prazo.getTime() < Date.now()}
+                />
                 {t.responsavel && (
                   <span
                     className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-bold"

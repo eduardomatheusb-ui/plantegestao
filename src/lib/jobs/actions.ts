@@ -9,6 +9,7 @@ import { registrarLog } from "@/lib/log";
 import { notificar, notificarMuitos } from "@/lib/notificacoes";
 import { TIPO_JOB_PADRAO, tipoJobSocial } from "./tipos";
 import { fluxoDoTipo } from "./fluxos";
+import { adiar, chaveDia, type UnidadeAdiar } from "@/lib/datas-uteis";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
 
 // Qualquer usuário autenticado trabalha em jobs (rotina diária da equipe).
@@ -316,6 +317,61 @@ export async function removerTarefa(id: string) {
   if (!t) return;
   await db.jobTarefa.delete({ where: { id } });
   revalidatePath(`/jobs/${t.jobId}`);
+}
+
+/** Define (ou limpa) o prazo próprio de uma etapa. `data` = "YYYY-MM-DD" ou "". */
+export async function definirPrazoTarefa(id: string, data: string) {
+  await userOrThrow();
+  const t = await db.jobTarefa.findUnique({ where: { id }, select: { jobId: true } });
+  if (!t) return;
+  const prazo = /^\d{4}-\d{2}-\d{2}$/.test(data) ? new Date(`${data}T12:00:00`) : null;
+  await db.jobTarefa.update({ where: { id }, data: { prazo } });
+  revalidatePath(`/jobs/${t.jobId}`);
+}
+
+export type AdiarOpts = {
+  unidade?: UnidadeAdiar;
+  quantidade?: number;
+  novaData?: string; // "YYYY-MM-DD" (tem precedência sobre unidade/quantidade)
+  recalcular?: boolean; // desloca também os prazos das tarefas
+  diasUteis?: boolean;
+};
+
+/** Adia o prazo do job (atalhos ou nova data); opcionalmente desloca as tarefas junto. */
+export async function adiarPrazoJob(jobId: string, opts: AdiarOpts) {
+  const user = await assertPapel(TRABALHAR);
+  const job = await db.job.findUnique({ where: { id: jobId }, select: { prazo: true } });
+  if (!job) throw new Error("Job não encontrado.");
+
+  const base = job.prazo ?? new Date();
+  let novo: Date;
+  if (opts.novaData && /^\d{4}-\d{2}-\d{2}$/.test(opts.novaData)) {
+    novo = new Date(`${opts.novaData}T12:00:00`);
+  } else if (opts.unidade && opts.quantidade) {
+    let feriados = new Set<string>();
+    if (opts.diasUteis) {
+      const fs = await db.feriado.findMany({ select: { data: true } });
+      feriados = new Set(fs.map((f) => chaveDia(new Date(f.data))));
+    }
+    novo = adiar(base, opts.unidade, opts.quantidade, { diasUteis: opts.diasUteis, feriados });
+  } else {
+    return;
+  }
+
+  const delta = novo.getTime() - base.getTime();
+  await db.job.update({ where: { id: jobId }, data: { prazo: novo } });
+
+  // Recalcula: desloca os prazos das tarefas que têm data pelo mesmo intervalo.
+  if (opts.recalcular && delta !== 0) {
+    const tarefas = await db.jobTarefa.findMany({ where: { jobId, prazo: { not: null } }, select: { id: true, prazo: true } });
+    for (const t of tarefas) {
+      await db.jobTarefa.update({ where: { id: t.id }, data: { prazo: new Date(t.prazo!.getTime() + delta) } });
+    }
+  }
+
+  await registrarLog({ entidadeTipo: "job", entidadeId: jobId, usuarioId: user.id, acao: "adiou o prazo" });
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${jobId}`);
 }
 
 // ── Gestão de status (kanban configurável) ────────────────────────────

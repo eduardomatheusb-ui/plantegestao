@@ -808,18 +808,29 @@ model JobEnvolvido {
 }
 
 model JobTarefa {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   jobId         String
   descricao     String
   responsavelId String?
-  concluida     Boolean  @default(false)
-  ordem         Int      @default(0)
-  criadoEm      DateTime @default(now())
+  concluida     Boolean   @default(false)
+  ordem         Int       @default(0)
+  prazo         DateTime? // prazo próprio da etapa (opcional)
+  criadoEm      DateTime  @default(now())
 
   job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   responsavel Usuario? @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
 
   @@index([jobId])
+}
+
+/// Feriado cadastrado — usado no cálculo de prazos em "dias úteis".
+model Feriado {
+  id       String   @id @default(cuid())
+  data     DateTime @unique // dia do feriado (00:00 local)
+  nome     String
+  criadoEm DateTime @default(now())
+
+  @@index([data])
 }
 
 // ─────────────────────────── Fase 5 — Propostas ───────────────────────────

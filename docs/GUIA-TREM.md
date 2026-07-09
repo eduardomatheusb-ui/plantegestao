@@ -187,6 +187,13 @@ status** do quadro.
 sequência"**. Com ele ativo, **cada etapa só é concluída depois da anterior** (as travadas
 aparecem com 🔒). Desligado, as tarefas ficam **independentes**.
 
+**Prazos e adiamento:** cada **etapa pode ter prazo próprio** (campo de data na linha da
+tarefa). No resumo do job, o bloco **"Adiar prazo"** tem atalhos **+1h, +1 dia, +1 semana,
++1 mês** e **Definir data**. Duas opções:
+- **Recalcular tarefas seguintes:** desloca junto os prazos das etapas pelo mesmo intervalo.
+- **Considerar dias úteis:** ignora sábados, domingos e **feriados cadastrados** (ver
+  *Cadastros → Feriados*) ao contar os dias.
+
 **Visões:** lista, **pauta por status**, por responsável, minha pauta, timeline. Na pauta por
 status dá para **arrastar** o card entre colunas (ou usar o seletor "mover status"). Quando há
 muitos jobs, **cada coluna rola por dentro** e o quadro cabe na tela — a **rolagem lateral**
@@ -577,7 +584,10 @@ trabalha com você, onde o dinheiro entra e como ele é classificado. Todos segu
 formato de lista e formulário.
 
 **Fornecedores, Colaboradores, Prestadores, Veículos, Centros de custo, Contas bancárias,
-Categorias (plano de contas).** Todos com lista (busca e paginação de 25) e formulário.
+Categorias (plano de contas), Feriados.** Todos com lista (busca e paginação de 25) e formulário.
+
+- **Feriados:** datas que entram no cálculo de prazos em **dias úteis** (adiamento de prazo
+  dos jobs). Cadastre os feriados nacionais e locais que a agência não trabalha.
 
 - **Colaboradores:** documento, nascimento (vira aniversariante no dashboard), admissão,
   salário ou valor-hora (**só Administrador vê**).

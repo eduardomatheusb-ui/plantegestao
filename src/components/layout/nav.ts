@@ -27,6 +27,7 @@ import {
   Radio,
   Target,
   Landmark,
+  CalendarOff,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -111,6 +112,7 @@ export const NAV: NavGroup[] = [
       { label: "Colaboradores", href: "/cadastros/colaboradores", icon: Contact, modulo: "cadastros", disponivel: true },
       { label: "Prestadores", href: "/cadastros/prestadores", icon: Hammer, modulo: "cadastros", disponivel: true },
       { label: "Veículos", href: "/cadastros/veiculos", icon: Radio, modulo: "cadastros", disponivel: true },
+      { label: "Feriados", href: "/cadastros/feriados", icon: CalendarOff, modulo: "cadastros", disponivel: true },
     ],
   },
   {

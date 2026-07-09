@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { MoverStatus } from "@/components/jobs/mover-status";
 import { TarefasPanel } from "@/components/jobs/tarefas-panel";
+import { AdiarPrazo } from "@/components/jobs/adiar-prazo";
 import { CommentsPanel } from "@/components/shared/comments-panel";
 import { AttachmentsPanel } from "@/components/shared/attachments-panel";
 import { TimesheetPanel } from "@/components/shared/timesheet-panel";
@@ -154,6 +155,9 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
           <div className="space-y-1">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tempo apontado</p>
             <p className="font-display text-sm font-semibold tabular-nums">{formatHoras(job.apontadoMin)}</p>
+          </div>
+          <div className="col-span-2 sm:col-span-4">
+            <AdiarPrazo jobId={job.id} />
           </div>
         </CardContent>
       </Card>
