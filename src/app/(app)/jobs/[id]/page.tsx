@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock, Copy, Instagram, Send, Lock, LockOpen, CheckCircle2, RotateCcw } from "lucide-react";
+import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock, Copy, Instagram, Send, Lock, LockOpen, CheckCircle2, RotateCcw, LayoutTemplate } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { obterJob, listarStatus } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
 import { arquivarJob, excluirJob, duplicarJob, moverJobStatus } from "@/lib/jobs/actions";
+import { criarTemplateDeJob } from "@/lib/templates/actions";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
 import { formatDate, cn } from "@/lib/utils";
@@ -91,6 +92,12 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
               <Button type="submit" variant="outline" size="sm">
                 <Copy className="size-4" />
                 Duplicar
+              </Button>
+            </form>
+            <form action={criarTemplateDeJob.bind(null, job.id)}>
+              <Button type="submit" variant="outline" size="sm" title="Criar um template reutilizável a partir deste job">
+                <LayoutTemplate className="size-4" />
+                Salvar como template
               </Button>
             </form>
             {podeGerir && (

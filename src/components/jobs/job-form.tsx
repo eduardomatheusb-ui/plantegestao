@@ -35,6 +35,7 @@ export type JobInicial = {
   briefing?: string;
   formatos?: string[];
   envolvidosIds?: string[];
+  templateId?: string;
 };
 
 const sel = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60";
@@ -78,6 +79,12 @@ export function JobForm({
 
   return (
     <form action={formAction} className="space-y-6" noValidate>
+      {inicial.templateId && <input type="hidden" name="templateId" value={inicial.templateId} />}
+      {inicial.templateId && (
+        <p className="rounded-md border border-brand-yellow/40 bg-brand-yellow/10 px-3 py-2 text-sm">
+          Criando a partir de um <strong>template</strong> — o fluxo de tarefas será gerado ao salvar. Ajuste o que precisar.
+        </p>
+      )}
       <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="tipo">Tipo de job <span className="text-destructive">*</span></Label>

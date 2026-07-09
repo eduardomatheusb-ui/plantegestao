@@ -9,10 +9,10 @@ import { Card, CardContent } from "@/components/ui/card";
 export default async function NovoJobPage({
   searchParams,
 }: {
-  searchParams: Promise<{ projeto?: string; cliente?: string }>;
+  searchParams: Promise<{ projeto?: string; cliente?: string; template?: string }>;
 }) {
   await requireUser();
-  const { projeto, cliente } = await searchParams;
+  const { projeto, cliente, template } = await searchParams;
 
   const [clientes, projetos, usuarios, statuses, jobs] = await Promise.all([
     listarClientesAtivos(),
@@ -30,9 +30,27 @@ export default async function NovoJobPage({
     inicial = { clienteId: cliente };
   }
 
+  // A partir de um template: pré-preenche tipo/prioridade/responsável/briefing (as tarefas
+  // são geradas ao salvar, via templateId).
+  let nomeTemplate: string | null = null;
+  if (template) {
+    const tpl = await db.jobTemplate.findUnique({ where: { id: template }, select: { nome: true, tipo: true, prioridade: true, responsavelId: true, briefing: true } });
+    if (tpl) {
+      nomeTemplate = tpl.nome;
+      inicial = {
+        ...inicial,
+        templateId: template,
+        tipo: tpl.tipo,
+        prioridade: tpl.prioridade,
+        responsavelId: tpl.responsavelId ?? undefined,
+        briefing: tpl.briefing ?? undefined,
+      };
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <PageHeader titulo="Novo job" descricao="Uma tarefa de produção/criação." />
+      <PageHeader titulo="Novo job" descricao={nomeTemplate ? `A partir do template “${nomeTemplate}”.` : "Uma tarefa de produção/criação."} />
       <Card>
         <CardContent className="pt-6">
           <JobForm

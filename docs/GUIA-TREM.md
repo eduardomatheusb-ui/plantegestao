@@ -194,6 +194,13 @@ tarefa). No resumo do job, o bloco **"Adiar prazo"** tem atalhos **+1h, +1 dia, 
 - **Considerar dias úteis:** ignora sábados, domingos e **feriados cadastrados** (ver
   *Cadastros → Feriados*) ao contar os dias.
 
+**Templates de job** (menu **Templates de job**): modelos reutilizáveis que guardam **tipo,
+fluxo de tarefas, responsáveis** e **prazos relativos** (dias após o início). Você pode
+**criar do zero**, **salvar um job existente como template** (botão no próprio job),
+**editar, duplicar ou excluir**. Para usar, clique **"Usar"** no template (ou abra *Novo job*
+já a partir dele): o job nasce com tudo preenchido e as tarefas geradas — e você ajusta o que
+quiser antes de salvar.
+
 **Visões:** lista, **pauta por status**, por responsável, minha pauta, timeline. Na pauta por
 status dá para **arrastar** o card entre colunas (ou usar o seletor "mover status"). Quando há
 muitos jobs, **cada coluna rola por dentro** e o quadro cabe na tela — a **rolagem lateral**

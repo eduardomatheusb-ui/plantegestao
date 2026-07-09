@@ -135,14 +135,27 @@ export async function salvarJob(
       destino = `/jobs/${id}`;
     } else {
       const numero = await proximoNumero("JOB");
-      // Fluxo padrão do tipo: já nasce com as tarefas da operação (editável depois).
-      const fluxo = fluxoDoTipo(d.tipo);
+      // Tarefas iniciais: do template (se veio de um) ou o fluxo padrão do tipo.
+      const templateId = formData.get("templateId")?.toString() || null;
+      let tarefasCriar: { descricao: string; ordem: number; responsavelId?: string | null; prazo?: Date | null }[] = [];
+      if (templateId) {
+        const tpl = await db.jobTemplate.findUnique({ where: { id: templateId }, include: { tarefas: { orderBy: { ordem: "asc" } } } });
+        const inicio = data.prazo ?? new Date();
+        tarefasCriar = (tpl?.tarefas ?? []).map((t, i) => ({
+          descricao: t.descricao,
+          ordem: i,
+          responsavelId: t.responsavelId,
+          prazo: t.prazoRelativoDias != null ? new Date(inicio.getTime() + t.prazoRelativoDias * 86400000) : null,
+        }));
+      } else {
+        tarefasCriar = fluxoDoTipo(d.tipo).map((descricao, i) => ({ descricao, ordem: i }));
+      }
       const criado = await db.job.create({
         data: {
           ...data, numero, concluidoEm,
           prazoPostagemOriginal: ehSocial ? data.prazoPostagem : null,
           criadoPorId: user.id,
-          ...(fluxo.length ? { tarefas: { create: fluxo.map((descricao, i) => ({ descricao, ordem: i })) } } : {}),
+          ...(tarefasCriar.length ? { tarefas: { create: tarefasCriar } } : {}),
         },
       });
       jobId = criado.id;

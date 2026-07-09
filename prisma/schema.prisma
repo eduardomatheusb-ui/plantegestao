@@ -833,6 +833,34 @@ model Feriado {
   @@index([data])
 }
 
+/// Modelo reutilizável de job: tipo + fluxo de tarefas (+ responsáveis e prazos relativos).
+model JobTemplate {
+  id            String   @id @default(cuid())
+  nome          String
+  tipo          String   @default("post_estatico")
+  prioridade    String   @default("normal")
+  responsavelId String? // responsável padrão do job (id de Usuario, sem FK)
+  briefing      String?
+  criadoPorId   String?
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  tarefas JobTemplateTarefa[]
+}
+
+model JobTemplateTarefa {
+  id                String  @id @default(cuid())
+  templateId        String
+  descricao         String
+  ordem             Int     @default(0)
+  responsavelId     String? // id de Usuario (sem FK)
+  prazoRelativoDias Int? // prazo = início do job + N dias
+
+  template JobTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+}
+
 // ─────────────────────────── Fase 5 — Propostas ───────────────────────────
 
 enum PropostaStatus {

@@ -28,6 +28,7 @@ import {
   Target,
   Landmark,
   CalendarOff,
+  LayoutTemplate,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -74,6 +75,7 @@ export const NAV: NavGroup[] = [
     itens: [
       { label: "Projetos", href: "/projetos", icon: FolderKanban, modulo: "projetos", disponivel: true },
       { label: "Jobs", href: "/jobs", icon: ListChecks, modulo: "jobs", disponivel: true },
+      { label: "Templates de job", href: "/jobs/templates", icon: LayoutTemplate, modulo: "jobs", disponivel: true },
       { label: "Calendário editorial", href: "/calendario", icon: CalendarDays, modulo: "jobs", disponivel: true },
       { label: "Propostas", href: "/propostas", icon: FileText, modulo: "propostas", disponivel: true },
       { label: "Mídia", href: "/midia", icon: Megaphone, modulo: "midia", disponivel: true },
