@@ -10,6 +10,7 @@ import { notificar, notificarMuitos, destinatariosDaEntidade } from "@/lib/notif
 import { canalDM } from "@/lib/chat/queries";
 import { assertPapel, getSessionUser, podePapel } from "@/lib/rbac";
 import { STATUS_LABEL } from "./situacao";
+import { camposConclusao } from "@/lib/conclusao";
 import type { ProjetoStatus } from "@prisma/client";
 
 const EDITAR: "GESTOR" = "GESTOR";
@@ -106,9 +107,11 @@ export async function salvarProjeto(
       briefing: d.briefing,
     };
 
+    const prazoRef = d.prazoEstimado ?? d.prazoDesejado;
     if (id) {
-      const anterior = await db.projeto.findUnique({ where: { id }, select: { responsavelId: true } });
-      await db.projeto.update({ where: { id }, data });
+      const anterior = await db.projeto.findUnique({ where: { id }, select: { responsavelId: true, concluidoEm: true, concluidoForaPrazo: true } });
+      const conc = camposConclusao(d.status === "CONCLUIDO", anterior?.concluidoEm, anterior?.concluidoForaPrazo, prazoRef);
+      await db.projeto.update({ where: { id }, data: { ...data, ...conc } });
       await registrarLog({ entidadeTipo: "projeto", entidadeId: id, usuarioId: user.id, acao: "editou o projeto" });
       if (d.responsavelId && d.responsavelId !== anterior?.responsavelId) {
         await notificar({ usuarioId: d.responsavelId, atorId: user.id, tipo: "atribuicao", titulo: `Você é responsável pelo projeto "${d.nome}"`, entidadeTipo: "projeto", entidadeId: id, url: `/projetos/${id}` });
@@ -117,7 +120,7 @@ export async function salvarProjeto(
     } else {
       const numero = await proximoNumero("PROJETO");
       const criado = await db.projeto.create({
-        data: { ...data, numero, projetoPaiId: d.projetoPaiId, criadoPorId: user.id },
+        data: { ...data, ...camposConclusao(d.status === "CONCLUIDO", null, null, prazoRef), numero, projetoPaiId: d.projetoPaiId, criadoPorId: user.id },
       });
       await registrarLog({ entidadeTipo: "projeto", entidadeId: criado.id, usuarioId: user.id, acao: `criou o projeto #${numero}` });
       if (d.responsavelId) {
@@ -168,8 +171,9 @@ export async function duplicarProjeto(id: string) {
 export async function alterarStatusProjeto(id: string, status: ProjetoStatus) {
   const user = await assertPapel(EDITAR);
   if (!STATUS_VALUES.includes(status)) throw new Error("Status inválido.");
-  const atual = await db.projeto.findUnique({ where: { id }, select: { status: true, nome: true, responsavelId: true } });
-  await db.projeto.update({ where: { id }, data: { status } });
+  const atual = await db.projeto.findUnique({ where: { id }, select: { status: true, nome: true, responsavelId: true, concluidoEm: true, concluidoForaPrazo: true, prazoEstimado: true, prazoDesejado: true } });
+  const conc = camposConclusao(status === "CONCLUIDO", atual?.concluidoEm, atual?.concluidoForaPrazo, atual?.prazoEstimado ?? atual?.prazoDesejado);
+  await db.projeto.update({ where: { id }, data: { status, ...conc } });
   await registrarLog({
     entidadeTipo: "projeto",
     entidadeId: id,

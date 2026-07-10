@@ -10,6 +10,7 @@ import { notificar, notificarMuitos } from "@/lib/notificacoes";
 import { TIPO_JOB_PADRAO, tipoJobSocial } from "./tipos";
 import { fluxoDoTipo } from "./fluxos";
 import { adiar, chaveDia, type UnidadeAdiar } from "@/lib/datas-uteis";
+import { camposConclusao } from "@/lib/conclusao";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
 
 // Qualquer usuário autenticado trabalha em jobs (rotina diária da equipe).
@@ -88,11 +89,13 @@ export async function salvarJob(
       statusId = primeiro.id;
     }
     const statusAlvo = await db.jobStatus.findUnique({ where: { id: statusId } });
-    const concluidoEm = statusAlvo?.isConcluido ? new Date() : null;
+    const ehConcluido = statusAlvo?.isConcluido ?? false;
 
     const ehSocial = tipoJobSocial(d.tipo);
     const formatos = ehSocial ? formData.getAll("formatos").map(String).filter(Boolean).join(",") || null : null;
     const envolvidos = [...new Set(formData.getAll("envolvidos").map(String).filter(Boolean))];
+    // Prazo de referência para "fora do prazo": prazo de criação (ou o de postagem, se social).
+    const prazoRef = d.prazo ?? (ehSocial ? d.prazoPostagem : null);
 
     const data = {
       tipo: d.tipo,
@@ -114,7 +117,8 @@ export async function salvarJob(
 
     let jobId: string;
     if (id) {
-      const anterior = await db.job.findUnique({ where: { id }, select: { responsavelId: true, prazoPostagem: true, prazoPostagemOriginal: true, remarcacoesPostagem: true } });
+      const anterior = await db.job.findUnique({ where: { id }, select: { responsavelId: true, prazoPostagem: true, prazoPostagemOriginal: true, remarcacoesPostagem: true, concluidoEm: true, concluidoForaPrazo: true } });
+      const conc = camposConclusao(ehConcluido, anterior?.concluidoEm, anterior?.concluidoForaPrazo, prazoRef);
       // Aderência ao calendário: conta remarcação quando a data de postagem muda de dia.
       const novoPP = data.prazoPostagem;
       const remarc: { remarcacoesPostagem?: number; prazoPostagemOriginal?: Date } = {};
@@ -126,7 +130,7 @@ export async function salvarJob(
           remarc.prazoPostagemOriginal = novoPP;
         }
       }
-      await db.job.update({ where: { id }, data: { ...data, ...remarc } });
+      await db.job.update({ where: { id }, data: { ...data, ...remarc, ...conc } });
       jobId = id;
       await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: "editou o job" });
       if (data.responsavelId && data.responsavelId !== anterior?.responsavelId) {
@@ -152,7 +156,7 @@ export async function salvarJob(
       }
       const criado = await db.job.create({
         data: {
-          ...data, numero, concluidoEm,
+          ...data, numero, ...camposConclusao(ehConcluido, null, null, prazoRef),
           prazoPostagemOriginal: ehSocial ? data.prazoPostagem : null,
           criadoPorId: user.id,
           ...(tarefasCriar.length ? { tarefas: { create: tarefasCriar } } : {}),
@@ -182,16 +186,17 @@ export async function salvarJob(
 export async function moverJobStatus(id: string, statusId: string) {
   const user = await assertPapel(TRABALHAR);
   const [job, status] = await Promise.all([
-    db.job.findUnique({ where: { id }, select: { statusId: true, concluidoEm: true, responsavelId: true, titulo: true, prazoPostagem: true, publicadoEm: true, status: { select: { nome: true } } } }),
+    db.job.findUnique({ where: { id }, select: { statusId: true, concluidoEm: true, concluidoForaPrazo: true, prazo: true, responsavelId: true, titulo: true, prazoPostagem: true, publicadoEm: true, status: { select: { nome: true } } } }),
     db.jobStatus.findUnique({ where: { id: statusId } }),
   ]);
   if (!status) throw new Error("Status inválido.");
 
-  const concluidoEm = status.isConcluido ? (job?.concluidoEm ?? new Date()) : null;
+  // Carimba (uma vez) a conclusão e a flag "fora do prazo" — imutável em reaberturas.
+  const conc = camposConclusao(status.isConcluido, job?.concluidoEm, job?.concluidoForaPrazo, job?.prazo ?? job?.prazoPostagem ?? null);
   // Peça de postagem concluída sem data de publicação: assume publicada agora (pode ser ajustado no job).
-  const publicadoEm = status.isConcluido && job?.prazoPostagem && !job.publicadoEm ? concluidoEm : undefined;
+  const publicadoEm = status.isConcluido && job?.prazoPostagem && !job.publicadoEm ? conc.concluidoEm : undefined;
 
-  await db.job.update({ where: { id }, data: { statusId, concluidoEm, ...(publicadoEm !== undefined ? { publicadoEm } : {}) } });
+  await db.job.update({ where: { id }, data: { statusId, ...conc, ...(publicadoEm !== undefined ? { publicadoEm } : {}) } });
   await registrarLog({
     entidadeTipo: "job",
     entidadeId: id,

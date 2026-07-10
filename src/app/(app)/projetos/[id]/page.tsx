@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Archive, ArchiveRestore, Trash2, UserPlus, X, FolderTree, Copy } from "lucide-react";
+import { Pencil, Archive, ArchiveRestore, Trash2, UserPlus, X, FolderTree, Copy, AlarmClock } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { acessoAtual } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
@@ -109,6 +109,13 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
           </>
         }
       />
+
+      {projeto.concluidoForaPrazo && (
+        <p className="flex items-center gap-2 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300">
+          <AlarmClock className="size-4 shrink-0" aria-hidden="true" />
+          Concluído <strong>fora do prazo</strong>{projeto.concluidoEm ? ` em ${formatDate(projeto.concluidoEm)}` : ""}. Marca automática, registrada na conclusão.
+        </p>
+      )}
 
       {projeto.arquivado && (
         <p className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, FolderTree } from "lucide-react";
+import { CalendarClock, FolderTree, AlarmClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FavoritoButton } from "./favorito-button";
 import { situacaoProjeto } from "@/lib/projetos/situacao";
@@ -14,6 +14,7 @@ type ProjetoCardData = {
   nome: string;
   status: ProjetoStatus;
   prazoEstimado: Date | null;
+  concluidoForaPrazo?: boolean | null;
   favorito: boolean;
   cliente: { nome: string; nomeFantasia: string | null } | null;
   responsavel: { nome: string } | null;
@@ -43,7 +44,14 @@ export function ProjetoCard({ projeto }: { projeto: ProjetoCardData }) {
       </p>
 
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-        <Badge variant={TONE_BADGE[situacao.tone]}>{situacao.label}</Badge>
+        <span className="flex flex-wrap items-center gap-1.5">
+          <Badge variant={TONE_BADGE[situacao.tone]}>{situacao.label}</Badge>
+          {projeto.concluidoForaPrazo && (
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 dark:bg-red-950 dark:text-red-300" title="Concluído depois do prazo (automático)">
+              <AlarmClock className="size-3" aria-hidden="true" /> Fora do prazo
+            </span>
+          )}
+        </span>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {projeto._count.subprojetos > 0 && (
             <span className="inline-flex items-center gap-1" title="Subprojetos">

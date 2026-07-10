@@ -175,6 +175,10 @@ um job hoje é o que aparece nos painéis depois.
   **"Concluído"** num clique — carimba a conclusão, marca a postagem como publicada e
   **libera** os jobs que dependiam dele. Depois de concluído, o botão vira **Reabrir**. (Dá
   para fazer o mesmo pelo seletor de status ou arrastando no kanban.)
+- **Concluído fora do prazo (automático):** se a conclusão acontecer **depois do prazo**, o
+  job recebe sozinho a tag vermelha **"Fora do prazo"**. Ela é **carimbada no momento da
+  conclusão e não muda depois** — ninguém "conserta" alterando o prazo mais tarde. Concluir no
+  **próprio dia** do prazo conta como no prazo. Vale igual para **projetos**.
 
 **Tarefas por tipo (o job já nasce com o checklist):** ao criar, o job recebe automaticamente
 as **subtarefas padrão do tipo** (ex.: Post estático → Briefing, Criação, Revisão, Aprovação

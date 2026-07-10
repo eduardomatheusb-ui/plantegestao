@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, ListTodo, Send, Flame, PauseCircle, Repeat, Lock, CheckCircle2 } from "lucide-react";
+import { CalendarClock, ListTodo, Send, Flame, PauseCircle, Repeat, Lock, CheckCircle2, AlarmClock } from "lucide-react";
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
@@ -47,6 +47,11 @@ export function JobCard({
             {concluido && (
               <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                 <CheckCircle2 className="size-3" aria-hidden="true" /> Concluído
+              </span>
+            )}
+            {job.concluidoForaPrazo && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 dark:bg-red-950 dark:text-red-300" title="Concluído depois do prazo (automático)">
+                <AlarmClock className="size-3" aria-hidden="true" /> Fora do prazo
               </span>
             )}
             {destaque && (

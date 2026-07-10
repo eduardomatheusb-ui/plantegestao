@@ -608,23 +608,25 @@ enum ProjetoStatus {
 }
 
 model Projeto {
-  id               String        @id @default(cuid())
-  numero           Int           @unique
-  nome             String
-  clienteId        String
-  responsavelId    String?
-  status           ProjetoStatus @default(SEM_STATUS)
-  prazoDesejado    DateTime?
-  prazoEstimado    DateTime?
-  budget           Decimal?      @db.Decimal(14, 2)
-  tempoEstimadoMin Int?
-  briefing         String?
-  favorito         Boolean       @default(false)
-  arquivado        Boolean       @default(false)
-  projetoPaiId     String?
-  criadoPorId      String?
-  criadoEm         DateTime      @default(now())
-  atualizadoEm     DateTime      @updatedAt
+  id                 String        @id @default(cuid())
+  numero             Int           @unique
+  nome               String
+  clienteId          String
+  responsavelId      String?
+  status             ProjetoStatus @default(SEM_STATUS)
+  prazoDesejado      DateTime?
+  prazoEstimado      DateTime?
+  concluidoEm        DateTime? // setado ao entrar em CONCLUIDO
+  concluidoForaPrazo Boolean? // carimbado na conclusão (imutável): concluído depois do prazo?
+  budget             Decimal?      @db.Decimal(14, 2)
+  tempoEstimadoMin   Int?
+  briefing           String?
+  favorito           Boolean       @default(false)
+  arquivado          Boolean       @default(false)
+  projetoPaiId       String?
+  criadoPorId        String?
+  criadoEm           DateTime      @default(now())
+  atualizadoEm       DateTime      @updatedAt
 
   cliente           Cliente            @relation(fields: [clienteId], references: [id])
   responsavel       Usuario?           @relation("ProjetoResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
@@ -757,6 +759,7 @@ model Job {
   aprovacaoToken        String?   @unique // token do link público de aprovação do cliente
   aprovacaoEm           DateTime? // quando a peça foi enviada para aprovação
   concluidoEm           DateTime? // setado ao entrar em status isConcluido (para "% no prazo")
+  concluidoForaPrazo    Boolean? // carimbado na conclusão (imutável): concluído depois do prazo?
   arquivado             Boolean   @default(false)
   criadoPorId           String?
   criadoEm              DateTime  @default(now())

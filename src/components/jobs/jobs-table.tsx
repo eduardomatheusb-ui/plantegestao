@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AlarmClock } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
@@ -41,6 +42,11 @@ export function JobsTable({
                   >
                     {rotuloTipoJob(job.tipo)}
                   </span>
+                  {job.concluidoForaPrazo && (
+                    <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-red-100 px-1.5 py-0.5 align-middle text-[10px] font-semibold text-red-700 dark:bg-red-950 dark:text-red-300" title="Concluído depois do prazo (automático)">
+                      <AlarmClock className="size-3" aria-hidden="true" /> Fora do prazo
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {job.cliente?.nome}
