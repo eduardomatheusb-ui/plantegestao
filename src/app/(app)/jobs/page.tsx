@@ -38,6 +38,8 @@ export default async function JobsPage({ searchParams }: PageProps) {
       statusId,
       responsavelId: view === "minha-pauta" ? undefined : responsavelId,
       minhasDoUsuario: view === "minha-pauta" ? user.id : undefined,
+      // Pautas de pendências (minha pauta / por responsável) escondem concluídos.
+      semConcluidos: view === "minha-pauta" || view === "kanban-resp",
       clienteId,
     }),
   ]);

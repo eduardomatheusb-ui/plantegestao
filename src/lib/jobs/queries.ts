@@ -7,6 +7,7 @@ export type ListarJobsOpts = {
   clienteId?: string;
   projetoId?: string;
   minhasDoUsuario?: string; // id do usuário (Minha Pauta)
+  semConcluidos?: boolean; // esconde jobs em status concluído (pautas de pendências)
   incluirArquivados?: boolean;
 };
 
@@ -23,6 +24,8 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   const where: Record<string, unknown> = {};
   if (!opts.incluirArquivados) where.arquivado = false;
   if (opts.statusId) where.statusId = opts.statusId;
+  // Pautas de pendências escondem concluídos — a menos que a pessoa filtre por um status.
+  else if (opts.semConcluidos) where.status = { isConcluido: false };
   if (opts.responsavelId) where.responsavelId = opts.responsavelId;
   if (opts.clienteId) where.clienteId = opts.clienteId;
   if (opts.projetoId) where.projetoId = opts.projetoId;

@@ -214,6 +214,10 @@ muitos jobs, **cada coluna rola por dentro** e o quadro cabe na tela — a **rol
 > envolvido** — então, ao te marcarem como envolvida num reel/edição, ele **aparece na sua
 > pauta** (e você recebe a notificação), sem precisar avisar por fora. O mesmo vale para a
 > "sua pauta" na **Minha página**.
+>
+> Essas pautas listam **pendências**: quando um job é **concluído, ele sai da pauta**
+> automaticamente (mas continua na **Pauta por status**, na coluna Concluído, na **Lista** e no
+> histórico do cliente/projeto). Para rever um concluído, use a Lista ou filtre pelo status.
 
 **No card você vê:** o **tipo** (cada tipo tem uma **cor própria** na borda esquerda e na
 etiqueta — reels, carrossel, post estático e afins), prioridade, prazo, "parado Xd" (sem
