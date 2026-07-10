@@ -54,10 +54,13 @@ export default async function JobsPage({ searchParams }: PageProps) {
       jobs: jobs.filter((j) => j.statusId === s.id),
     }));
   } else if (view === "kanban-resp") {
+    // Cada pessoa vê os jobs em que é responsável OU está entre os envolvidos.
+    const daPessoa = (uid: string) => (j: (typeof jobs)[number]) =>
+      j.responsavelId === uid || j.envolvidos.some((e) => e.usuarioId === uid);
     const comResp = usuarios
-      .map((u) => ({ id: u.id, titulo: u.nome, jobs: jobs.filter((j) => j.responsavelId === u.id) }))
+      .map((u) => ({ id: u.id, titulo: u.nome, jobs: jobs.filter(daPessoa(u.id)) }))
       .filter((c) => c.jobs.length > 0);
-    const semResp = jobs.filter((j) => !j.responsavelId);
+    const semResp = jobs.filter((j) => !j.responsavelId && j.envolvidos.length === 0);
     colunas = [...comResp];
     if (semResp.length > 0) colunas.push({ id: "sem", titulo: "Sem responsável", jobs: semResp });
   }

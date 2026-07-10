@@ -210,6 +210,11 @@ status dá para **arrastar** o card entre colunas (ou usar o seletor "mover stat
 muitos jobs, **cada coluna rola por dentro** e o quadro cabe na tela — a **rolagem lateral**
 (esquerda/direita) fica sempre à mão, sem ter que descer a página inteira.
 
+> **Minha pauta** e **Por responsável** mostram os jobs em que você é **responsável _ou_
+> envolvido** — então, ao te marcarem como envolvida num reel/edição, ele **aparece na sua
+> pauta** (e você recebe a notificação), sem precisar avisar por fora. O mesmo vale para a
+> "sua pauta" na **Minha página**.
+
 **No card você vê:** o **tipo** (cada tipo tem uma **cor própria** na borda esquerda e na
 etiqueta — reels, carrossel, post estático e afins), prioridade, prazo, "parado Xd" (sem
 movimento), "recorrente", "bloqueado por #N". Job **concluído** fica em **destaque verde**

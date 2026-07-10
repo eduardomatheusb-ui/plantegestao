@@ -24,15 +24,21 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   if (!opts.incluirArquivados) where.arquivado = false;
   if (opts.statusId) where.statusId = opts.statusId;
   if (opts.responsavelId) where.responsavelId = opts.responsavelId;
-  if (opts.minhasDoUsuario) where.responsavelId = opts.minhasDoUsuario;
   if (opts.clienteId) where.clienteId = opts.clienteId;
   if (opts.projetoId) where.projetoId = opts.projetoId;
+
+  const and: Record<string, unknown>[] = [];
+  // "Minha pauta": jobs em que sou responsável OU estou entre os envolvidos.
+  if (opts.minhasDoUsuario) {
+    and.push({ OR: [{ responsavelId: opts.minhasDoUsuario }, { envolvidos: { some: { usuarioId: opts.minhasDoUsuario } } }] });
+  }
   if (opts.q) {
-    where.OR = [
+    and.push({ OR: [
       { titulo: { contains: opts.q, mode: "insensitive" } },
       { cliente: { nome: { contains: opts.q, mode: "insensitive" } } },
-    ];
+    ] });
   }
+  if (and.length) where.AND = and;
 
   return db.job.findMany({
     where,
@@ -43,6 +49,7 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
       responsavel: { select: { id: true, nome: true } },
       status: true,
       bloqueadoPor: { select: { id: true, numero: true, titulo: true, concluidoEm: true } },
+      envolvidos: { select: { usuarioId: true } },
       _count: { select: { tarefas: true } },
     },
   });

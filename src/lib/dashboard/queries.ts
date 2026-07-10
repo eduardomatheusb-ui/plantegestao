@@ -28,7 +28,8 @@ export async function aniversariantesDoMes(): Promise<{ id: string; nome: string
 /** Minha pauta: meus jobs ainda não concluídos, mais urgentes primeiro. */
 export async function minhaPauta(userId: string) {
   const jobs = await db.job.findMany({
-    where: { responsavelId: userId, arquivado: false, status: { isConcluido: false } },
+    // Responsável OU envolvido: a pauta mostra tudo que é meu, não só o que eu subi.
+    where: { arquivado: false, status: { isConcluido: false }, OR: [{ responsavelId: userId }, { envolvidos: { some: { usuarioId: userId } } }] },
     orderBy: [{ prazo: { sort: "asc", nulls: "last" } }],
     take: 6,
     include: { cliente: { select: { nome: true } }, status: { select: { nome: true, cor: true } } },
