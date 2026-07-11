@@ -15,14 +15,18 @@ function slugBase(s: string) {
     .slice(0, 40) || "cliente";
 }
 
-/** Gera um slug único: base amigável + sufixo aleatório curto (inadivinhável). */
+/**
+ * Gera um slug único: base amigável + sufixo aleatório de 64 bits (16 hex).
+ * O sufixo forte é o que protege o portal — o slug é entregue como link público
+ * e precisa ser inadivinhável (não dá pra descobrir só sabendo o nome do cliente).
+ */
 async function slugUnico(base: string): Promise<string> {
   for (let i = 0; i < 6; i++) {
-    const slug = `${slugBase(base)}-${randomBytes(2).toString("hex")}`;
+    const slug = `${slugBase(base)}-${randomBytes(8).toString("hex")}`;
     const existe = await db.cliente.findUnique({ where: { portalSlug: slug }, select: { id: true } });
     if (!existe) return slug;
   }
-  return `${slugBase(base)}-${randomBytes(4).toString("hex")}`;
+  return `${slugBase(base)}-${randomBytes(10).toString("hex")}`;
 }
 
 /** Ativa o portal: gera token (secreto) + slug amigável a partir do nome. */
