@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import { CheckCircle2, PenLine, Clock } from "lucide-react";
 import { obterParaAprovacao } from "@/lib/aprovacao/queries";
-import { rotulosFormatos } from "@/lib/jobs/formatos";
+import { rotulosFormatos, rotuloFormato } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { RespostaForm } from "@/components/aprovacao/resposta-form";
+import { PostPreview } from "@/components/postagens/post-preview/PostPreview";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Aprovação de peça — Plante" };
@@ -12,8 +13,17 @@ function dataBR(d: Date) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(d);
 }
 
-function ehImagem(ct: string | null) {
+function ehImagem(ct: string | null | undefined) {
   return !!ct && ct.startsWith("image/");
+}
+
+function urlPareceImagem(url: string | null | undefined) {
+  if (!url) return false;
+  if (/\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(url)) return true;
+  // CDNs (Unsplash, Cloudinary…) marcam formato via query string.
+  if (/[?&](fm|format)=(png|jpe?g|webp|gif|avif)\b/i.test(url)) return true;
+  // Hosts de imagem conhecidos sem extensão no path.
+  return /(?:images\.unsplash\.com|res\.cloudinary\.com|picsum\.photos)/i.test(url);
 }
 
 export default async function AprovarPage({ params }: { params: Promise<{ token: string }> }) {
@@ -21,16 +31,35 @@ export default async function AprovarPage({ params }: { params: Promise<{ token:
   const dados = await obterParaAprovacao(token);
   if (!dados) notFound();
 
-  const { job, anexos, eventos } = dados;
-  const formatos = rotulosFormatos(job.formatos);
+  const { job, anexos, anexosAnteriores, eventos } = dados;
+  const formatos = (job.formatos || "").split(",").map((k) => k.trim()).filter(Boolean);
+  const formatosRotulos = rotulosFormatos(job.formatos);
   const cliente = job.cliente?.nomeFantasia || job.cliente?.nome || "";
   const respondido = job.aprovacaoStatus === "aprovado" || job.aprovacaoStatus === "ajustes";
 
+  const imagensAtuais = anexos
+    .filter((a) => (a.tipo === "arquivo" && ehImagem(a.contentType)) || (a.tipo === "link" && urlPareceImagem(a.url)))
+    .map((a) => ({
+      id: a.id,
+      src: a.tipo === "arquivo" ? `/api/aprovar/${token}/anexo/${a.id}` : a.url ?? "",
+      alt: a.nome,
+      contentType: a.contentType,
+    }));
+
+  const anexosNaoImagem = anexos.filter(
+    (a) => !((a.tipo === "arquivo" && ehImagem(a.contentType)) || (a.tipo === "link" && urlPareceImagem(a.url)))
+  );
+
+  const formatosParaPreview = formatos.length > 0 ? formatos : ["outro"];
+
   return (
-    <main className="mx-auto max-w-2xl space-y-6 px-4 py-8 sm:py-12">
+    <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:py-12">
       <header className="flex items-center justify-between gap-3">
         <div className="rounded-xl bg-[#050505] px-4 py-2 text-xl font-extrabold tracking-wide text-[#F7FF19]">Plante</div>
-        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold" style={{ background: `${corAprovacao(job.aprovacaoStatus)}22`, color: corAprovacao(job.aprovacaoStatus) }}>
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+          style={{ background: `${corAprovacao(job.aprovacaoStatus)}22`, color: corAprovacao(job.aprovacaoStatus) }}
+        >
           {rotuloAprovacao(job.aprovacaoStatus)}
         </span>
       </header>
@@ -43,35 +72,76 @@ export default async function AprovarPage({ params }: { params: Promise<{ token:
         </p>
       </div>
 
-      {formatos.length > 0 && (
+      {formatosRotulos.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {formatos.map((f) => (
-            <span key={f} className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">{f}</span>
+          {formatosRotulos.map((f) => (
+            <span key={f} className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              {f}
+            </span>
           ))}
         </div>
       )}
 
-      {/* Pré-visualização da arte */}
-      {anexos.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Arte</h2>
-          <div className="grid grid-cols-1 gap-3">
-            {anexos.map((a) => {
+      {/* Pré-visualização por rede */}
+      {imagensAtuais.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Pré-visualização</h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {formatosParaPreview.map((f) => (
+              <div key={f} className="space-y-2">
+                <p className="text-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {rotuloFormato(f)}
+                </p>
+                <PostPreview
+                  formato={f}
+                  cliente={{ nome: job.cliente?.nome ?? "", nomeFantasia: job.cliente?.nomeFantasia ?? null, logoUrl: job.cliente?.logoUrl ?? null }}
+                  imagens={imagensAtuais.map((i) => ({ id: i.id, src: i.src, alt: i.alt }))}
+                  legenda={job.legenda}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Outros arquivos (não-imagem ou links) */}
+      {anexosNaoImagem.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Arquivos</h2>
+          <div className="grid grid-cols-1 gap-2">
+            {anexosNaoImagem.map((a) => {
               const src = a.tipo === "arquivo" ? `/api/aprovar/${token}/anexo/${a.id}` : a.url ?? "#";
-              return ehImagem(a.contentType) && a.tipo === "arquivo" ? (
-                <figure key={a.id} className="overflow-hidden rounded-lg border border-border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt={a.nome} className="w-full" />
-                  <figcaption className="bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground">{a.nome}</figcaption>
-                </figure>
-              ) : (
-                <a key={a.id} href={src} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-border p-3 text-sm font-medium text-foreground hover:bg-muted">
+              return (
+                <a
+                  key={a.id}
+                  href={src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-border p-3 text-sm font-medium text-foreground hover:bg-muted"
+                >
                   📎 {a.nome}
                 </a>
               );
             })}
           </div>
         </section>
+      )}
+
+      {/* Versões anteriores (histórico) */}
+      {anexosAnteriores.length > 0 && (
+        <details className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-sm">
+          <summary className="cursor-pointer font-medium text-muted-foreground">
+            Ver versões anteriores ({anexosAnteriores.length})
+          </summary>
+          <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+            {anexosAnteriores.map((a) => (
+              <li key={a.id} className="flex items-center gap-2">
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">v{a.versao}</span>
+                <span className="line-through">{a.nome}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
 
       {/* Legenda */}
@@ -115,7 +185,10 @@ export default async function AprovarPage({ params }: { params: Promise<{ token:
             {eventos.map((e) => (
               <li key={e.id} className="flex items-center gap-2">
                 <Clock className="size-3.5 shrink-0" aria-hidden="true" />
-                <span>{dataBR(e.criadoEm)} — {rotuloAcao(e.acao)}{e.autor ? ` · ${e.autor}` : ""}</span>
+                <span>
+                  {dataBR(e.criadoEm)} — {rotuloAcao(e.acao)}
+                  {e.autor ? ` · ${e.autor}` : ""}
+                </span>
               </li>
             ))}
           </ul>
@@ -130,5 +203,8 @@ export default async function AprovarPage({ params }: { params: Promise<{ token:
 }
 
 function rotuloAcao(acao: string) {
-  return { enviado: "enviado para aprovação", reenviado: "reenviado para aprovação", aprovado: "aprovado", ajustes: "ajustes solicitados" }[acao] ?? acao;
+  return (
+    { enviado: "enviado para aprovação", reenviado: "reenviado para aprovação", aprovado: "aprovado", ajustes: "ajustes solicitados" }[acao] ??
+    acao
+  );
 }

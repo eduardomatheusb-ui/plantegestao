@@ -275,8 +275,25 @@ export async function duplicarJob(id: string) {
 /** Marca (ou desmarca) a data em que a peça de postagem foi publicada — alimenta a aderência ao calendário. */
 export async function marcarPublicada(id: string, publicada: boolean) {
   const user = await assertPapel(TRABALHAR);
-  await db.job.update({ where: { id }, data: { publicadoEm: publicada ? new Date() : null } });
+  await db.job.update({
+    where: { id },
+    // Ao desmarcar, limpa também o link do post ao vivo.
+    data: { publicadoEm: publicada ? new Date() : null, ...(publicada ? {} : { linkPublicado: null }) },
+  });
   await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: publicada ? "marcou como publicada" : "desmarcou a publicação" });
+  revalidatePath(`/jobs/${id}`);
+}
+
+/** Salva (ou limpa) a URL do post publicado. */
+export async function salvarLinkPublicado(id: string, formData: FormData): Promise<void> {
+  const user = await assertPapel(TRABALHAR);
+  const bruto = formData.get("linkPublicado")?.toString().trim() || null;
+  if (bruto && !/^https?:\/\//i.test(bruto)) {
+    // Sem esquema válido — ignora silenciosamente (o input já pede http/https).
+    return;
+  }
+  await db.job.update({ where: { id }, data: { linkPublicado: bruto } });
+  await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: bruto ? "salvou o link do post publicado" : "removeu o link do post" });
   revalidatePath(`/jobs/${id}`);
 }
 

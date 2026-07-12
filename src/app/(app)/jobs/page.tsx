@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Settings2 } from "lucide-react";
+import { Plus, Settings2, Layers } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { requireModulo } from "@/lib/permissoes.server";
 import { listarStatus, listarJobs } from "@/lib/jobs/queries";
@@ -82,6 +82,12 @@ export default async function JobsPage({ searchParams }: PageProps) {
                 </Link>
               </Button>
             )}
+            <Button asChild variant="outline">
+              <Link href="/jobs/aprovacao-lote/novo">
+                <Layers className="size-4" />
+                Rodada de aprovação
+              </Link>
+            </Button>
             <Button asChild>
               <Link href="/jobs/novo">
                 <Plus className="size-4" />

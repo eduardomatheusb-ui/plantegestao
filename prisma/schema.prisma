@@ -113,6 +113,7 @@ model Usuario {
   reembolsosAnalisados  Reembolso[]               @relation("ReembolsoAnalisadoPor")
   compromissosCriados   Compromisso[]             @relation("CompromissoCriadoPor")
   compromissosParticipa CompromissoParticipante[]
+  aprovacaoLotesCriados AprovacaoLote[]           @relation("AprovacaoLoteCriadoPor")
 
   @@index([papel])
 }
@@ -317,6 +318,7 @@ model Cliente {
   linksUteis          String? // outros links (Drive, brand guide…)
   logoUrl             String? // URL do logo do cliente (portal e visão)
   portalSlug          String?  @unique // link amigável do portal (nome + sufixo)
+  lookerEmbedUrl      String? // URL de incorporação do Looker Studio (aba Performance do portal)
   arquivado           Boolean  @default(false)
   criadoEm            DateTime @default(now())
   atualizadoEm        DateTime @updatedAt
@@ -336,6 +338,7 @@ model Cliente {
   contratos         Contrato[]
   reembolsoDespesas ReembolsoDespesa[]
   compromissos      Compromisso[]
+  aprovacaoLotes    AprovacaoLote[]
   portalToken       String?            @unique // link público do portal do cliente
 
   @@index([arquivado])
@@ -687,6 +690,9 @@ model Anexo {
   blobKey      String? // chave no Netlify Blobs (tipo = arquivo)
   tamanho      Int? // bytes (tipo = arquivo)
   contentType  String? // mime (tipo = arquivo)
+  // Flux — versionamento da mídia por rodada de aprovação (só usado em jobs de postagem).
+  versao       Int      @default(1) // rodada em que este anexo foi enviado
+  atual        Boolean  @default(true) // aparece no preview / na resposta ao cliente
   criadoPorId  String?
   criadoEm     DateTime @default(now())
 
@@ -748,6 +754,7 @@ model Job {
   prazoPostagemOriginal DateTime? // 1ª data de postagem planejada (para medir aderência ao calendário)
   remarcacoesPostagem   Int       @default(0) // quantas vezes a data de postagem foi remarcada
   publicadoEm           DateTime? // só postagem: data real em que a peça foi ao ar
+  linkPublicado         String? // só postagem: URL do post ao vivo (colada pelo operador)
   recorrenciaFreq       String? // null = não recorrente; "semanal"|"quinzenal"|"mensal" → este job gera cópias
   recorrenciaProxima    DateTime? // próxima data de geração
   bloqueadoPorId        String? // depende de outro job (não pode começar até ele concluir)
@@ -774,9 +781,10 @@ model Job {
   apontamentos      Apontamento[]
   lancamentos       Lancamento[]
   envolvidos        JobEnvolvido[]
-  bloqueadoPor      Job?               @relation("JobDependencia", fields: [bloqueadoPorId], references: [id], onDelete: SetNull)
-  bloqueia          Job[]              @relation("JobDependencia")
+  bloqueadoPor      Job?                @relation("JobDependencia", fields: [bloqueadoPorId], references: [id], onDelete: SetNull)
+  bloqueia          Job[]               @relation("JobDependencia")
   aprovacaoEventos  AprovacaoEvento[]
+  aprovacaoLoteItens AprovacaoLoteItem[]
   reembolsoDespesas ReembolsoDespesa[]
 
   @@index([clienteId])
@@ -797,6 +805,41 @@ model AprovacaoEvento {
 
   job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
+  @@index([jobId])
+}
+
+/// Flux — rodada de aprovação em lote: agrupa vários jobs de um cliente num único link público.
+model AprovacaoLote {
+  id          String    @id @default(cuid())
+  clienteId   String
+  token       String    @unique // 48 hex, mesmo padrão de Job.aprovacaoToken
+  titulo      String? // ex.: "Pauta de Julho"
+  status      String    @default("aberto") // aberto | encerrado
+  criadoPorId String?
+  criadoEm    DateTime  @default(now())
+  encerradoEm DateTime?
+
+  cliente   Cliente             @relation(fields: [clienteId], references: [id])
+  criadoPor Usuario?            @relation("AprovacaoLoteCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  itens     AprovacaoLoteItem[]
+
+  @@index([clienteId])
+  @@index([status])
+}
+
+model AprovacaoLoteItem {
+  loteId       String
+  jobId        String
+  ordem        Int       @default(0)
+  decisao      String? // null | aprovado | ajustes
+  comentario   String?
+  respondidoEm DateTime?
+  autorNome    String?
+
+  lote AprovacaoLote @relation(fields: [loteId], references: [id], onDelete: Cascade)
+  job  Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@id([loteId, jobId])
   @@index([jobId])
 }
 

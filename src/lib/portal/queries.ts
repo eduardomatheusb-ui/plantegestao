@@ -8,13 +8,13 @@ import { db } from "@/lib/db";
 export async function obterPortal(token: string) {
   const cliente = await db.cliente.findFirst({
     where: { OR: [{ portalSlug: token }, { portalToken: token }] },
-    select: { id: true, nome: true, nomeFantasia: true, logoUrl: true },
+    select: { id: true, nome: true, nomeFantasia: true, logoUrl: true, lookerEmbedUrl: true },
   });
   if (!cliente) return null;
 
   const agora = new Date();
 
-  const [jobs, postagens, aprovacoes] = await Promise.all([
+  const [jobs, postagens, aprovacoes, publicadas] = await Promise.all([
     // Jobs em andamento (não arquivados, não concluídos)
     db.job.findMany({
       where: { clienteId: cliente.id, arquivado: false, status: { isConcluido: false } },
@@ -33,7 +33,13 @@ export async function obterPortal(token: string) {
       orderBy: { aprovacaoEm: "desc" },
       select: { id: true, titulo: true, aprovacaoToken: true, prazoPostagem: true },
     }),
+    // Postagens já publicadas (com link ao vivo, se houver)
+    db.job.findMany({
+      where: { clienteId: cliente.id, arquivado: false, publicadoEm: { not: null } },
+      orderBy: { publicadoEm: "desc" }, take: 8,
+      select: { id: true, titulo: true, publicadoEm: true, linkPublicado: true, formatos: true },
+    }),
   ]);
 
-  return { cliente, jobs, postagens, aprovacoes };
+  return { cliente, jobs, postagens, aprovacoes, publicadas };
 }

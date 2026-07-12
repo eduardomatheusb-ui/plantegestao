@@ -178,6 +178,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
       { name: "redesSociais", label: "Redes sociais (links)", type: "textarea", colSpan: 2 },
       { name: "linksUteis", label: "Links úteis (Drive, brand guide…)", type: "textarea", colSpan: 2 },
       { name: "logoUrl", label: "Logo do cliente (URL da imagem)", type: "text", colSpan: 2, help: "Cole o link de uma imagem (PNG/JPG). Aparece no portal e na página do cliente." },
+      { name: "lookerEmbedUrl", label: "Dashboard de performance (Looker Studio)", type: "text", colSpan: 2, help: "No Looker Studio: Compartilhar → Incorporar → copie a URL do src (começa com /embed/reporting/). Aparece na aba Performance do portal." },
       {
         name: "condicoesComerciais",
         label: "Condições comerciais",
@@ -204,6 +205,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
       redesSociais: textoOpcional,
       linksUteis: textoOpcional,
       logoUrl: textoOpcional,
+      lookerEmbedUrl: textoOpcional,
       condicoesComerciais: textoOpcional,
     }),
     colunas: [

@@ -244,8 +244,25 @@ gera um **link** (copiável) e, se você quiser, manda por **e-mail** ao cliente
 abre o link, vê a arte e a legenda e clica em **Aprovar** ou **Solicitar ajustes** (com
 comentário). Você recebe **notificação** e o status muda (aguardando, aprovado, ajustes).
 
-> **Boas práticas:** anexe a arte como **arquivo**, não só link, para o cliente ver a
-> imagem no próprio link. Acompanhe as pendências no **Calendário** e nos **Indicadores**.
+**Pré-visualização por rede:** o cliente não vê um arquivo solto — vê a arte **montada como
+sairá em cada rede** (Instagram Feed, Reels e Stories têm molduras fiéis; as demais redes
+usam uma prévia simples). Basta escolher os **canais de publicação** no job e anexar a
+imagem; a prévia é gerada sozinha para cada canal.
+
+**Novas versões (quando o cliente pede ajustes):** com o job em **Ajustes**, o card de
+aprovação mostra **Enviar nova versão**. Suba a arte corrigida — ela vira a **versão atual**,
+o cliente é avisado e reabre o **mesmo link**. As versões antigas não somem: ficam num
+expansor **"Ver versões anteriores"** no fim da página, para registro.
+
+**Rodada de aprovação (aprovar vários de uma vez):** em **Jobs → Rodada de aprovação**,
+escolha o cliente, dê um título (ex.: "Pauta de Agosto") e marque **várias peças**. O sistema
+gera **um único link** e manda **um e-mail** ao cliente. Ele aprova ou pede ajuste em cada
+peça e envia tudo de uma vez. Acompanhe as respostas na página da rodada; ela é marcada como
+**concluída** quando todas as peças forem respondidas.
+
+> **Boas práticas:** anexe a arte como **arquivo** (ou link de imagem), para o cliente ver a
+> prévia montada. Use a **rodada** para a pauta do mês e o envio **individual** para peças
+> avulsas. Acompanhe as pendências no **Calendário** e nos **Indicadores**.
 
 ---
 
@@ -257,8 +274,9 @@ mostra cada peça no dia em que vai ao ar, colorida pelo status de aprovação.
 **Para quê:** ver todas as **postagens do mês** por data de publicação.
 
 **Como usar:** **Calendário editorial**. Cada peça aparece no dia, **colorida pelo status de
-aprovação**. No celular vira uma **agenda em lista**. O botão **Exportar (.ics)** baixa as
-postagens para importar no **Google ou Apple Agenda**.
+aprovação** e com **miniatura da arte**. Use os **filtros** no topo (cliente, rede/formato e
+status de aprovação) para focar no que interessa. No celular vira uma **agenda em lista**. O
+botão **Exportar (.ics)** baixa as postagens para importar no **Google ou Apple Agenda**.
 
 ---
 
@@ -603,6 +621,10 @@ todos os itens**, o cliente vira **"ativo"** automaticamente.
 **Logo do cliente:** cole a **URL de uma imagem** no campo "Logo do cliente" (edição do
 cadastro). Ela aparece no **portal** e na **visão do cliente**.
 
+**Dashboard de performance (Looker Studio):** cole a URL de incorporação de um painel do
+Looker Studio no campo de mesmo nome, e o portal do cliente ganha uma aba **Performance**
+com os resultados das campanhas dele (ver seção 24).
+
 **Cadastros incompletos** (menu Cadastros): lista os clientes ativos que estão **sem
 contato ou brand kit**, com botão "Completar". Use para fechar lacunas.
 
@@ -665,11 +687,25 @@ O que o **seu cliente** vê pelo link (sem login), com a identidade da Plante:
 - **Aguardando aprovação** (peças para ele aprovar).
 - **Próximas postagens** (com status).
 - **Trabalhos em andamento** (com status, sem valores).
+- **Publicadas recentemente** (com botão **"Ver post"** quando você cola o link da
+  publicação — ver seção 6, "Marcar como publicada").
+- **Performance** (aba, opcional): um **painel de resultados** do Looker Studio embutido.
 
 O portal **não mostra** nada financeiro. Gere, renove ou desative o link na visão do cliente.
 
+**Aba Performance (Looker Studio):** para o cliente ver os números das campanhas dele
+(Google Analytics, Google Ads, Meta Ads etc.) sem sair do portal, monte um painel no
+**Looker Studio** (gratuito, do Google) e cole o link no cadastro do cliente:
+
+1. No Looker Studio, abra o painel → **Compartilhar → Incorporar relatório** → copie a URL
+   do `src` (começa com `/embed/reporting/`).
+2. No **cadastro do cliente**, cole no campo **"Dashboard de performance (Looker Studio)"**.
+3. A aba **Performance** passa a aparecer no portal daquele cliente. Sem link cadastrado, a
+   aba simplesmente não aparece.
+
 > **Boas práticas:** mande o link do portal ao cliente como canal oficial de
-> acompanhamento. Reduz mensagem solta no WhatsApp.
+> acompanhamento. Reduz mensagem solta no WhatsApp. Deixe o painel do Looker marcado como
+> **"qualquer pessoa com o link pode ver"** para ele carregar dentro do portal.
 
 ---
 

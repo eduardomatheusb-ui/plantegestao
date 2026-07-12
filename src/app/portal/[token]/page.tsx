@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, ListChecks, CheckSquare, ArrowRight } from "lucide-react";
+import { CalendarDays, ListChecks, CheckSquare, ArrowRight, ExternalLink, BarChart3, Send } from "lucide-react";
 import { obterPortal } from "@/lib/portal/queries";
 import { rotuloTipoJob } from "@/lib/jobs/tipos";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { Logo } from "@/components/brand/logo";
 import { iniciais } from "@/lib/format";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Portal do cliente — Plante" };
@@ -23,8 +24,9 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
   const dados = await obterPortal(token);
   if (!dados) notFound();
 
-  const { cliente, jobs, postagens, aprovacoes } = dados;
+  const { cliente, jobs, postagens, aprovacoes, publicadas } = dados;
   const nome = cliente.nomeFantasia || cliente.nome;
+  const temPerformance = !!cliente.lookerEmbedUrl;
 
   return (
     <div className="min-h-screen bg-muted/20">
@@ -53,6 +55,49 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
       </header>
 
       <main className="mx-auto max-w-2xl space-y-5 px-4 py-8">
+        {temPerformance ? (
+          <Tabs defaultValue="acompanhamento" className="space-y-5">
+            <TabsList>
+              <TabsTrigger value="acompanhamento"><ListChecks className="mr-1.5 size-4" /> Acompanhamento</TabsTrigger>
+              <TabsTrigger value="performance"><BarChart3 className="mr-1.5 size-4" /> Performance</TabsTrigger>
+            </TabsList>
+            <TabsContent value="acompanhamento" className="space-y-5">
+              <Acompanhamento aprovacoes={aprovacoes} postagens={postagens} jobs={jobs} publicadas={publicadas} />
+            </TabsContent>
+            <TabsContent value="performance">
+              <iframe
+                src={cliente.lookerEmbedUrl!}
+                className="h-[calc(100vh-220px)] min-h-[560px] w-full rounded-2xl border border-border bg-card"
+                allow="fullscreen"
+                title={`Performance — ${nome}`}
+              />
+              <p className="mt-2 text-center text-xs text-muted-foreground">Dados de desempenho atualizados automaticamente.</p>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <div className="space-y-5">
+            <Acompanhamento aprovacoes={aprovacoes} postagens={postagens} jobs={jobs} publicadas={publicadas} />
+          </div>
+        )}
+
+        <footer className="pt-2 text-center text-xs text-muted-foreground">
+          Portal exclusivo de acompanhamento · <span className="font-semibold">Plante Comunicação</span>
+        </footer>
+      </main>
+    </div>
+  );
+}
+
+type AcompanhamentoProps = {
+  aprovacoes: { id: string; titulo: string; aprovacaoToken: string | null; prazoPostagem: Date | null }[];
+  postagens: { id: string; titulo: string; prazoPostagem: Date | null; aprovacaoStatus: string; formatos: string | null }[];
+  jobs: { id: string; titulo: string; tipo: string; prazo: Date | null; status: { nome: string; cor: string | null } }[];
+  publicadas: { id: string; titulo: string; publicadoEm: Date | null; linkPublicado: string | null; formatos: string | null }[];
+};
+
+function Acompanhamento({ aprovacoes, postagens, jobs, publicadas }: AcompanhamentoProps) {
+  return (
+    <>
         {/* Aprovações pendentes — ação do cliente, em destaque */}
         {aprovacoes.length > 0 && (
           <section className="rounded-2xl border-2 border-brand-yellow bg-brand-yellow/10 p-5">
@@ -130,10 +175,35 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           )}
         </section>
 
-        <footer className="pt-2 text-center text-xs text-muted-foreground">
-          Portal exclusivo de acompanhamento · <span className="font-semibold">Plante Comunicação</span>
-        </footer>
-      </main>
-    </div>
+        {/* Publicadas recentemente */}
+        {publicadas.length > 0 && (
+          <section className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
+              <Send className="size-4 text-muted-foreground" aria-hidden="true" /> Publicadas recentemente
+            </h2>
+            <ul className="space-y-2.5">
+              {publicadas.map((p) => {
+                const formatos = rotulosFormatos(p.formatos);
+                return (
+                  <li key={p.id} className="flex items-center justify-between gap-2 border-b border-border/60 pb-2.5 last:border-0 last:pb-0">
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">{p.titulo}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {p.publicadoEm ? `Publicada ${diaCurto(p.publicadoEm)}` : "Publicada"}
+                        {formatos.length > 0 ? ` · ${formatos.join(" · ")}` : ""}
+                      </span>
+                    </span>
+                    {p.linkPublicado && (
+                      <a href={p.linkPublicado} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium hover:bg-muted/70">
+                        Ver post <ExternalLink className="size-3.5" aria-hidden="true" />
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+    </>
   );
 }

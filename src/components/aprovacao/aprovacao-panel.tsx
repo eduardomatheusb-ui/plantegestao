@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Send, Copy, Check, X, ExternalLink } from "lucide-react";
-import { enviarParaAprovacao, cancelarAprovacao } from "@/lib/aprovacao/actions";
+import { Send, Copy, Check, X, ExternalLink, Upload, ChevronDown, ChevronUp } from "lucide-react";
+import { enviarParaAprovacao, cancelarAprovacao, enviarNovaVersaoParaAprovacao, type NovaVersaoState } from "@/lib/aprovacao/actions";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ export function AprovacaoPanel({
   }
 
   const ativo = status !== "rascunho";
+  const precisaAjustes = status === "ajustes";
 
   return (
     <div className="space-y-4">
@@ -85,6 +86,8 @@ export function AprovacaoPanel({
         </div>
       )}
 
+      {ativo && precisaAjustes && <NovaVersaoForm jobId={jobId} />}
+
       {eventos.length > 0 && (
         <div className="space-y-2 border-t border-border pt-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Histórico</p>
@@ -98,6 +101,38 @@ export function AprovacaoPanel({
             ))}
           </ul>
         </div>
+      )}
+    </div>
+  );
+}
+
+function NovaVersaoForm({ jobId }: { jobId: string }) {
+  const [aberto, setAberto] = useState(false);
+  const [state, action] = useActionState<NovaVersaoState, FormData>(enviarNovaVersaoParaAprovacao.bind(null, jobId), {});
+
+  return (
+    <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
+      <button
+        type="button"
+        onClick={() => setAberto((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 text-left text-sm font-semibold text-amber-900 dark:text-amber-200"
+      >
+        <span className="flex items-center gap-2">
+          <Upload className="size-4" /> Enviar nova versão para aprovação
+        </span>
+        {aberto ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+      </button>
+      {aberto && (
+        <form action={action} className="mt-3 space-y-2">
+          <p className="text-xs text-amber-900/80 dark:text-amber-200/80">
+            Suba a nova arte (uma ou mais imagens). A versão anterior fica no histórico. O cliente reabre o mesmo link.
+          </p>
+          <Input type="file" name="arquivos" accept="image/*,video/*" multiple required className="bg-white text-xs" />
+          <Input name="links" placeholder="ou cole um link (opcional)" className="bg-white text-xs" />
+          {state.error && <p className="text-xs font-medium text-red-600">{state.error}</p>}
+          {state.ok && <p className="text-xs font-medium text-emerald-700">Nova versão enviada — cliente notificado.</p>}
+          <BotaoEnviar><Send className="size-4" /> Enviar nova versão</BotaoEnviar>
+        </form>
       )}
     </div>
   );

@@ -2,14 +2,20 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { listarPostagensDoMes } from "@/lib/aprovacao/queries";
+import { listarClientesAtivos } from "@/lib/projetos/queries";
 import { corAprovacao, rotuloAprovacao } from "@/lib/aprovacao/status";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
+import { CalendarioFilters } from "@/components/calendario/calendario-filters";
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-export default async function CalendarioPage({ searchParams }: { searchParams: Promise<{ ano?: string; mes?: string }> }) {
+export default async function CalendarioPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ano?: string; mes?: string; clienteId?: string; formato?: string; aprovacaoStatus?: string }>;
+}) {
   await requireModulo("jobs", "VER");
   const sp = await searchParams;
 
@@ -17,7 +23,23 @@ export default async function CalendarioPage({ searchParams }: { searchParams: P
   const ano = sp.ano ? parseInt(sp.ano, 10) : hoje.getFullYear();
   const mes0 = sp.mes ? parseInt(sp.mes, 10) - 1 : hoje.getMonth();
 
-  const posts = await listarPostagensDoMes(ano, mes0);
+  const filtros = {
+    clienteId: sp.clienteId || undefined,
+    formato: sp.formato || undefined,
+    aprovacaoStatus: sp.aprovacaoStatus || undefined,
+  };
+
+  const [posts, clientes] = await Promise.all([
+    listarPostagensDoMes(ano, mes0, filtros),
+    listarClientesAtivos(),
+  ]);
+
+  // Preserva filtros ao navegar entre meses.
+  const qsFiltros = new URLSearchParams();
+  if (filtros.clienteId) qsFiltros.set("clienteId", filtros.clienteId);
+  if (filtros.formato) qsFiltros.set("formato", filtros.formato);
+  if (filtros.aprovacaoStatus) qsFiltros.set("aprovacaoStatus", filtros.aprovacaoStatus);
+  const sufixo = qsFiltros.toString() ? `&${qsFiltros.toString()}` : "";
 
   // Agrupa por dia do mês.
   const porDia = new Map<number, typeof posts>();
@@ -53,12 +75,14 @@ export default async function CalendarioPage({ searchParams }: { searchParams: P
         }
       />
 
+      <CalendarioFilters clientes={clientes} />
+
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-display text-lg font-semibold">{MESES[mes0]} {ano}</h2>
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm"><Link href={`/calendario?ano=${mesAnt.ano}&mes=${mesAnt.mes}`} aria-label="Mês anterior"><ChevronLeft className="size-4" /></Link></Button>
+          <Button asChild variant="outline" size="sm"><Link href={`/calendario?ano=${mesAnt.ano}&mes=${mesAnt.mes}${sufixo}`} aria-label="Mês anterior"><ChevronLeft className="size-4" /></Link></Button>
           <Button asChild variant="ghost" size="sm"><Link href="/calendario">Hoje</Link></Button>
-          <Button asChild variant="outline" size="sm"><Link href={`/calendario?ano=${mesProx.ano}&mes=${mesProx.mes}`} aria-label="Próximo mês"><ChevronRight className="size-4" /></Link></Button>
+          <Button asChild variant="outline" size="sm"><Link href={`/calendario?ano=${mesProx.ano}&mes=${mesProx.mes}${sufixo}`} aria-label="Próximo mês"><ChevronRight className="size-4" /></Link></Button>
         </div>
       </div>
 
@@ -76,6 +100,10 @@ export default async function CalendarioPage({ searchParams }: { searchParams: P
                 {(porDia.get(dia) ?? []).map((p) => (
                   <Link key={p.id} href={`/jobs/${p.id}`} className="flex items-center gap-2 px-3 py-2 hover:bg-muted">
                     <span className="h-8 w-1 shrink-0 rounded" style={{ backgroundColor: corAprovacao(p.aprovacaoStatus) }} aria-hidden="true" />
+                    {p.thumbUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.thumbUrl} alt="" className="size-9 shrink-0 rounded object-cover" />
+                    )}
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">{p.titulo}</span>
                       <span className="block truncate text-xs text-muted-foreground">{p.cliente?.nomeFantasia || p.cliente?.nome} · {rotuloAprovacao(p.aprovacaoStatus)}</span>
@@ -101,9 +129,15 @@ export default async function CalendarioPage({ searchParams }: { searchParams: P
                 {dia && <p className={`mb-1 text-xs font-medium ${dia === hojeNoMes ? "text-primary" : "text-muted-foreground"}`}>{dia}</p>}
                 <div className="space-y-1">
                   {lista.map((p) => (
-                    <Link key={p.id} href={`/jobs/${p.id}`} className="block rounded border-l-2 bg-muted/50 px-1.5 py-1 text-[11px] leading-tight hover:bg-muted" style={{ borderColor: corAprovacao(p.aprovacaoStatus) }} title={`${rotuloAprovacao(p.aprovacaoStatus)} — ${p.cliente?.nomeFantasia || p.cliente?.nome || ""}`}>
-                      <span className="block truncate font-medium">{p.titulo}</span>
-                      <span className="block truncate text-muted-foreground">{p.cliente?.nomeFantasia || p.cliente?.nome}</span>
+                    <Link key={p.id} href={`/jobs/${p.id}`} className="flex items-start gap-1.5 rounded border-l-2 bg-muted/50 px-1.5 py-1 text-[11px] leading-tight hover:bg-muted" style={{ borderColor: corAprovacao(p.aprovacaoStatus) }} title={`${rotuloAprovacao(p.aprovacaoStatus)} — ${p.cliente?.nomeFantasia || p.cliente?.nome || ""}`}>
+                      {p.thumbUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.thumbUrl} alt="" className="size-7 shrink-0 rounded object-cover" />
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium">{p.titulo}</span>
+                        <span className="block truncate text-muted-foreground">{p.cliente?.nomeFantasia || p.cliente?.nome}</span>
+                      </span>
                     </Link>
                   ))}
                 </div>

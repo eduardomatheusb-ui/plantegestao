@@ -207,7 +207,7 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
                   {job.remarcacoesPostagem > 0 && <span className="text-muted-foreground"> · {job.remarcacoesPostagem} remarcação(ões)</span>}
                 </p>
               </div>
-              <PublicadaToggle jobId={job.id} publicado={!!job.publicadoEm} />
+              <PublicadaToggle jobId={job.id} publicado={!!job.publicadoEm} linkPublicado={job.linkPublicado} />
             </div>
 
             <div className="space-y-1">

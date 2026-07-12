@@ -9,6 +9,7 @@ import { notificar } from "@/lib/notificacoes";
 import { enviarEmail, layoutEmail, baseUrl } from "@/lib/email";
 
 const TRABALHAR: "OPERADOR" = "OPERADOR";
+const MAX_ARQUIVO = 4 * 1024 * 1024; // 4 MB, mesmo limite do upload comum
 
 function novoToken() {
   return randomBytes(24).toString("hex"); // 48 chars, inadivinhável
@@ -61,6 +62,125 @@ export async function cancelarAprovacao(jobId: string) {
   await db.job.update({ where: { id: jobId }, data: { aprovacaoStatus: "rascunho", aprovacaoToken: null, aprovacaoEm: null } });
   await registrarLog({ entidadeTipo: "job", entidadeId: jobId, usuarioId: user.id, acao: "cancelou a aprovação" });
   revalidatePath(`/jobs/${jobId}`);
+}
+
+export type NovaVersaoState = { ok?: boolean; error?: string };
+
+/**
+ * Interno: rebaixa os anexos atuais do job para `atual=false`, sobe os novos
+ * arquivos/links como versão seguinte, e reenvia a peça para aprovação.
+ * O cliente reabre o mesmo link e vê a nova arte; as versões anteriores
+ * ficam disponíveis num expansor no fim da página.
+ */
+export async function enviarNovaVersaoParaAprovacao(
+  jobId: string,
+  _prev: NovaVersaoState,
+  formData: FormData,
+): Promise<NovaVersaoState> {
+  const user = await assertPapel(TRABALHAR);
+
+  const arquivos = formData.getAll("arquivos").filter((f): f is File => f instanceof File && f.size > 0);
+  const linksBrutos = formData
+    .getAll("links")
+    .map((v) => v.toString().trim())
+    .filter(Boolean);
+
+  if (arquivos.length === 0 && linksBrutos.length === 0) {
+    return { error: "Selecione ao menos um arquivo ou informe um link." };
+  }
+  for (const f of arquivos) {
+    if (f.size > MAX_ARQUIVO) return { error: `Arquivo "${f.name}" acima de 4 MB.` };
+  }
+
+  const job = await db.job.findUnique({
+    where: { id: jobId },
+    select: { aprovacaoToken: true, aprovacaoStatus: true, titulo: true, cliente: { select: { email: true, nome: true } } },
+  });
+  if (!job) return { error: "Job não encontrado." };
+
+  const versaoMaxAtual = await db.anexo.aggregate({
+    where: { entidadeTipo: "job", entidadeId: jobId },
+    _max: { versao: true },
+  });
+  const proximaVersao = (versaoMaxAtual._max.versao ?? 0) + 1;
+
+  // Sobe os arquivos primeiro (falha antes de mexer no schema do job).
+  const novos: { nome: string; tipo: "arquivo" | "link"; blobKey?: string; url?: string; tamanho?: number; contentType?: string }[] = [];
+  try {
+    if (arquivos.length > 0) {
+      const { getStore } = await import("@netlify/blobs");
+      const store = getStore("anexos");
+      for (const file of arquivos) {
+        const key = `job/${jobId}/${crypto.randomUUID()}`;
+        await store.set(key, await file.arrayBuffer());
+        novos.push({
+          nome: file.name || "arquivo",
+          tipo: "arquivo",
+          blobKey: key,
+          tamanho: file.size,
+          contentType: file.type || "application/octet-stream",
+        });
+      }
+    }
+    for (const url of linksBrutos) {
+      const nome = url.split("/").pop() || "link";
+      novos.push({ nome, tipo: "link", url });
+    }
+  } catch (e) {
+    return { error: `Falha ao subir a nova versão: ${e instanceof Error ? e.message : String(e)}` };
+  }
+
+  const token = job.aprovacaoToken ?? novoToken();
+
+  await db.$transaction([
+    db.anexo.updateMany({
+      where: { entidadeTipo: "job", entidadeId: jobId, atual: true },
+      data: { atual: false },
+    }),
+    db.anexo.createMany({
+      data: novos.map((n) => ({
+        entidadeTipo: "job",
+        entidadeId: jobId,
+        nome: n.nome,
+        tipo: n.tipo,
+        blobKey: n.blobKey,
+        url: n.url,
+        tamanho: n.tamanho,
+        contentType: n.contentType,
+        versao: proximaVersao,
+        atual: true,
+        criadoPorId: user.id,
+      })),
+    }),
+    db.job.update({
+      where: { id: jobId },
+      data: { aprovacaoToken: token, aprovacaoStatus: "enviado", aprovacaoEm: new Date() },
+    }),
+    db.aprovacaoEvento.create({
+      data: { jobId, acao: "reenviado", autor: user.name ?? "Equipe", comentario: `Nova versão (v${proximaVersao}) enviada.` },
+    }),
+  ]);
+
+  await registrarLog({ entidadeTipo: "job", entidadeId: jobId, usuarioId: user.id, acao: `enviou v${proximaVersao} para aprovação` });
+
+  const emailDestino = job.cliente?.email || null;
+  if (emailDestino) {
+    const link = `${baseUrl()}/aprovar/${token}`;
+    await enviarEmail({
+      to: emailDestino,
+      subject: `Nova versão para aprovação — ${job.titulo}`,
+      html: layoutEmail({
+        titulo: "Ajustes aplicados — confira a nova versão",
+        corpo: `Olá! Ajustamos <strong>${job.titulo}</strong> conforme sua solicitação. Abra o link para conferir e aprovar.`,
+        linkUrl: link,
+        linkTexto: "Ver a nova versão",
+        rodape: "Link exclusivo de aprovação. Não é necessário login.",
+      }),
+    });
+  }
+
+  revalidatePath(`/jobs/${jobId}`);
+  return { ok: true };
 }
 
 export type RespostaState = { ok?: boolean; error?: string };
