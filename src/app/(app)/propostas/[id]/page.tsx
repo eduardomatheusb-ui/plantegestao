@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Trash2, FileDown, CheckCircle2, Eye, EyeOff, FolderPlus } from "lucide-react";
+import { Pencil, Trash2, FileDown, CheckCircle2, Eye, EyeOff, FolderPlus, FileSignature, Handshake } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
+import { db } from "@/lib/db";
+import { acessoAtual } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { obterProposta, listarProdutosAtivos } from "@/lib/propostas/queries";
 import { concluirProposta, excluirProposta, gerarProjetoDaProposta } from "@/lib/propostas/actions";
+import { GerarFinanceiro } from "@/components/propostas/gerar-financeiro";
 import { STATUS_LABEL, STATUS_BADGE } from "@/lib/propostas/status";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/shared/page-header";
@@ -33,8 +37,16 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
   const podeEditar = podePapel(user.papel, "GESTOR");
   const podeExcluir = podePapel(user.papel, "SOCIO_DIRETOR");
 
-  const [proposta, produtos] = await Promise.all([obterProposta(id), listarProdutosAtivos()]);
+  const [proposta, produtos, lancamentos, contratoVinc, acesso] = await Promise.all([
+    obterProposta(id),
+    listarProdutosAtivos(),
+    db.lancamento.findMany({ where: { propostaId: id }, orderBy: { parcelaNum: "asc" }, select: { id: true, valor: true } }),
+    db.contrato.findFirst({ where: { propostaId: id }, select: { id: true } }),
+    acessoAtual(),
+  ]);
   if (!proposta) notFound();
+  const podeFin = podeModulo(acesso.caps, "financeiro", "EDITAR");
+  const totalLancado = lancamentos.reduce((s, l) => s + Number(l.valor), 0);
 
   // Converte Decimal → number antes de passar a componentes client (serialização).
   const produtosPlain = produtos.map((p) => ({
@@ -75,14 +87,6 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
                 </Button>
               </form>
             )}
-            {podeEditar && !proposta.projetoId && (
-              <form action={gerarProjetoDaProposta.bind(null, proposta.id)}>
-                <Button type="submit" size="sm" variant={proposta.status === "APROVADA" ? "default" : "outline"}>
-                  <FolderPlus className="size-4" />
-                  Gerar projeto
-                </Button>
-              </form>
-            )}
             <Button asChild variant="outline" size="sm">
               <Link href={`/imprimir/proposta/${proposta.id}`} target="_blank">
                 <FileDown className="size-4" />
@@ -111,6 +115,46 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
           </div>
         }
       />
+
+      {/* Fechar negócio — projeto + contrato + financeiro */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base"><Handshake className="size-4" /> Fechar negócio</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-3">
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Projeto</p>
+            {proposta.projetoId ? (
+              <Button asChild variant="outline" size="sm"><Link href={`/projetos/${proposta.projetoId}`}>Abrir projeto</Link></Button>
+            ) : podeEditar ? (
+              <form action={gerarProjetoDaProposta.bind(null, proposta.id)}>
+                <Button type="submit" size="sm" variant="outline"><FolderPlus className="size-4" /> Gerar projeto</Button>
+              </form>
+            ) : <p className="text-sm text-muted-foreground">—</p>}
+          </div>
+
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contrato</p>
+            {contratoVinc ? (
+              <Button asChild variant="outline" size="sm"><Link href={`/contratos/${contratoVinc.id}`}>Abrir contrato</Link></Button>
+            ) : podeFin ? (
+              <Button asChild variant="outline" size="sm"><Link href={`/contratos/novo?proposta=${proposta.id}`}><FileSignature className="size-4" /> Registrar contrato</Link></Button>
+            ) : <p className="text-sm text-muted-foreground">Sem acesso ao financeiro.</p>}
+          </div>
+
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Financeiro</p>
+            {lancamentos.length > 0 ? (
+              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                ✓ Lançado — {formatBRL(totalLancado)}{lancamentos.length > 1 ? ` (${lancamentos.length}x)` : ""}
+                <Link href="/financeiro" className="ml-2 text-xs font-normal text-muted-foreground underline">ver</Link>
+              </p>
+            ) : podeFin ? (
+              <GerarFinanceiro propostaId={proposta.id} valorLabel={formatBRL(Number(proposta.valorTotal))} />
+            ) : <p className="text-sm text-muted-foreground">Sem acesso ao financeiro.</p>}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Barra de informações */}
       <Card>

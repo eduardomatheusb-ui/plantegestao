@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -8,6 +9,7 @@ import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
 import { notificar } from "@/lib/notificacoes";
 import { assertPapel } from "@/lib/rbac";
+import { assertModulo } from "@/lib/permissoes.server";
 import { calcularSubtotal, calcularTotal } from "./calculo";
 import { STATUS_LABEL } from "./status";
 import type { PropostaStatus } from "@prisma/client";
@@ -210,6 +212,82 @@ export async function gerarProjetoDaProposta(propostaId: string) {
   revalidatePath("/projetos");
   revalidatePath(`/propostas/${propostaId}`);
   redirect(`/projetos/${projeto.id}`);
+}
+
+export type FinanceiroPropostaState = { error?: string };
+const addMonths = (d: Date, n: number) => { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; };
+
+/**
+ * Lança a receita da proposta no financeiro (à vista ou parcelada), já ligada
+ * ao cliente, ao projeto e à própria proposta. Parte do "fechar negócio".
+ */
+export async function gerarFinanceiroDaProposta(propostaId: string, _prev: FinanceiroPropostaState, formData: FormData): Promise<FinanceiroPropostaState> {
+  let destino = "";
+  try {
+    const acesso = await assertModulo("financeiro", "EDITAR");
+    const p = await db.proposta.findUnique({ where: { id: propostaId }, select: { id: true, numero: true, titulo: true, clienteId: true, projetoId: true, valorTotal: true } });
+    if (!p) return { error: "Proposta não encontrada." };
+
+    const jaTem = await db.lancamento.count({ where: { propostaId } });
+    if (jaTem > 0) return { error: "Esta proposta já foi lançada no financeiro." };
+
+    const total = Number(p.valorTotal);
+    if (!(total > 0)) return { error: "A proposta não tem valor para lançar." };
+
+    const vStr = formData.get("dataVencimento")?.toString();
+    const cStr = formData.get("dataCompetencia")?.toString();
+    if (!vStr || !cStr) return { error: "Informe a data de vencimento e a competência." };
+    const venc = new Date(`${vStr}T00:00:00`);
+    const comp = new Date(`${cStr}T00:00:00`);
+    const categoriaId = formData.get("categoriaId")?.toString().trim() || null;
+
+    const parcelado = formData.get("condicao")?.toString() === "PARCELADO";
+    const nParc = Math.max(1, Math.min(36, parseInt(formData.get("numParcelas")?.toString() || "1", 10) || 1));
+
+    const base = {
+      tipo: "RECEITA" as const,
+      clienteId: p.clienteId,
+      projetoId: p.projetoId,
+      propostaId: p.id,
+      categoriaId,
+      status: "EM_ABERTO" as const,
+      condicao: (parcelado && nParc >= 2 ? "PARCELADO" : "A_VISTA") as "A_VISTA" | "PARCELADO",
+    };
+
+    if (parcelado && nParc >= 2) {
+      const grupo = randomUUID();
+      const centavos = Math.round(total * 100);
+      const cota = Math.floor(centavos / nParc);
+      for (let i = 0; i < nParc; i++) {
+        const valorCent = cota + (i === nParc - 1 ? centavos - cota * nParc : 0);
+        const numero = await proximoNumero("LANCAMENTO");
+        await db.lancamento.create({
+          data: {
+            ...base,
+            titulo: `Proposta #${p.numero} — ${p.titulo} (${i + 1}/${nParc})`,
+            valor: valorCent / 100,
+            dataVencimento: addMonths(venc, i),
+            dataCompetencia: addMonths(comp, i),
+            parcelaGrupo: grupo, parcelaNum: i + 1, parcelaTotal: nParc,
+            numero, criadoPorId: acesso.id,
+          },
+        });
+      }
+      await registrarLog({ entidadeTipo: "proposta", entidadeId: propostaId, usuarioId: acesso.id, acao: `lançou no financeiro (${nParc}x)` });
+    } else {
+      const numero = await proximoNumero("LANCAMENTO");
+      await db.lancamento.create({
+        data: { ...base, titulo: `Proposta #${p.numero} — ${p.titulo}`, valor: total, dataVencimento: venc, dataCompetencia: comp, numero, criadoPorId: acesso.id },
+      });
+      await registrarLog({ entidadeTipo: "proposta", entidadeId: propostaId, usuarioId: acesso.id, acao: "lançou no financeiro" });
+    }
+    destino = `/financeiro?ano=${comp.getFullYear()}&mes=${comp.getMonth() + 1}`;
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Não foi possível lançar no financeiro." };
+  }
+  revalidatePath("/financeiro");
+  revalidatePath(`/propostas/${propostaId}`);
+  redirect(destino);
 }
 
 // ── Itens ─────────────────────────────────────────────────────────────
