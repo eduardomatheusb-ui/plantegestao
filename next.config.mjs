@@ -9,7 +9,6 @@ const nextConfig = {
   // Garante que arquivos lidos em runtime vão no bundle serverless do Netlify.
   outputFileTracingIncludes: {
     "/ajuda": ["./docs/GUIA-TREM.md"],
-    "/manual/asset/[...path]": ["./content/biblia/**/*"],
   },
 };
 
