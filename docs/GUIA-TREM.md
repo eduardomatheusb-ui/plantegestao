@@ -614,15 +614,31 @@ Arquivos, Resultados, Contrato & Financeiro, Histórico):
   solicitados, entregas da semana, conteúdos programados, campanhas ativas e próxima
   entrega — além de jobs em andamento, próximas postagens, projetos, **equipe envolvida**
   (derivada dos jobs ativos), portal e onboarding.
-- **Demandas / Aprovações:** os jobs da conta e o que aguarda o cliente ou está em ajustes,
-  com atalho para nova rodada de aprovação.
-- **Reuniões:** últimas atas + próximo compromisso + registrar reunião já com o cliente
-  pré-selecionado.
-- **Arquivos:** anexos da conta (links e arquivos).
-- **Resultados:** painel do Looker (quando cadastrado) e o relatório do mês.
-- **Contrato & Financeiro** (só p/ quem vê o financeiro): contratos, MRR e condições
-  comerciais.
-- **Histórico:** o log da conta.
+- **Saúde da conta:** verde (nos trilhos), amarelo (exige atenção) ou vermelho (risco
+  elevado) — **sempre com o motivo** ("3 entregas atrasadas, aprovação média de 8 dias…").
+  Calculada por entregas no prazo, atraso atual, tempo de aprovação, retrabalho, pagamentos
+  vencidos, participação do cliente e fim de contrato próximo.
+- **Dossiê:** a memória estratégica da conta — objetivos, público, concorrentes,
+  posicionamento, restrições e o campo-regra **"o que precisamos saber antes de produzir"**
+  (aparece em destaque também na aba Demandas). Edite em "Editar dossiê".
+- **Planejamento:** o plano do mês (objetivo, pilares, ações on/off-line, produção
+  audiovisual, verba de mídia, indicadores), com histórico dos meses anteriores.
+- **Demandas:** os jobs da conta com filtros por tipo, status e responsável.
+- **Aprovações:** aguardando o cliente (com link público), ajustes solicitados (com o
+  comentário do cliente), aprovadas recentes e as rodadas de aprovação.
+- **Reuniões:** últimas atas + próximo compromisso + **linha do tempo do relacionamento**
+  (reuniões, envios, aprovações, entregas, publicações e contratos, em ordem).
+- **Arquivos:** anexos da conta, documentos que já vivem no TREM (propostas, atas,
+  relatórios) e os **acessos do cliente** — registrando *onde* cada acesso está guardado e
+  *quem* tem, **nunca a senha**.
+- **Resultados:** indicadores operacionais dos últimos 90 dias (% no prazo, ciclo, tempo de
+  aprovação, retrabalho…), produção realizada, campanhas com CPL/CTR, painel do Looker e
+  histórico de relatórios mensais.
+- **Contrato & Financeiro:** o **consumo do escopo** (contratado × utilizado × saldo, que
+  conta sozinho a partir dos jobs/campanhas/reuniões do mês — visível a todos) e, para quem
+  vê o financeiro, contratos com **alerta de renovação/reajuste**, MRR, a receber, vencido e
+  notas fiscais.
+- **Histórico:** a linha do tempo do relacionamento + o log de alterações do cadastro.
 - As abas têm **link direto** (ex.: `?aba=aprovacoes`) — dá para favoritar ou compartilhar
   com a equipe.
 - **Relatório do mês:** botão que gera o **PDF de prestação de contas** (postagens,
