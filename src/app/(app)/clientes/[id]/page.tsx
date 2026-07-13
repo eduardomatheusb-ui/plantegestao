@@ -13,6 +13,7 @@ import { listarUsuariosAtivos } from "@/lib/projetos/queries";
 import { listarJobs, listarStatus } from "@/lib/jobs/queries";
 import { listarLotesDoCliente } from "@/lib/aprovacao/lote.queries";
 import { CLIENTE_STATUS } from "@/lib/cadastros/registry";
+import { CAMPOS_DOSSIE } from "@/lib/clientes/dossie";
 import { rotuloTipoJob, TIPOS_JOB } from "@/lib/jobs/tipos";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
@@ -220,8 +221,44 @@ export default async function ClienteEstacaoPage({
     </>
   );
 
+  const dossie = (c.dossie ?? {}) as Record<string, string | null>;
+  const dossiePreenchido = CAMPOS_DOSSIE.some((campo) => dossie[campo.name]);
+
   const abaDossie = (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {/* Regra de ouro da conta — sempre no topo, em destaque */}
+      {dossie.antesDeProduzir && (
+        <Card className="lg:col-span-2 border-2 border-brand-yellow/60 bg-[#f7ff19]/10">
+          <CardHeader><CardTitle className="text-base">⚠️ Antes de produzir</CardTitle></CardHeader>
+          <CardContent><p className="whitespace-pre-wrap text-sm">{dossie.antesDeProduzir}</p></CardContent>
+        </Card>
+      )}
+
+      <div className="lg:col-span-2 flex justify-end">
+        <Button asChild variant="outline" size="sm"><Link href={`/clientes/${id}/dossie`}><Pencil className="size-4" /> Editar dossiê</Link></Button>
+      </div>
+
+      {dossiePreenchido ? (
+        <Card className="lg:col-span-2">
+          <CardHeader><CardTitle className="text-base">Dossiê estratégico</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+            {CAMPOS_DOSSIE.filter((campo) => campo.name !== "antesDeProduzir").map((campo) => (
+              <Campo key={campo.name} rotulo={campo.label} valor={dossie[campo.name]} />
+            ))}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="lg:col-span-2 border-dashed">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">
+              O dossiê estratégico ainda não foi preenchido — é a memória da conta (objetivos, público,
+              concorrentes, restrições, &ldquo;o que precisamos saber antes de produzir&rdquo;).{" "}
+              <Link href={`/clientes/${id}/dossie`} className="underline">Preencher agora</Link>.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader><CardTitle className="text-base">Brand kit & escopo</CardTitle></CardHeader>
         <CardContent className="space-y-4">
@@ -249,20 +286,17 @@ export default async function ClienteEstacaoPage({
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-2 border-dashed">
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
-            O <strong>dossiê estratégico</strong> (objetivos, público-alvo, concorrentes, posicionamento,
-            &ldquo;o que precisamos saber antes de produzir&rdquo;…) chega numa próxima atualização da Estação.
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 
   const selFiltro = "h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
   const abaDemandas = (
     <>
+      {dossie.antesDeProduzir && (
+        <div className="rounded-lg border-2 border-brand-yellow/60 bg-[#f7ff19]/10 px-4 py-3 text-sm">
+          <strong>Antes de produzir:</strong> {dossie.antesDeProduzir}
+        </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {/* Filtros (GET — preserva a aba) */}
         <form method="get" className="flex flex-wrap items-center gap-2">

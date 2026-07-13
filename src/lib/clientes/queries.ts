@@ -90,6 +90,7 @@ export async function obterClienteVisao(id: string) {
       lookerEmbedUrl: true, criadoEm: true,
       atendimento: { select: { id: true, nome: true } },
       estrategia: { select: { id: true, nome: true } },
+      dossie: true,
     },
   });
   if (!c) return null;
