@@ -116,6 +116,7 @@ model Usuario {
   aprovacaoLotesCriados AprovacaoLote[]           @relation("AprovacaoLoteCriadoPor")
   clientesAtendimento   Cliente[]                 @relation("ClienteAtendimento")
   clientesEstrategia    Cliente[]                 @relation("ClienteEstrategia")
+  planejamentosCriados  PlanejamentoPeriodo[]     @relation("PlanejamentoCriadoPor")
 
   @@index([papel])
 }
@@ -346,6 +347,10 @@ model Cliente {
   aprovacaoLotes    AprovacaoLote[]
   atendimento       Usuario?           @relation("ClienteAtendimento", fields: [atendimentoId], references: [id], onDelete: SetNull)
   estrategia        Usuario?           @relation("ClienteEstrategia", fields: [estrategiaId], references: [id], onDelete: SetNull)
+  dossie            ClienteDossie?
+  escopoItens       EscopoItem[]
+  acessos           ClienteAcesso[]
+  planejamentos     PlanejamentoPeriodo[]
   portalToken       String?            @unique // link público do portal do cliente
 
   @@index([arquivado])
@@ -361,6 +366,8 @@ model Contrato {
   diaVencimento Int? // dia do mês de cobrança (1-31)
   dataInicio    DateTime
   dataFim       DateTime? // null = vigente
+  reajusteEm    DateTime? // Estação: data prevista do próximo reajuste
+  reajusteObs   String? // Estação: índice/percentual/combinado do reajuste
   status        String    @default("ativo") // ativo | suspenso | encerrado
   criadoPorId   String?
   criadoEm      DateTime  @default(now())
@@ -370,6 +377,90 @@ model Contrato {
 
   @@index([clienteId])
   @@index([status])
+}
+
+// ─────────────────────────── Estação do Cliente ───────────────────────────
+
+/// Dossiê estratégico da conta (memória viva; orienta qualquer entrega).
+model ClienteDossie {
+  clienteId            String   @id
+  apresentacao         String? // apresentação da empresa
+  segmento             String? // segmento / área de atuação
+  aprovadores          String? // responsáveis e aprovadores do lado do cliente
+  objetivosNegocio     String?
+  objetivosComunicacao String?
+  publicoAlvo          String?
+  produtosPrioritarios String?
+  diferenciais         String?
+  concorrentes         String?
+  posicionamento       String?
+  canaisAtivos         String?
+  restricoes           String? // restrições e cuidados
+  datasImportantes     String?
+  historicoRelacao     String? // histórico da relação com a Plante
+  antesDeProduzir      String? // "o que precisamos saber antes de produzir"
+  atualizadoEm         DateTime @updatedAt
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+}
+
+/// Item de escopo contratado (quadro contratado × utilizado × saldo).
+model EscopoItem {
+  id               String   @id @default(cuid())
+  clienteId        String
+  rotulo           String // ex.: "Posts", "Horas de captação"
+  bucket           String // posts | videos | materiais | campanhas | reunioes | horas_captacao | outro
+  quantidadeMensal Int
+  unidade          String   @default("un") // un | horas
+  ordem            Int      @default(0)
+  criadoEm         DateTime @default(now())
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+}
+
+/// Onde estão os acessos do cliente (NUNCA guarda senha — só onde está e quem tem).
+model ClienteAcesso {
+  id            String   @id @default(cuid())
+  clienteId     String
+  plataforma    String // ex.: Instagram, Meta Business, Google, site/hospedagem
+  identificacao String? // conta/página/usuário (sem credenciais)
+  ondeGuardado  String? // ex.: cofre do 1Password, planilha X
+  quemTemAcesso String?
+  observacao    String?
+  criadoEm      DateTime @default(now())
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+}
+
+/// Planejamento mensal da conta.
+model PlanejamentoPeriodo {
+  id                   String   @id @default(cuid())
+  clienteId            String
+  ano                  Int
+  mes                  Int // 1-12
+  objetivoPrincipal    String?
+  pilares              String? // pilares de conteúdo
+  produtosPrioritarios String?
+  datasImportantes     String?
+  acoesOnline          String?
+  acoesOffline         String?
+  producaoAudiovisual  String?
+  verbaMidia           Decimal? @db.Decimal(14, 2)
+  indicadores          String? // indicadores acompanhados
+  status               String   @default("vigente") // rascunho | vigente | encerrado
+  criadoPorId          String?
+  criadoEm             DateTime @default(now())
+  atualizadoEm         DateTime @updatedAt
+
+  cliente   Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  criadoPor Usuario? @relation("PlanejamentoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+
+  @@unique([clienteId, ano, mes])
+  @@index([clienteId])
 }
 
 /// Campanha de tráfego pago (Meta, Google, etc.) de um cliente.

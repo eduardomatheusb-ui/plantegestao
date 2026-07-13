@@ -10,8 +10,10 @@ import { podeModulo } from "@/lib/permissoes";
 import { obterClienteVisao, estacaoResumo } from "@/lib/clientes/queries";
 import { listarOnboarding } from "@/lib/onboarding/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
+import { listarJobs, listarStatus } from "@/lib/jobs/queries";
+import { listarLotesDoCliente } from "@/lib/aprovacao/lote.queries";
 import { CLIENTE_STATUS } from "@/lib/cadastros/registry";
-import { rotuloTipoJob } from "@/lib/jobs/tipos";
+import { rotuloTipoJob, TIPOS_JOB } from "@/lib/jobs/tipos";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { baseUrl } from "@/lib/email";
@@ -82,22 +84,25 @@ export default async function ClienteEstacaoPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ aba?: string }>;
+  searchParams: Promise<{ aba?: string; dtipo?: string; dstatus?: string; dresp?: string }>;
 }) {
   const acesso = await requireModulo("cadastros", "VER");
   const podeFinanceiro = podeModulo(acesso.caps, "financeiro", "VER");
   const podeEditar = podeModulo(acesso.caps, "cadastros", "EDITAR");
   const { id } = await params;
-  const { aba } = await searchParams;
+  const { aba, dtipo, dstatus, dresp } = await searchParams;
 
   const dados = await obterClienteVisao(id);
   if (!dados) notFound();
   const { cliente: c, jobsAtivos, projetosAtivos, postagens, resumo } = dados;
 
-  const [estacao, onboardingItens, usuarios] = await Promise.all([
+  const [estacao, onboardingItens, usuarios, statuses, demandas, lotes] = await Promise.all([
     estacaoResumo(id),
     listarOnboarding(id),
     listarUsuariosAtivos(),
+    listarStatus(),
+    listarJobs({ clienteId: id, tipo: dtipo || undefined, statusId: dstatus || undefined, responsavelId: dresp || undefined }),
+    listarLotesDoCliente(id),
   ]);
 
   const st = statusInfo(c.status);
@@ -255,22 +260,52 @@ export default async function ClienteEstacaoPage({
     </div>
   );
 
+  const selFiltro = "h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
   const abaDemandas = (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">{ck.abertas} demanda{ck.abertas === 1 ? "" : "s"} aberta{ck.abertas === 1 ? "" : "s"} · {ck.atrasadas} atrasada{ck.atrasadas === 1 ? "" : "s"}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Filtros (GET — preserva a aba) */}
+        <form method="get" className="flex flex-wrap items-center gap-2">
+          <input type="hidden" name="aba" value="demandas" />
+          <label htmlFor="dtipo" className="sr-only">Tipo</label>
+          <select id="dtipo" name="dtipo" defaultValue={dtipo ?? ""} className={selFiltro}>
+            <option value="">Todos os tipos</option>
+            {TIPOS_JOB.map((t) => (<option key={t.key} value={t.key}>{t.label}</option>))}
+          </select>
+          <label htmlFor="dstatus" className="sr-only">Status</label>
+          <select id="dstatus" name="dstatus" defaultValue={dstatus ?? ""} className={selFiltro}>
+            <option value="">Todos os status</option>
+            {statuses.map((s) => (<option key={s.id} value={s.id}>{s.nome}</option>))}
+          </select>
+          <label htmlFor="dresp" className="sr-only">Responsável</label>
+          <select id="dresp" name="dresp" defaultValue={dresp ?? ""} className={selFiltro}>
+            <option value="">Todos os responsáveis</option>
+            {usuarios.map((u) => (<option key={u.id} value={u.id}>{u.nome}</option>))}
+          </select>
+          <Button type="submit" variant="outline" size="sm">Filtrar</Button>
+          {(dtipo || dstatus || dresp) && (
+            <Button asChild variant="ghost" size="sm"><Link href={`/clientes/${id}?aba=demandas`}>Limpar</Link></Button>
+          )}
+        </form>
         <Button asChild variant="outline" size="sm"><Link href={`/jobs?view=lista&clienteId=${id}`}><ListChecks className="size-4" /> Abrir nos Jobs</Link></Button>
       </div>
       <Card>
         <CardContent className="pt-6">
-          {jobsAtivos.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma demanda aberta.</p>
+          {demandas.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhuma demanda com esses filtros.</p>
           ) : (
             <ul className="divide-y divide-border">
-              {jobsAtivos.map((j) => (
+              {demandas.map((j) => (
                 <li key={j.id} className="py-2">
                   <Link href={`/jobs/${j.id}`} className="flex items-center justify-between gap-2 text-sm hover:underline">
-                    <span className="min-w-0"><span className="text-muted-foreground tabular-nums">#{j.numero}</span> {j.titulo}<span className="block text-xs text-muted-foreground">{rotuloTipoJob(j.tipo)}{j.prazo ? ` · ${dataBR(j.prazo)}` : ""}</span></span>
+                    <span className="min-w-0">
+                      <span className="text-muted-foreground tabular-nums">#{j.numero}</span> {j.titulo}
+                      <span className="block text-xs text-muted-foreground">
+                        {rotuloTipoJob(j.tipo)}
+                        {j.responsavel ? ` · ${j.responsavel.nome}` : ""}
+                        {j.prazo ? ` · ${dataBR(j.prazo)}` : ""}
+                      </span>
+                    </span>
                     <span className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ background: `${j.status.cor ?? "#9ca3af"}22`, color: j.status.cor ?? "#6b7280" }}>{j.status.nome}</span>
                   </Link>
                 </li>
@@ -279,7 +314,7 @@ export default async function ClienteEstacaoPage({
           )}
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground">Filtros por período, tipo, responsável e status chegam na próxima atualização.</p>
+      <p className="text-xs text-muted-foreground">{demandas.length} demanda{demandas.length === 1 ? "" : "s"} · {ck.atrasadas} atrasada{ck.atrasadas === 1 ? "" : "s"}</p>
     </>
   );
 
@@ -324,6 +359,51 @@ export default async function ClienteEstacaoPage({
                 {estacao.ajustesLista.map((j) => (
                   <li key={j.id} className="py-2 text-sm">
                     <Link href={`/jobs/${j.id}`} className="hover:underline"><span className="text-muted-foreground tabular-nums">#{j.numero}</span> {j.titulo}</Link>
+                    {j.ultimoAjuste && (
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        &ldquo;{j.ultimoAjuste.comentario ?? "sem comentário"}&rdquo;
+                        {j.ultimoAjuste.autor ? ` — ${j.ultimoAjuste.autor}` : ""} · {dataBR(j.ultimoAjuste.criadoEm)}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-base"><ListChecks className="size-4" /> Aprovadas recentemente</CardTitle></CardHeader>
+          <CardContent>
+            {estacao.aprovadasLista.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma peça aprovada ainda.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {estacao.aprovadasLista.map((j) => (
+                  <li key={j.id} className="py-2 text-sm">
+                    <Link href={`/jobs/${j.id}`} className="hover:underline"><span className="text-muted-foreground tabular-nums">#{j.numero}</span> {j.titulo}</Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Layers className="size-4" /> Rodadas de aprovação</CardTitle></CardHeader>
+          <CardContent>
+            {lotes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma rodada criada para este cliente.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {lotes.map((l) => (
+                  <li key={l.id} className="py-2 text-sm">
+                    <Link href={`/jobs/aprovacao-lote/${l.id}`} className="flex items-center justify-between gap-2 hover:underline">
+                      <span className="min-w-0 truncate">{l.titulo || "Rodada de aprovação"} · {l._count.itens} peça{l._count.itens === 1 ? "" : "s"}</span>
+                      <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium", l.status === "encerrado" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700")}>
+                        {l.status === "encerrado" ? "Concluída" : "Aberta"}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>

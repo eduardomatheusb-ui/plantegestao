@@ -181,8 +181,8 @@ export async function estacaoResumo(clienteId: string) {
     }),
   ]);
 
-  // Listas curtas para as abas (Onda 1 — visões simples; abas completas chegam nas ondas seguintes).
-  const [aguardandoLista, ajustesLista, reunioesLista, contratosLista] = await Promise.all([
+  // Listas curtas para as abas.
+  const [aguardandoLista, ajustesBase, aprovadasLista, reunioesLista, contratosLista] = await Promise.all([
     db.job.findMany({
       where: { clienteId, arquivado: false, aprovacaoStatus: "enviado" },
       orderBy: { aprovacaoEm: "desc" }, take: 8,
@@ -193,6 +193,11 @@ export async function estacaoResumo(clienteId: string) {
       orderBy: { atualizadoEm: "desc" }, take: 8,
       select: { id: true, numero: true, titulo: true },
     }),
+    db.job.findMany({
+      where: { clienteId, arquivado: false, aprovacaoStatus: "aprovado" },
+      orderBy: { atualizadoEm: "desc" }, take: 6,
+      select: { id: true, numero: true, titulo: true },
+    }),
     db.reuniao.findMany({
       where: { clienteId },
       orderBy: { data: "desc" }, take: 6,
@@ -201,9 +206,21 @@ export async function estacaoResumo(clienteId: string) {
     db.contrato.findMany({
       where: { clienteId },
       orderBy: [{ status: "asc" }, { dataInicio: "desc" }],
-      select: { id: true, descricao: true, valorMensal: true, diaVencimento: true, dataInicio: true, dataFim: true, status: true },
+      select: { id: true, descricao: true, valorMensal: true, diaVencimento: true, dataInicio: true, dataFim: true, reajusteEm: true, reajusteObs: true, status: true },
     }),
   ]);
+
+  // Último pedido de ajuste de cada peça em "ajustes" (autor, data e comentário do cliente).
+  const eventosAjuste = ajustesBase.length
+    ? await db.aprovacaoEvento.findMany({
+        where: { jobId: { in: ajustesBase.map((j) => j.id) }, acao: "ajustes" },
+        orderBy: { criadoEm: "desc" },
+        select: { jobId: true, autor: true, comentario: true, criadoEm: true },
+      })
+    : [];
+  const ultimoAjuste = new Map<string, { autor: string | null; comentario: string | null; criadoEm: Date }>();
+  for (const e of eventosAjuste) if (!ultimoAjuste.has(e.jobId)) ultimoAjuste.set(e.jobId, e);
+  const ajustesLista = ajustesBase.map((j) => ({ ...j, ultimoAjuste: ultimoAjuste.get(j.id) ?? null }));
 
   const equipeMap = new Map<string, string>();
   for (const j of equipeJobs) {
@@ -230,6 +247,7 @@ export async function estacaoResumo(clienteId: string) {
     equipe,
     aguardandoLista,
     ajustesLista,
+    aprovadasLista,
     reunioesLista,
     contratosLista,
   };

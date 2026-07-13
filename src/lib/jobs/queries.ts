@@ -6,6 +6,7 @@ export type ListarJobsOpts = {
   responsavelId?: string;
   clienteId?: string;
   projetoId?: string;
+  tipo?: string; // chave de TIPOS_JOB (filtro da Estação do Cliente)
   minhasDoUsuario?: string; // id do usuário (Minha Pauta)
   semConcluidos?: boolean; // esconde jobs em status concluído (pautas de pendências)
   // Drill-down de conclusão (ex.: clicar no donut do dashboard):
@@ -32,6 +33,7 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   if (opts.responsavelId) where.responsavelId = opts.responsavelId;
   if (opts.clienteId) where.clienteId = opts.clienteId;
   if (opts.projetoId) where.projetoId = opts.projetoId;
+  if (opts.tipo) where.tipo = opts.tipo;
 
   // Filtro de conclusão (drill-down do dashboard): sempre concluídos que tinham prazo.
   // no-prazo/fora-prazo são refinados em memória (concluidoEm vs prazo) — mesma lógica do
