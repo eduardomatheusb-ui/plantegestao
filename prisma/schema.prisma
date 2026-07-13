@@ -761,6 +761,7 @@ model Job {
   workflowAtivo         Boolean   @default(false) // tarefas em sequência: cada uma só conclui após a anterior
   legenda               String? // só postagem
   formatos              String? // só postagem: chaves separadas por vírgula (instagram_feed, stories…)
+  minutosGravados       Int? // vídeos: minutos gravados (alimenta a "casa do cliente")
   briefing              String?
   aprovacaoStatus       String    @default("rascunho") // rascunho | enviado | aprovado | ajustes
   aprovacaoToken        String?   @unique // token do link público de aprovação do cliente

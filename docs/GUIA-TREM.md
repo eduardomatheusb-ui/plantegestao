@@ -689,11 +689,17 @@ sem login. Ela mostra o andamento sem expor nada financeiro, e serve como canal 
 acompanhamento no lugar de mensagens soltas.
 
 O que o **seu cliente** vê pelo link (sem login), com a identidade da Plante:
+- **O que fizemos juntos** — contadores de produção **do mês** (Posts, Vídeos, Materiais
+  gráficos, Produções, Minutos gravados). **Categoria zerada não aparece** — só mostra o que
+  teve movimento. Os números saem sozinhos do trabalho no TREM: cada job **concluído** no mês
+  conta no balde do seu tipo. "Minutos gravados" vem do campo de mesmo nome no job de vídeo
+  (você digita ao concluir); se ninguém preencher, o contador some.
 - **Aguardando aprovação** (peças para ele aprovar).
 - **Próximas postagens** (com status).
 - **Trabalhos em andamento** (com status, sem valores).
-- **Publicadas recentemente** (com botão **"Ver post"** quando você cola o link da
-  publicação — ver seção 6, "Marcar como publicada").
+- **Linha do tempo** — tudo que já foi **entregue** (concluído ou publicado), agrupado por
+  mês, com ícone e cor por tipo e botão **"Ver post"** quando há link da publicação (seção 6,
+  "Marcar como publicada").
 - **Performance** (aba, opcional): um **painel de resultados** do Looker Studio embutido.
 
 O portal **não mostra** nada financeiro. Gere, renove ou desative o link na visão do cliente.

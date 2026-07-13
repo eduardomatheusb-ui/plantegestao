@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, ListChecks, CheckSquare, ArrowRight, ExternalLink, BarChart3, Send } from "lucide-react";
+import { CalendarDays, ListChecks, CheckSquare, ArrowRight, ExternalLink, BarChart3, History, Video, Image as ImageIcon, FileText, Instagram, Sparkles } from "lucide-react";
 import { obterPortal } from "@/lib/portal/queries";
-import { rotuloTipoJob } from "@/lib/jobs/tipos";
+import { rotuloTipoJob, corTipoJob } from "@/lib/jobs/tipos";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { Logo } from "@/components/brand/logo";
@@ -24,7 +24,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
   const dados = await obterPortal(token);
   if (!dados) notFound();
 
-  const { cliente, jobs, postagens, aprovacoes, publicadas } = dados;
+  const { cliente, jobs, postagens, aprovacoes, producao, timeline } = dados;
   const nome = cliente.nomeFantasia || cliente.nome;
   const temPerformance = !!cliente.lookerEmbedUrl;
 
@@ -62,7 +62,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
               <TabsTrigger value="performance"><BarChart3 className="mr-1.5 size-4" /> Performance</TabsTrigger>
             </TabsList>
             <TabsContent value="acompanhamento" className="space-y-5">
-              <Acompanhamento aprovacoes={aprovacoes} postagens={postagens} jobs={jobs} publicadas={publicadas} />
+              <Acompanhamento aprovacoes={aprovacoes} postagens={postagens} jobs={jobs} producao={producao} timeline={timeline} />
             </TabsContent>
             <TabsContent value="performance">
               <iframe
@@ -76,7 +76,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
           </Tabs>
         ) : (
           <div className="space-y-5">
-            <Acompanhamento aprovacoes={aprovacoes} postagens={postagens} jobs={jobs} publicadas={publicadas} />
+            <Acompanhamento aprovacoes={aprovacoes} postagens={postagens} jobs={jobs} producao={producao} timeline={timeline} />
           </div>
         )}
 
@@ -88,16 +88,70 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
   );
 }
 
+type Producao = { mesLabel: string; posts: number; videos: number; materiais: number; producoes: number; minutos: number };
+type TimelineItem = { id: string; numero: number; titulo: string; tipo: string; data: Date | null; linkPublicado: string | null };
+
 type AcompanhamentoProps = {
   aprovacoes: { id: string; titulo: string; aprovacaoToken: string | null; prazoPostagem: Date | null }[];
   postagens: { id: string; titulo: string; prazoPostagem: Date | null; aprovacaoStatus: string; formatos: string | null }[];
   jobs: { id: string; titulo: string; tipo: string; prazo: Date | null; status: { nome: string; cor: string | null } }[];
-  publicadas: { id: string; titulo: string; publicadoEm: Date | null; linkPublicado: string | null; formatos: string | null }[];
+  producao: Producao;
+  timeline: TimelineItem[];
 };
 
-function Acompanhamento({ aprovacoes, postagens, jobs, publicadas }: AcompanhamentoProps) {
+/** Ícone do tile da linha do tempo, por balde de tipo. */
+function IconeTipo({ tipo, className }: { tipo: string; className?: string }) {
+  if (["post_estatico", "carrossel", "story"].includes(tipo)) return <Instagram className={className} aria-hidden="true" />;
+  if (["reels", "video", "motion"].includes(tipo)) return <Video className={className} aria-hidden="true" />;
+  if (["material_grafico", "identidade", "branding"].includes(tipo)) return <ImageIcon className={className} aria-hidden="true" />;
+  return <FileText className={className} aria-hidden="true" />;
+}
+
+function tituloMes(d: Date) {
+  const s = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date(d));
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: AcompanhamentoProps) {
+  const contadores = [
+    { label: "Posts", valor: producao.posts },
+    { label: "Vídeos", valor: producao.videos },
+    { label: "Materiais gráficos", valor: producao.materiais },
+    { label: "Produções", valor: producao.producoes },
+    { label: "Minutos gravados", valor: producao.minutos },
+  ].filter((c) => c.valor > 0);
+
+  // Agrupa a linha do tempo por mês (a ordem já vem do mais recente).
+  const gruposTimeline: { mes: string; itens: TimelineItem[] }[] = [];
+  for (const it of timeline) {
+    if (!it.data) continue;
+    const mes = tituloMes(it.data);
+    const grupo = gruposTimeline.find((g) => g.mes === mes);
+    if (grupo) grupo.itens.push(it);
+    else gruposTimeline.push({ mes, itens: [it] });
+  }
+
   return (
     <>
+        {/* O que fizemos juntos — contadores de produção do mês (zerado não aparece) */}
+        {contadores.length > 0 && (
+          <section className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
+              <Sparkles className="size-4 text-brand-yellow" aria-hidden="true" /> O que fizemos juntos
+              <span className="font-sans text-xs font-normal text-muted-foreground">· {producao.mesLabel}</span>
+            </h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {contadores.map((c) => (
+                <div key={c.label} className="rounded-xl border border-border bg-muted/30 p-3 text-center">
+                  <p className="font-display text-2xl font-bold tabular-nums">{c.valor}</p>
+                  <p className="text-xs text-muted-foreground">{c.label}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">Só aparece o que teve movimento no mês.</p>
+          </section>
+        )}
+
         {/* Aprovações pendentes — ação do cliente, em destaque */}
         {aprovacoes.length > 0 && (
           <section className="rounded-2xl border-2 border-brand-yellow bg-brand-yellow/10 p-5">
@@ -175,33 +229,39 @@ function Acompanhamento({ aprovacoes, postagens, jobs, publicadas }: Acompanhame
           )}
         </section>
 
-        {/* Publicadas recentemente */}
-        {publicadas.length > 0 && (
+        {/* Linha do tempo — tudo que já foi entregue, por mês */}
+        {gruposTimeline.length > 0 && (
           <section className="rounded-2xl border border-border bg-card p-5">
             <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
-              <Send className="size-4 text-muted-foreground" aria-hidden="true" /> Publicadas recentemente
+              <History className="size-4 text-muted-foreground" aria-hidden="true" /> Linha do tempo
             </h2>
-            <ul className="space-y-2.5">
-              {publicadas.map((p) => {
-                const formatos = rotulosFormatos(p.formatos);
-                return (
-                  <li key={p.id} className="flex items-center justify-between gap-2 border-b border-border/60 pb-2.5 last:border-0 last:pb-0">
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium">{p.titulo}</span>
-                      <span className="block text-xs text-muted-foreground">
-                        {p.publicadoEm ? `Publicada ${diaCurto(p.publicadoEm)}` : "Publicada"}
-                        {formatos.length > 0 ? ` · ${formatos.join(" · ")}` : ""}
-                      </span>
-                    </span>
-                    {p.linkPublicado && (
-                      <a href={p.linkPublicado} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium hover:bg-muted/70">
-                        Ver post <ExternalLink className="size-3.5" aria-hidden="true" />
-                      </a>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="space-y-5">
+              {gruposTimeline.map((g) => (
+                <div key={g.mes}>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.mes}</p>
+                  <ul className="space-y-2.5">
+                    {g.itens.map((it) => (
+                      <li key={it.id} className="flex items-center gap-3">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-xl text-white" style={{ background: corTipoJob(it.tipo) }}>
+                          <IconeTipo tipo={it.tipo} className="size-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">{it.titulo}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {rotuloTipoJob(it.tipo)}{it.data ? ` · ${diaCurto(it.data)}` : ""}
+                          </span>
+                        </span>
+                        {it.linkPublicado && (
+                          <a href={it.linkPublicado} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium hover:bg-muted/70">
+                            Ver post <ExternalLink className="size-3.5" aria-hidden="true" />
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </section>
         )}
     </>

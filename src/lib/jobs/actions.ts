@@ -44,6 +44,10 @@ const jobSchema = z.object({
   recorrenciaProxima: z.string().optional().transform(dataOpt),
   bloqueadoPorId: z.string().optional().transform((v) => (v ? v : null)),
   legenda: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
+  minutosGravados: z.string().optional().transform((v) => {
+    const n = v && v.trim() ? parseInt(v, 10) : NaN;
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  }),
   briefing: z.string().optional().transform((v) => (v && v.trim() ? v : null)),
 });
 
@@ -69,6 +73,7 @@ export async function salvarJob(
       recorrenciaProxima: formData.get("recorrenciaProxima")?.toString(),
       bloqueadoPorId: formData.get("bloqueadoPorId")?.toString(),
       legenda: formData.get("legenda")?.toString(),
+      minutosGravados: formData.get("minutosGravados")?.toString(),
       briefing: formData.get("briefing")?.toString(),
     });
     if (!parsed.success) {
@@ -112,6 +117,7 @@ export async function salvarJob(
       bloqueadoPorId: d.bloqueadoPorId && d.bloqueadoPorId !== id ? d.bloqueadoPorId : null,
       legenda: ehSocial ? d.legenda : null,
       formatos,
+      minutosGravados: ["video", "reels", "motion"].includes(d.tipo) ? d.minutosGravados : null,
       briefing: d.briefing,
     };
 

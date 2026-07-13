@@ -32,11 +32,15 @@ export type JobInicial = {
   recorrenciaProxima?: string;
   bloqueadoPorId?: string;
   legenda?: string;
+  minutosGravados?: number;
   briefing?: string;
   formatos?: string[];
   envolvidosIds?: string[];
   templateId?: string;
 };
+
+/** Tipos de vídeo (mostram o campo "minutos gravados", que alimenta a casa do cliente). */
+const TIPOS_VIDEO = ["video", "reels", "motion"];
 
 const sel = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60";
 
@@ -75,6 +79,7 @@ export function JobForm({
   const projetosDoCliente = projetos.filter((p) => p.clienteId === clienteId);
   const jobsDoCliente = jobs.filter((j) => j.clienteId === clienteId && j.id !== id);
   const social = tipoJobSocial(tipo);
+  const ehVideo = TIPOS_VIDEO.includes(tipo);
   const formatosIniciais = new Set(inicial.formatos ?? []);
 
   return (
@@ -149,6 +154,13 @@ export function JobForm({
           <div className="space-y-2">
             <Label htmlFor="prazoPostagem">Prazo de postagem <span className="text-xs font-normal text-muted-foreground">(vai ao ar)</span></Label>
             <Input id="prazoPostagem" name="prazoPostagem" type="date" defaultValue={inicial.prazoPostagem ?? ""} />
+          </div>
+        )}
+
+        {ehVideo && (
+          <div className="space-y-2">
+            <Label htmlFor="minutosGravados">Minutos gravados <span className="text-xs font-normal text-muted-foreground">(entra na casa do cliente)</span></Label>
+            <Input id="minutosGravados" name="minutosGravados" type="number" min="0" step="1" defaultValue={inicial.minutosGravados ?? ""} placeholder="Ex.: 12" />
           </div>
         )}
 

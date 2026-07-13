@@ -37,6 +37,7 @@ export default async function EditarJobPage({ params }: { params: Promise<{ id: 
     recorrenciaProxima: dia(job.recorrenciaProxima),
     bloqueadoPorId: job.bloqueadoPorId ?? "",
     legenda: job.legenda ?? "",
+    minutosGravados: job.minutosGravados ?? undefined,
     briefing: job.briefing ?? "",
     formatos: job.formatos ? job.formatos.split(",").filter(Boolean) : [],
     envolvidosIds: job.envolvidos.map((e) => e.usuarioId),
