@@ -758,18 +758,18 @@ sem login. Ela mostra o andamento sem expor nada financeiro, e serve como canal 
 acompanhamento no lugar de mensagens soltas.
 
 O que o **seu cliente** vê pelo link (sem login), com a identidade da Plante:
-- **O que fizemos juntos** — contadores de produção **do mês** (Posts, Vídeos, Materiais
-  gráficos, Produções, Minutos gravados). **Categoria zerada não aparece** — só mostra o que
-  teve movimento. Os números saem sozinhos do trabalho no TREM: cada job **concluído** no mês
-  conta no balde do seu tipo. "Minutos gravados" vem do campo de mesmo nome no job de vídeo
-  (você digita ao concluir); se ninguém preencher, o contador some.
+Em destaque no topo ficam o **mini-dashboard** e a **linha do tempo**; abaixo, as listas de acompanhamento.
+- **O que fizemos juntos** — mini-dashboard com contadores **do mês** (Posts, Vídeos, Materiais
+  gráficos, Produções, Minutos gravados). **Sempre aparece** (Posts e Vídeos mesmo zerados, p/
+  conta nova não parecer vazia); as demais só quando têm movimento. Cada job **concluído** no
+  mês conta no balde do seu tipo.
+- **Linha do tempo** — feed do que já foi **entregue** (concluído ou publicado), por mês, em
+  **cartões com miniatura** da peça (1ª imagem anexada ao job; sem imagem, um cartão na cor do
+  tipo) e botão **"Ver post"** quando há link (seção 6, "Marcar como publicada").
 - **Aguardando aprovação** (peças para ele aprovar).
 - **Próximas postagens** (com status; peça ainda em criação aparece como "Em produção").
 - **Trabalhos em andamento** (com status, sem valores) — **não repete** o que já está em
   "Próximas postagens".
-- **Linha do tempo** — tudo que já foi **entregue** (concluído ou publicado), agrupado por
-  mês, com ícone e cor por tipo e botão **"Ver post"** quando há link da publicação (seção 6,
-  "Marcar como publicada").
 - **Performance** (aba, opcional): um **painel de resultados** do Looker Studio embutido.
 
 O portal **não mostra** nada financeiro. Os **títulos aparecem limpos** para o cliente (sem o

@@ -92,6 +92,24 @@ export async function obterPortal(token: string) {
     minutos: minutosAgg._sum.minutosGravados ?? 0,
   };
 
+  // Miniatura de cada peça da timeline: 1ª imagem anexada (arquivo → rota do token; link → url).
+  const ehImagem = (ct: string | null, nome: string, url: string | null) =>
+    (ct ?? "").startsWith("image/") || /\.(png|jpe?g|webp|gif|avif)$/i.test(nome || url || "");
+  const anexos = timelineJobs.length
+    ? await db.anexo.findMany({
+        where: { entidadeTipo: "job", entidadeId: { in: timelineJobs.map((j) => j.id) } },
+        orderBy: { criadoEm: "asc" },
+        select: { id: true, entidadeId: true, tipo: true, url: true, contentType: true, nome: true },
+      })
+    : [];
+  const imgPorJob = new Map<string, string>();
+  for (const a of anexos) {
+    if (imgPorJob.has(a.entidadeId)) continue;
+    if (!ehImagem(a.contentType, a.nome, a.url)) continue;
+    const src = a.tipo === "arquivo" ? `/portal/${encodeURIComponent(token)}/img/${a.id}` : a.url;
+    if (src) imgPorJob.set(a.entidadeId, src);
+  }
+
   // Cada item da timeline com a data que vale (publicado, senão concluído).
   const timeline = timelineJobs.map((j) => ({
     id: j.id,
@@ -100,6 +118,7 @@ export async function obterPortal(token: string) {
     tipo: j.tipo,
     data: j.publicadoEm ?? j.concluidoEm,
     linkPublicado: j.linkPublicado,
+    imagem: imgPorJob.get(j.id) ?? null,
   }));
 
   // Títulos limpos para a visão do cliente (sem prefixo de data nem "(Tipo)").

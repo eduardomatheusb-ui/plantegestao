@@ -89,7 +89,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
 }
 
 type Producao = { mesLabel: string; posts: number; videos: number; materiais: number; producoes: number; minutos: number };
-type TimelineItem = { id: string; numero: number; titulo: string; tipo: string; data: Date | null; linkPublicado: string | null };
+type TimelineItem = { id: string; numero: number; titulo: string; tipo: string; data: Date | null; linkPublicado: string | null; imagem: string | null };
 
 type AcompanhamentoProps = {
   aprovacoes: { id: string; titulo: string; aprovacaoToken: string | null; prazoPostagem: Date | null }[];
@@ -113,13 +113,17 @@ function tituloMes(d: Date) {
 }
 
 function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: AcompanhamentoProps) {
-  const contadores = [
-    { label: "Posts", valor: producao.posts },
-    { label: "Vídeos", valor: producao.videos },
-    { label: "Materiais gráficos", valor: producao.materiais },
-    { label: "Produções", valor: producao.producoes },
-    { label: "Minutos gravados", valor: producao.minutos },
-  ].filter((c) => c.valor > 0);
+  // Posts e Vídeos aparecem sempre (mesmo zerados, p/ conta nova não parecer vazia);
+  // os demais só quando têm movimento.
+  const todosContadores = [
+    { label: "Posts", valor: producao.posts, fixo: true },
+    { label: "Vídeos", valor: producao.videos, fixo: true },
+    { label: "Materiais gráficos", valor: producao.materiais, fixo: false },
+    { label: "Produções", valor: producao.producoes, fixo: false },
+    { label: "Minutos gravados", valor: producao.minutos, fixo: false },
+  ];
+  const contadores = todosContadores.filter((c) => c.fixo || c.valor > 0);
+  const temEntregaNoMes = todosContadores.some((c) => c.valor > 0);
 
   // Agrupa a linha do tempo por mês (a ordem já vem do mais recente).
   const gruposTimeline: { mes: string; itens: TimelineItem[] }[] = [];
@@ -133,18 +137,65 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
 
   return (
     <>
-        {/* O que fizemos juntos — contadores de produção do mês (zerado não aparece) */}
-        {contadores.length > 0 && (
-          <section className="overflow-hidden rounded-2xl border-2 border-[#f7ff19]/70 bg-[#f7ff19]/10 p-5 sm:p-6">
-            <h2 className="flex flex-wrap items-center gap-x-2 text-xs font-bold uppercase tracking-[0.14em] text-ink-900 dark:text-brand-yellow">
-              <Sparkles className="size-4 text-brand-yellow" aria-hidden="true" /> O que fizemos juntos
-              <span className="font-sans text-[11px] font-medium normal-case tracking-normal text-muted-foreground">· {producao.mesLabel}</span>
+        {/* O que fizemos juntos — mini-dashboard do mês (sempre visível) */}
+        <section className="overflow-hidden rounded-2xl border-2 border-[#f7ff19]/70 bg-[#f7ff19]/10 p-5 sm:p-6">
+          <h2 className="flex flex-wrap items-center gap-x-2 text-xs font-bold uppercase tracking-[0.14em] text-ink-900 dark:text-brand-yellow">
+            <Sparkles className="size-4 text-brand-yellow" aria-hidden="true" /> O que fizemos juntos
+            <span className="font-sans text-[11px] font-medium normal-case tracking-normal text-muted-foreground">· {producao.mesLabel}</span>
+          </h2>
+          <div className="mt-5 flex flex-wrap gap-x-9 gap-y-5">
+            {contadores.map((c) => (
+              <div key={c.label}>
+                <p className="font-display text-4xl font-extrabold leading-none tabular-nums text-ink-900 dark:text-foreground">{c.valor}</p>
+                <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{c.label}</p>
+              </div>
+            ))}
+          </div>
+          {!temEntregaNoMes && (
+            <p className="mt-4 text-xs text-muted-foreground">As primeiras entregas do mês aparecem aqui assim que forem concluídas. 🌱</p>
+          )}
+        </section>
+
+        {/* Linha do tempo — feed do que já foi entregue, por mês */}
+        {gruposTimeline.length > 0 && (
+          <section className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
+              <History className="size-4 text-muted-foreground" aria-hidden="true" /> Linha do tempo
             </h2>
-            <div className="mt-5 flex flex-wrap gap-x-9 gap-y-5">
-              {contadores.map((c) => (
-                <div key={c.label}>
-                  <p className="font-display text-4xl font-extrabold leading-none tabular-nums text-ink-900 dark:text-foreground">{c.valor}</p>
-                  <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{c.label}</p>
+            <div className="space-y-7">
+              {gruposTimeline.map((g) => (
+                <div key={g.mes}>
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{g.mes}</p>
+                  <div className="space-y-4">
+                    {g.itens.map((it) => (
+                      <article key={it.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                        <div className="relative aspect-square w-full">
+                          {it.imagem ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={it.imagem} alt={it.titulo} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center" style={{ background: corTipoJob(it.tipo) }}>
+                              <IconeTipo tipo={it.tipo} className="size-12 text-white/90" />
+                            </div>
+                          )}
+                          <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur">
+                            {rotuloTipoJob(it.tipo)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 p-4">
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-semibold">{it.titulo}</span>
+                            <span className="block text-xs text-muted-foreground">{it.data ? diaCurto(it.data) : ""}</span>
+                          </span>
+                          {it.linkPublicado && (
+                            <a href={it.linkPublicado} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-xs font-medium hover:bg-muted/70">
+                              Ver post <ExternalLink className="size-3.5" aria-hidden="true" />
+                            </a>
+                          )}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -224,42 +275,6 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
           </section>
         )}
 
-        {/* Linha do tempo — tudo que já foi entregue, por mês */}
-        {gruposTimeline.length > 0 && (
-          <section className="rounded-2xl border border-border bg-card p-5">
-            <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
-              <History className="size-4 text-muted-foreground" aria-hidden="true" /> Linha do tempo
-            </h2>
-            <div className="space-y-6">
-              {gruposTimeline.map((g) => (
-                <div key={g.mes}>
-                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{g.mes}</p>
-                  {/* Trilho vertical alinhado ao centro dos tiles (left-5 = centro do tile size-10). */}
-                  <ul className="relative space-y-1 before:absolute before:bottom-5 before:left-5 before:top-5 before:w-px before:bg-border">
-                    {g.itens.map((it) => (
-                      <li key={it.id} className="group relative flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/50">
-                        <span className="grid size-10 shrink-0 place-items-center rounded-xl text-white shadow-sm ring-4 ring-card" style={{ background: corTipoJob(it.tipo) }}>
-                          <IconeTipo tipo={it.tipo} className="size-4" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-medium">{it.titulo}</span>
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {rotuloTipoJob(it.tipo)}{it.data ? ` · ${diaCurto(it.data)}` : ""}
-                          </span>
-                        </span>
-                        {it.linkPublicado && (
-                          <a href={it.linkPublicado} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium hover:bg-muted/70">
-                            Ver post <ExternalLink className="size-3.5" aria-hidden="true" />
-                          </a>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
     </>
   );
 }
