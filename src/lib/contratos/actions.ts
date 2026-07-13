@@ -50,6 +50,8 @@ export async function salvarContrato(id: string | null, _prev: ContratoFormState
       dataInicio,
       dataFim: dataOpt(formData.get("dataFim")?.toString()),
       diaVencimento,
+      reajusteEm: dataOpt(formData.get("reajusteEm")?.toString()),
+      reajusteObs: formData.get("reajusteObs")?.toString().trim() || null,
     };
 
     if (id) {

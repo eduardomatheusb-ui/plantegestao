@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 type Opt = { id: string; nome: string };
 export type ContratoInicial = Partial<{
   clienteId: string; descricao: string; valorMensal: string; diaVencimento: string;
-  dataInicio: string; dataFim: string; status: string;
+  dataInicio: string; dataFim: string; status: string; reajusteEm: string; reajusteObs: string;
 }>;
 
 const sel = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -67,6 +67,14 @@ export function ContratoForm({ id, inicial = {}, clientes, cancelHref }: { id: s
           <select id="status" name="status" className={sel} defaultValue={inicial.status ?? "ativo"}>
             {CONTRATO_STATUS.map((s) => (<option key={s.key} value={s.key}>{s.label}</option>))}
           </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="reajusteEm">Próximo reajuste <span className="text-xs font-normal text-muted-foreground">(opcional)</span></Label>
+          <Input id="reajusteEm" name="reajusteEm" type="date" defaultValue={inicial.reajusteEm ?? ""} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="reajusteObs">Regra do reajuste <span className="text-xs font-normal text-muted-foreground">(índice, %)</span></Label>
+          <Input id="reajusteObs" name="reajusteObs" defaultValue={inicial.reajusteObs ?? ""} placeholder="Ex.: IPCA ou 8%" />
         </div>
       </div>
       <div className="flex items-center gap-2">

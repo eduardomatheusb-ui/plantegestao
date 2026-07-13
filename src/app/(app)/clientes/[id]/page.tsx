@@ -7,7 +7,9 @@ import {
 } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
-import { obterClienteVisao, estacaoResumo } from "@/lib/clientes/queries";
+import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente } from "@/lib/clientes/queries";
+import { salvarEscopoItem, removerEscopoItem } from "@/lib/clientes/actions";
+import { BUCKETS_ESCOPO } from "@/lib/clientes/escopo";
 import { listarOnboarding } from "@/lib/onboarding/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
 import { listarJobs, listarStatus } from "@/lib/jobs/queries";
@@ -97,13 +99,15 @@ export default async function ClienteEstacaoPage({
   if (!dados) notFound();
   const { cliente: c, jobsAtivos, projetosAtivos, postagens, resumo } = dados;
 
-  const [estacao, onboardingItens, usuarios, statuses, demandas, lotes] = await Promise.all([
+  const [estacao, onboardingItens, usuarios, statuses, demandas, lotes, consumo, fin] = await Promise.all([
     estacaoResumo(id),
     listarOnboarding(id),
     listarUsuariosAtivos(),
     listarStatus(),
     listarJobs({ clienteId: id, tipo: dtipo || undefined, statusId: dstatus || undefined, responsavelId: dresp || undefined }),
     listarLotesDoCliente(id),
+    consumoEscopo(id),
+    podeFinanceiro ? financeiroCliente(id) : Promise.resolve(null),
   ]);
 
   const st = statusInfo(c.status);
@@ -510,46 +514,180 @@ export default async function ClienteEstacaoPage({
     </>
   );
 
-  const abaContrato = podeFinanceiro ? (
+  // Alertas de vigência/reajuste dos contratos ativos.
+  const agoraMs = Date.now();
+  const diaMs = 24 * 3600 * 1000;
+  const alertasContrato: { tipo: "renovacao" | "reajuste"; texto: string }[] = [];
+  for (const ct of estacao.contratosLista) {
+    if (ct.status !== "ativo") continue;
+    if (ct.dataFim) {
+      const dias = Math.ceil((new Date(ct.dataFim).getTime() - agoraMs) / diaMs);
+      if (dias >= 0 && dias <= 60) alertasContrato.push({ tipo: "renovacao", texto: `Contrato${ct.descricao ? ` "${ct.descricao}"` : ""} encerra em ${dias} dia${dias === 1 ? "" : "s"} — iniciar processo de renovação.` });
+      else if (dias < 0) alertasContrato.push({ tipo: "renovacao", texto: `Contrato${ct.descricao ? ` "${ct.descricao}"` : ""} venceu há ${Math.abs(dias)} dia${Math.abs(dias) === 1 ? "" : "s"} e segue ativo — regularizar.` });
+    }
+    if (ct.reajusteEm) {
+      const dias = Math.ceil((new Date(ct.reajusteEm).getTime() - agoraMs) / diaMs);
+      if (dias >= 0 && dias <= 45) alertasContrato.push({ tipo: "reajuste", texto: `Reajuste${ct.reajusteObs ? ` (${ct.reajusteObs})` : ""} previsto em ${dias} dia${dias === 1 ? "" : "s"}.` });
+    }
+  }
+
+  const quadroConsumo = (
+    <Card>
+      <CardHeader><CardTitle className="text-base">Consumo do escopo — este mês</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        {consumo.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum item de escopo cadastrado. Adicione abaixo o que foi contratado por mês (posts, vídeos, horas de captação…).</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2 pr-2 font-medium">Entregável</th>
+                  <th className="py-2 pr-2 font-medium text-right">Contratado</th>
+                  <th className="py-2 pr-2 font-medium text-right">Utilizado</th>
+                  <th className="py-2 pr-2 font-medium text-right">Saldo</th>
+                  <th className="w-1/4 py-2 font-medium">Uso</th>
+                  {podeEditar && <th className="py-2" />}
+                </tr>
+              </thead>
+              <tbody>
+                {consumo.map((item) => {
+                  const pct = item.utilizado == null || item.contratado === 0 ? 0 : Math.min(100, Math.round((item.utilizado / item.contratado) * 100));
+                  const estourou = item.saldo != null && item.saldo < 0;
+                  return (
+                    <tr key={item.id} className="border-b border-border/60 last:border-0">
+                      <td className="py-2 pr-2">{item.rotulo}</td>
+                      <td className="py-2 pr-2 text-right tabular-nums">{item.contratado}{item.unidade === "horas" ? "h" : ""}</td>
+                      <td className="py-2 pr-2 text-right tabular-nums">{item.utilizado == null ? "—" : `${item.utilizado}${item.unidade === "horas" ? "h" : ""}`}</td>
+                      <td className={cn("py-2 pr-2 text-right font-medium tabular-nums", estourou && "text-destructive")}>
+                        {item.saldo == null ? "—" : `${item.saldo}${item.unidade === "horas" ? "h" : ""}`}
+                      </td>
+                      <td className="py-2">
+                        {item.utilizado != null && (
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                            <div className={cn("h-full rounded-full", estourou ? "bg-destructive" : pct >= 80 ? "bg-amber-500" : "bg-emerald-500")} style={{ width: `${pct}%` }} />
+                          </div>
+                        )}
+                      </td>
+                      {podeEditar && (
+                        <td className="py-2 pl-2 text-right">
+                          <form action={removerEscopoItem.bind(null, item.id)}>
+                            <button type="submit" className="text-xs text-muted-foreground hover:text-destructive" title="Remover item">remover</button>
+                          </form>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {podeEditar && (
+          <form action={salvarEscopoItem.bind(null, id)} className="flex flex-wrap items-end gap-2 border-t border-border pt-4">
+            <div className="space-y-1">
+              <label htmlFor="esc-rotulo" className="text-xs text-muted-foreground">Entregável</label>
+              <input id="esc-rotulo" name="rotulo" required placeholder="Ex.: Posts" className="h-9 w-40 rounded-md border border-input bg-background px-2 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="esc-bucket" className="text-xs text-muted-foreground">Conta automática</label>
+              <select id="esc-bucket" name="bucket" className={selFiltro}>
+                {BUCKETS_ESCOPO.map((b) => (<option key={b.key} value={b.key}>{b.label}</option>))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="esc-qtd" className="text-xs text-muted-foreground">Qtd./mês</label>
+              <input id="esc-qtd" name="quantidadeMensal" type="number" min="0" required className="h-9 w-24 rounded-md border border-input bg-background px-2 text-sm" />
+            </div>
+            <Button type="submit" variant="outline" size="sm">Adicionar</Button>
+          </form>
+        )}
+        <p className="text-xs text-muted-foreground">O &ldquo;utilizado&rdquo; conta sozinho: jobs concluídos no mês (por tipo), campanhas ativas, reuniões do mês e minutos gravados.</p>
+      </CardContent>
+    </Card>
+  );
+
+  const abaContrato = (
     <>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat icon={Repeat} rotulo={resumo.contratosAtivos ? `Contrato mensal (${resumo.contratosAtivos})` : "Contrato mensal"} valor={resumo.mrr > 0 ? formatBRL(resumo.mrr) : "—"} destaque={resumo.mrr > 0} />
-      </div>
-      <Card>
-        <CardHeader><CardTitle className="text-base">Contratos</CardTitle></CardHeader>
-        <CardContent>
-          {estacao.contratosLista.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum contrato cadastrado. <Link href="/contratos" className="underline">Abrir contratos</Link>.</p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {estacao.contratosLista.map((ct) => (
-                <li key={ct.id} className="flex items-center justify-between gap-2 py-2 text-sm">
-                  <span className="min-w-0">
-                    <span className="font-medium">{ct.descricao || "Contrato"}</span>
-                    <span className="block text-xs text-muted-foreground">
-                      {formatDate(ct.dataInicio)}{ct.dataFim ? ` → ${formatDate(ct.dataFim)}` : " → vigente"}{ct.diaVencimento ? ` · vence dia ${ct.diaVencimento}` : ""}
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-right">
-                    <span className="block font-semibold tabular-nums">{formatBRL(Number(ct.valorMensal))}</span>
-                    <span className={cn("text-xs", ct.status === "ativo" ? "text-emerald-600" : "text-muted-foreground")}>{ct.status}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-      {c.condicoesComerciais && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">Condições comerciais</CardTitle></CardHeader>
-          <CardContent><p className="whitespace-pre-wrap text-sm">{c.condicoesComerciais}</p></CardContent>
-        </Card>
+      {alertasContrato.length > 0 && (
+        <div className="space-y-2">
+          {alertasContrato.map((a, i) => (
+            <div key={i} className={cn("flex items-center gap-2 rounded-lg border px-4 py-3 text-sm", a.tipo === "renovacao" ? "border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200" : "border-border bg-muted/40")}>
+              <AlertTriangle className="size-4 shrink-0" aria-hidden="true" /> {a.texto}
+            </div>
+          ))}
+        </div>
       )}
-      <p className="text-xs text-muted-foreground">O consumo de escopo (contratado × utilizado × saldo) chega numa próxima atualização.</p>
+
+      {quadroConsumo}
+
+      {podeFinanceiro ? (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <Stat icon={Repeat} rotulo={resumo.contratosAtivos ? `Contrato mensal (${resumo.contratosAtivos})` : "Contrato mensal"} valor={resumo.mrr > 0 ? formatBRL(resumo.mrr) : "—"} destaque={resumo.mrr > 0} />
+            {fin && <Stat icon={CalendarDays} rotulo={`A receber (${fin.aReceber.qtd})`} valor={fin.aReceber.total > 0 ? formatBRL(fin.aReceber.total) : "—"} />}
+            {fin && <Stat icon={AlertTriangle} rotulo={`Vencido (${fin.vencido.qtd})`} valor={fin.vencido.total > 0 ? formatBRL(fin.vencido.total) : "—"} alerta={fin.vencido.total > 0} />}
+          </div>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Contratos</CardTitle></CardHeader>
+            <CardContent>
+              {estacao.contratosLista.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum contrato cadastrado. <Link href="/contratos" className="underline">Abrir contratos</Link>.</p>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {estacao.contratosLista.map((ct) => (
+                    <li key={ct.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                      <span className="min-w-0">
+                        <span className="font-medium">{ct.descricao || "Contrato"}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {formatDate(ct.dataInicio)}{ct.dataFim ? ` → ${formatDate(ct.dataFim)}` : " → vigente"}
+                          {ct.diaVencimento ? ` · vence dia ${ct.diaVencimento}` : ""}
+                          {ct.reajusteEm ? ` · reajuste ${formatDate(ct.reajusteEm)}${ct.reajusteObs ? ` (${ct.reajusteObs})` : ""}` : ""}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <span className="block font-semibold tabular-nums">{formatBRL(Number(ct.valorMensal))}</span>
+                        <span className={cn("text-xs", ct.status === "ativo" ? "text-emerald-600" : "text-muted-foreground")}>{ct.status}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {fin && fin.notas.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Últimas notas fiscais</CardTitle></CardHeader>
+              <CardContent>
+                <ul className="divide-y divide-border">
+                  {fin.notas.map((n) => (
+                    <li key={n.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                      <span className="min-w-0 truncate">NF {n.numero ?? "—"} · {formatDate(n.criadoEm)} · {n.status}</span>
+                      <span className="flex shrink-0 items-center gap-2">
+                        <span className="font-medium tabular-nums">{formatBRL(Number(n.valor))}</span>
+                        {n.urlPdf && <a href={n.urlPdf} target="_blank" rel="noopener noreferrer" className="text-xs underline">PDF</a>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {c.condicoesComerciais && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Condições comerciais</CardTitle></CardHeader>
+              <CardContent><p className="whitespace-pre-wrap text-sm">{c.condicoesComerciais}</p></CardContent>
+            </Card>
+          )}
+        </>
+      ) : (
+        <EmBreve texto="Os valores de contrato e a situação financeira são visíveis só para quem tem acesso ao módulo Financeiro. O consumo de escopo acima é visível para toda a equipe." />
+      )}
     </>
-  ) : (
-    <EmBreve texto="As informações de contrato e financeiro são visíveis só para quem tem acesso ao módulo Financeiro." />
   );
 
   const abas: AbaEstacao[] = [

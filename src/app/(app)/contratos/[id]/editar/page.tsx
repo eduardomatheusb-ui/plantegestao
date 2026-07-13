@@ -25,6 +25,7 @@ export default async function EditarContratoPage({ params }: { params: Promise<{
               clienteId: c.clienteId, descricao: c.descricao ?? "", valorMensal: String(c.valorMensal),
               diaVencimento: c.diaVencimento != null ? String(c.diaVencimento) : "",
               dataInicio: dia(c.dataInicio), dataFim: dia(c.dataFim), status: c.status,
+              reajusteEm: dia(c.reajusteEm), reajusteObs: c.reajusteObs ?? "",
             }}
             clientes={clientes}
             cancelHref={`/contratos/${id}`}

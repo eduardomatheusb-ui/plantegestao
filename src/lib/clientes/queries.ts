@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { BUCKET_TIPOS } from "@/lib/clientes/escopo";
 
 /** Clientes ativos com dados faltando (contato ou brand kit). */
 export async function clientesIncompletos() {
@@ -251,5 +252,79 @@ export async function estacaoResumo(clienteId: string) {
     aprovadasLista,
     reunioesLista,
     contratosLista,
+  };
+}
+
+/** Estação — consumo do escopo contratado no mês (contratado × utilizado × saldo). */
+export async function consumoEscopo(clienteId: string) {
+  const agora = new Date();
+  const iniMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+  const proxMes = new Date(agora.getFullYear(), agora.getMonth() + 1, 1);
+
+  const [itens, gruposTipo, campanhasAtivas, reunioesMes, minutosAgg] = await Promise.all([
+    db.escopoItem.findMany({ where: { clienteId }, orderBy: [{ ordem: "asc" }, { criadoEm: "asc" }] }),
+    db.job.groupBy({
+      by: ["tipo"],
+      where: { clienteId, arquivado: false, concluidoEm: { gte: iniMes, lt: proxMes } },
+      _count: { _all: true },
+    }),
+    db.campanha.count({ where: { clienteId, status: "ativa" } }),
+    db.reuniao.count({ where: { clienteId, data: { gte: iniMes, lt: proxMes } } }),
+    db.job.aggregate({
+      _sum: { minutosGravados: true },
+      where: { clienteId, arquivado: false, concluidoEm: { gte: iniMes, lt: proxMes } },
+    }),
+  ]);
+
+  const somaTipos = (chaves: string[]) =>
+    gruposTipo.filter((g) => chaves.includes(g.tipo)).reduce((s, g) => s + g._count._all, 0);
+
+  // Utilizado no mês por bucket; "outro" não tem conta automática (null → mostra "—").
+  const utilizadoPorBucket: Record<string, number | null> = {
+    posts: somaTipos(BUCKET_TIPOS.posts),
+    videos: somaTipos(BUCKET_TIPOS.videos),
+    materiais: somaTipos(BUCKET_TIPOS.materiais),
+    campanhas: campanhasAtivas,
+    reunioes: reunioesMes,
+    horas_captacao: Math.round(((minutosAgg._sum.minutosGravados ?? 0) / 60) * 10) / 10,
+    outro: null,
+  };
+
+  return itens.map((i) => {
+    const utilizado = utilizadoPorBucket[i.bucket] ?? null;
+    return {
+      id: i.id,
+      rotulo: i.rotulo,
+      bucket: i.bucket,
+      unidade: i.unidade,
+      contratado: i.quantidadeMensal,
+      utilizado,
+      saldo: utilizado == null ? null : i.quantidadeMensal - utilizado,
+    };
+  });
+}
+
+/** Estação — situação financeira do cliente (a receber, vencido, últimas notas). */
+export async function financeiroCliente(clienteId: string) {
+  const agora = new Date();
+  const [aReceber, vencido, notas] = await Promise.all([
+    db.lancamento.aggregate({
+      _sum: { valor: true }, _count: true,
+      where: { clienteId, tipo: "RECEITA", status: "EM_ABERTO", dataVencimento: { gte: agora } },
+    }),
+    db.lancamento.aggregate({
+      _sum: { valor: true }, _count: true,
+      where: { clienteId, tipo: "RECEITA", status: "EM_ABERTO", dataVencimento: { lt: agora } },
+    }),
+    db.notaFiscal.findMany({
+      where: { clienteId },
+      orderBy: { criadoEm: "desc" }, take: 5,
+      select: { id: true, numero: true, status: true, valor: true, criadoEm: true, urlPdf: true },
+    }),
+  ]);
+  return {
+    aReceber: { total: Number(aReceber._sum.valor ?? 0), qtd: aReceber._count },
+    vencido: { total: Number(vencido._sum.valor ?? 0), qtd: vencido._count },
+    notas,
   };
 }
