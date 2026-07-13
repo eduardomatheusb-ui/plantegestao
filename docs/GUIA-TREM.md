@@ -361,6 +361,16 @@ Depois, na tela da proposta, você refina cada item usando o **catálogo de prod
 é calculado sozinho. **Exportar PDF** gera o documento timbrado (empresa, número e versão,
 assinaturas).
 
+**Fechar negócio (proposta aprovada):** no topo da proposta há o card **"Fechar negócio"** com
+três ações que amarram tudo:
+- **Projeto** — gera (ou abre) o projeto ligado à proposta.
+- **Contrato** — **"Registrar contrato"** abre um contrato **pontual** já pré-preenchido com o
+  cliente, o serviço e o valor da proposta (ver seção 16).
+- **Financeiro** — **"Lançar no financeiro"** cria a **receita** (à vista ou **parcelada** — você
+  escolhe nº de parcelas, vencimento e competência na hora), **ligada ao cliente, ao projeto e à
+  proposta**. Depois de lançado, mostra **"✓ Lançado"** com o valor. Aparece em Financeiro e na
+  visão 360 do cliente. *(Exige acesso ao Financeiro.)*
+
 ---
 
 ## 11. Mídia (PI)
@@ -527,11 +537,14 @@ Aqui o financeiro deixa de ser só o mês corrente e vira leitura de médio praz
 receita recorrente a agência tem contratada, quem está em atraso e quanto cada cliente deixa
 de margem. É a visão de sustentação do negócio.
 
-- **Contratos** (menu Financeiro): cadastre o **fee mensal recorrente** de cada cliente
-  (valor, início e fim, dia de cobrança, status) e, opcionalmente, o **próximo reajuste**
-  (data + regra, ex.: "IPCA" ou "8%"). O topo mostra **MRR** (receita recorrente mensal) e
-  **ARR** (anual). Contratos perto do fim (**≤ 60 dias**) ou do reajuste (**≤ 45 dias**)
-  geram **alerta** na Estação do Cliente, visível a quem tem acesso ao Financeiro.
+- **Contratos** (menu Financeiro): há **dois tipos**:
+  - **Recorrente** — o **fee mensal** do cliente (valor mensal, início/fim, dia de cobrança,
+    reajuste). É a base do **MRR/ARR**.
+  - **Pontual** — um **serviço fechado** (mídia, identidade visual, site, produção…) com
+    **valor total** e **validade própria**. Serve para ter controle do que foi contratado;
+    **não entra no MRR**. Pode ser criado direto ou pelo **"Fechar negócio"** da proposta.
+  O topo mostra **MRR** (só recorrentes) e **ARR**. Contratos recorrentes perto do fim
+  (**≤ 60 dias**) ou do reajuste (**≤ 45 dias**) geram **alerta** na Estação do Cliente.
 - **Saúde financeira** (menu Gestão): **MRR, ARR, inadimplência**, **margem por cliente** no
   ano (receita menos despesa atribuída) e a lista de **a receber vencido** com dias de atraso.
 
