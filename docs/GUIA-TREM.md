@@ -7,6 +7,11 @@ Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas p
 > pós-venda. Quanto mais completo o cadastro (cliente, contato, brand kit), mais o sistema
 > trabalha por você (portal, relatórios, alertas, e-mails).
 
+> **Bíblia Operacional:** o manual de operação, estratégia e governança da Plante fica no
+> menu lateral em **Bíblia Operacional** (rota `/manual`) — sempre à mão, para consulta a
+> qualquer momento. Este guia aqui é o "como usar o sistema"; a Bíblia é o "como a agência
+> trabalha".
+
 ---
 
 ## Sumário

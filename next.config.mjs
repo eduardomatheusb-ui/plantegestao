@@ -6,9 +6,10 @@ const nextConfig = {
     // Upload de anexos vai até 4 MB; o padrão de server action é 1 MB.
     serverActions: { bodySizeLimit: "5mb" },
   },
-  // Garante que o guia (lido em runtime pela página /ajuda) vá no bundle.
+  // Garante que arquivos lidos em runtime vão no bundle serverless do Netlify.
   outputFileTracingIncludes: {
     "/ajuda": ["./docs/GUIA-TREM.md"],
+    "/manual/asset/[...path]": ["./content/biblia/**/*"],
   },
 };
 

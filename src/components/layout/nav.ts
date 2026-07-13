@@ -31,6 +31,7 @@ import {
   CalendarOff,
   LayoutTemplate,
   ShieldCheck,
+  BookMarked,
   type LucideIcon,
 } from "lucide-react";
 import { nivelAtende, type ModuloKey, type Capacidades } from "@/lib/permissoes";
@@ -62,6 +63,7 @@ export const NAV: NavGroup[] = [
       { label: "Minha página", href: "/dashboard", icon: LayoutDashboard, disponivel: true },
       { label: "Chat", href: "/chat", icon: MessageCircle, disponivel: true },
       { label: "Agenda", href: "/agenda", icon: CalendarClock, disponivel: true },
+      { label: "Bíblia Operacional", href: "/manual", icon: BookMarked, disponivel: true },
     ],
   },
   {

@@ -1,0 +1,76 @@
+/* ============================================================
+   PLANTE — Color tokens
+   Source: Manual de marca (rebranding 2025) + current asset set.
+   Core palette is intentionally tiny: electric yellow, ink black,
+   paper white. Everything is built from these three.
+   ============================================================ */
+:root {
+  /* ---- Brand core ---- */
+  --plante-yellow:        #F5F331; /* electric chartreuse-yellow — THE brand color */
+  --plante-yellow-glow:   #E8F02A; /* slightly limey variant seen on photo overlays */
+  --plante-yellow-deep:   #D9D71F; /* pressed / hover-darker */
+  --plante-yellow-soft:   #FBFAB0; /* tint for large light fields (rare) */
+
+  --plante-ink:           #0D0B0C; /* near-black — primary dark (manual #0D0B0C) */
+  --plante-ink-800:       #1A181A; /* raised surface on dark */
+  --plante-ink-700:       #262327; /* hairline / divider on dark */
+
+  --plante-white:         #FFFFFF;
+  --plante-paper:         #F2F2F2; /* off-white background (manual #F2F2F2) */
+  --plante-paper-200:     #E7E7E5; /* slightly deeper paper / divider on light */
+
+  /* ---- Warm neutral ramp (secondary headline words, captions) ---- */
+  --plante-stone-600:     #5C5953; /* body on paper, muted */
+  --plante-stone-500:     #8B8579; /* warm taupe — secondary headline words */
+  --plante-stone-400:     #A8A296; /* disabled / faint */
+
+  /* ---- Functional (kept neutral; brand avoids extra hues) ---- */
+  --plante-positive:      #5B8C3E; /* sparing — uses the leaf green only when needed */
+  --plante-danger:        #C0392B;
+
+  /* ============================================================
+     SEMANTIC ALIASES — light (paper) context = default
+     ============================================================ */
+  --bg:              var(--plante-paper);
+  --bg-elevated:     var(--plante-white);
+  --surface:         var(--plante-white);
+  --surface-sunk:    var(--plante-paper-200);
+
+  --text:            var(--plante-ink);
+  --text-muted:      var(--plante-stone-600);
+  --text-faint:      var(--plante-stone-500);
+  --text-on-yellow:  var(--plante-ink);
+  --text-on-dark:    var(--plante-white);
+
+  --accent:          var(--plante-yellow);
+  --accent-press:    var(--plante-yellow-deep);
+  --on-accent:       var(--plante-ink);
+
+  --border:          var(--plante-paper-200);
+  --border-strong:   var(--plante-ink);
+  --rule:            var(--plante-ink); /* the signature brushy rule is always ink/yellow */
+
+  --focus-ring:      var(--plante-ink);
+}
+
+/* ============================================================
+   DARK CONTEXT — opt-in by setting data-theme="dark" or .on-dark
+   The brand lives just as much on black as on paper.
+   ============================================================ */
+[data-theme="dark"],
+.on-dark {
+  --bg:            var(--plante-ink);
+  --bg-elevated:   var(--plante-ink-800);
+  --surface:       var(--plante-ink-800);
+  --surface-sunk:  #000000;
+
+  --text:          var(--plante-white);
+  --text-muted:    #B7B3AD;
+  --text-faint:    var(--plante-stone-500);
+
+  --border:        var(--plante-ink-700);
+  --border-strong: var(--plante-white);
+  --rule:          var(--plante-white);
+
+  --focus-ring:    var(--plante-yellow);
+}
