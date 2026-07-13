@@ -28,6 +28,8 @@ export default async function JobsPage({ searchParams }: PageProps) {
   const statusId = typeof sp.statusId === "string" ? sp.statusId : undefined;
   const responsavelId = typeof sp.responsavelId === "string" ? sp.responsavelId : undefined;
   const clienteId = typeof sp.clienteId === "string" ? sp.clienteId : undefined;
+  const conclusao =
+    sp.conclusao === "com-prazo" || sp.conclusao === "no-prazo" || sp.conclusao === "fora-prazo" ? sp.conclusao : undefined;
 
   const [statuses, usuarios, clientes, jobs] = await Promise.all([
     listarStatus(),
@@ -38,8 +40,9 @@ export default async function JobsPage({ searchParams }: PageProps) {
       statusId,
       responsavelId: view === "minha-pauta" ? undefined : responsavelId,
       minhasDoUsuario: view === "minha-pauta" ? user.id : undefined,
-      // Pautas de pendências (minha pauta / por responsável) escondem concluídos.
-      semConcluidos: view === "minha-pauta" || view === "kanban-resp",
+      // Pautas de pendências escondem concluídos — mas o filtro de conclusão pede justamente os concluídos.
+      semConcluidos: !conclusao && (view === "minha-pauta" || view === "kanban-resp"),
+      conclusao,
       clienteId,
     }),
   ]);

@@ -8,6 +8,9 @@ export type ListarJobsOpts = {
   projetoId?: string;
   minhasDoUsuario?: string; // id do usuário (Minha Pauta)
   semConcluidos?: boolean; // esconde jobs em status concluído (pautas de pendências)
+  // Drill-down de conclusão (ex.: clicar no donut do dashboard):
+  // com-prazo = concluídos que tinham prazo; no-prazo = dentro do prazo; fora-prazo = atrasados.
+  conclusao?: "com-prazo" | "no-prazo" | "fora-prazo";
   incluirArquivados?: boolean;
 };
 
@@ -30,6 +33,15 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   if (opts.clienteId) where.clienteId = opts.clienteId;
   if (opts.projetoId) where.projetoId = opts.projetoId;
 
+  // Filtro de conclusão (drill-down do dashboard): sempre concluídos que tinham prazo.
+  // no-prazo/fora-prazo são refinados em memória (concluidoEm vs prazo) — mesma lógica do
+  // donut —, porque o Prisma não compara duas colunas no where e concluidoForaPrazo é
+  // nulo em jobs antigos.
+  if (opts.conclusao) {
+    where.concluidoEm = { not: null };
+    where.prazo = { not: null };
+  }
+
   const and: Record<string, unknown>[] = [];
   // "Minha pauta": jobs em que sou responsável OU estou entre os envolvidos.
   if (opts.minhasDoUsuario) {
@@ -43,7 +55,7 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   }
   if (and.length) where.AND = and;
 
-  return db.job.findMany({
+  const rows = await db.job.findMany({
     where,
     orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { numero: "desc" }],
     include: {
@@ -56,6 +68,11 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
       _count: { select: { tarefas: true } },
     },
   });
+
+  // Refino em memória de no-prazo/fora-prazo (mesma regra do donut do dashboard).
+  if (opts.conclusao === "no-prazo") return rows.filter((j) => j.concluidoEm && j.prazo && j.concluidoEm <= j.prazo);
+  if (opts.conclusao === "fora-prazo") return rows.filter((j) => j.concluidoEm && j.prazo && j.concluidoEm > j.prazo);
+  return rows;
 }
 
 export async function obterJob(id: string) {

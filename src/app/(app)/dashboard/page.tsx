@@ -78,20 +78,41 @@ export default async function DashboardPage() {
                 </Link>
               ))}
             </div>
-            <p className={cn("mt-3 flex items-center gap-1.5 text-xs", cont.emAtraso > 0 ? "text-destructive" : "text-muted-foreground")}>
-              <AlertTriangle className="size-3.5" aria-hidden="true" />
-              {cont.emAtraso > 0 ? `Você tem ${cont.emAtraso} documento(s) em atraso` : "Nenhum documento em atraso"}
-            </p>
+            {cont.emAtraso > 0 ? (
+              <Link href="/jobs?view=minha-pauta" className="mt-3 flex items-center gap-1.5 text-xs text-destructive hover:underline">
+                <AlertTriangle className="size-3.5" aria-hidden="true" />
+                Você tem {cont.emAtraso} documento(s) em atraso
+              </Link>
+            ) : (
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <AlertTriangle className="size-3.5" aria-hidden="true" /> Nenhum documento em atraso
+              </p>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Jobs concluídos no prazo</CardTitle></CardHeader>
-          <CardContent className="flex items-center gap-4">
-            <Donut pct={noPrazo?.pct ?? 0} />
-            <p className="text-sm text-muted-foreground">
-              {noPrazo ? `${noPrazo.noPrazo} de ${noPrazo.total} jobs concluídos no prazo` : "Sem jobs concluídos ainda."}
-            </p>
+          <CardContent className="p-3 pt-0">
+            {noPrazo ? (
+              <Link
+                href="/jobs?view=lista&conclusao=com-prazo"
+                className="flex items-center gap-4 rounded-lg p-2 transition-colors hover:bg-muted"
+              >
+                <Donut pct={noPrazo.pct} />
+                <span className="text-sm text-muted-foreground">
+                  {noPrazo.noPrazo} de {noPrazo.total} jobs concluídos no prazo
+                  <span className="mt-1 flex items-center gap-1 text-xs font-medium text-foreground">
+                    Ver quais <ArrowRight className="size-3.5" aria-hidden="true" />
+                  </span>
+                </span>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-4 p-2">
+                <Donut pct={0} />
+                <span className="text-sm text-muted-foreground">Sem jobs concluídos ainda.</span>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -134,19 +155,21 @@ export default async function DashboardPage() {
                 {pauta.map((j) => {
                   const atrasado = j.prazo && j.prazo < agora;
                   return (
-                    <li key={j.id} className="flex items-center justify-between gap-3 py-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{j.numero} · {j.titulo}</p>
-                        <p className="truncate text-xs text-muted-foreground">{j.clienteNome}</p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {j.prazo && (
-                          <span className={cn("text-xs tabular-nums", atrasado ? "font-medium text-destructive" : "text-muted-foreground")}>
-                            {formatDate(j.prazo)}
-                          </span>
-                        )}
-                        <span className="inline-block size-2.5 rounded-full" style={{ background: j.statusCor ?? "var(--border)" }} title={j.statusNome} />
-                      </div>
+                    <li key={j.id}>
+                      <Link href={`/jobs/${j.id}`} className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-muted">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{j.numero} · {j.titulo}</p>
+                          <p className="truncate text-xs text-muted-foreground">{j.clienteNome}</p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          {j.prazo && (
+                            <span className={cn("text-xs tabular-nums", atrasado ? "font-medium text-destructive" : "text-muted-foreground")}>
+                              {formatDate(j.prazo)}
+                            </span>
+                          )}
+                          <span className="inline-block size-2.5 rounded-full" style={{ background: j.statusCor ?? "var(--border)" }} title={j.statusNome} />
+                        </div>
+                      </Link>
                     </li>
                   );
                 })}
@@ -211,15 +234,28 @@ export default async function DashboardPage() {
             {comentarios.length === 0 ? (
               <p className="text-sm text-muted-foreground">Sem comentários recentes.</p>
             ) : (
-              <ul className="space-y-3">
-                {comentarios.map((c) => (
-                  <li key={c.id} className="text-sm">
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">{c.autorNome}</span> · {c.contexto} · {formatDate(c.criadoEm)}
-                    </p>
-                    <p className="line-clamp-2 text-foreground/90">{c.texto}</p>
-                  </li>
-                ))}
+              <ul className="space-y-1">
+                {comentarios.map((c) => {
+                  const conteudo = (
+                    <>
+                      <span className="block text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">{c.autorNome}</span> · {c.contexto} · {formatDate(c.criadoEm)}
+                      </span>
+                      <span className="line-clamp-2 text-foreground/90">{c.texto}</span>
+                    </>
+                  );
+                  return (
+                    <li key={c.id} className="text-sm">
+                      {c.href ? (
+                        <Link href={c.href} className="-mx-2 block rounded-lg px-2 py-1.5 transition-colors hover:bg-muted">
+                          {conteudo}
+                        </Link>
+                      ) : (
+                        <div className="px-0 py-1.5">{conteudo}</div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </CardContent>

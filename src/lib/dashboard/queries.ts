@@ -87,13 +87,13 @@ type DocRecente = { tipo: string; numero: number; titulo: string; atualizadoEm: 
 /** Últimos documentos que sou responsável, em todos os módulos. */
 export async function ultimosDocumentos(userId: string): Promise<DocRecente[]> {
   const [jobs, propostas, midia, producao] = await Promise.all([
-    db.job.findMany({ where: { responsavelId: userId }, orderBy: { atualizadoEm: "desc" }, take: 5, select: { numero: true, titulo: true, atualizadoEm: true } }),
+    db.job.findMany({ where: { responsavelId: userId }, orderBy: { atualizadoEm: "desc" }, take: 5, select: { id: true, numero: true, titulo: true, atualizadoEm: true } }),
     db.proposta.findMany({ where: { responsavelId: userId }, orderBy: { atualizadoEm: "desc" }, take: 5, select: { id: true, numero: true, titulo: true, atualizadoEm: true } }),
     db.midiaPlano.findMany({ where: { responsavelId: userId }, orderBy: { atualizadoEm: "desc" }, take: 5, select: { id: true, numero: true, titulo: true, atualizadoEm: true } }),
     db.producaoOrdem.findMany({ where: { responsavelId: userId }, orderBy: { atualizadoEm: "desc" }, take: 5, select: { id: true, numero: true, titulo: true, atualizadoEm: true } }),
   ]);
   const docs: DocRecente[] = [
-    ...jobs.map((d) => ({ tipo: "Job", numero: d.numero, titulo: d.titulo, atualizadoEm: d.atualizadoEm, href: `/jobs` })),
+    ...jobs.map((d) => ({ tipo: "Job", numero: d.numero, titulo: d.titulo, atualizadoEm: d.atualizadoEm, href: `/jobs/${d.id}` })),
     ...propostas.map((d) => ({ tipo: "Proposta", numero: d.numero, titulo: d.titulo, atualizadoEm: d.atualizadoEm, href: `/propostas/${d.id}` })),
     ...midia.map((d) => ({ tipo: "Mídia", numero: d.numero, titulo: d.titulo, atualizadoEm: d.atualizadoEm, href: `/midia/${d.id}` })),
     ...producao.map((d) => ({ tipo: "Produção", numero: d.numero, titulo: d.titulo, atualizadoEm: d.atualizadoEm, href: `/producao/${d.id}` })),
@@ -104,6 +104,8 @@ export async function ultimosDocumentos(userId: string): Promise<DocRecente[]> {
 /** Comentários mais recentes do sistema. */
 export async function comentariosRecentes() {
   const TIPO_LABEL: Record<string, string> = { projeto: "Projeto", job: "Job", proposta: "Proposta", midia: "Mídia", producao: "Produção" };
+  // Rota de detalhe por tipo de entidade (para o comentário virar link).
+  const TIPO_ROTA: Record<string, string> = { projeto: "/projetos", job: "/jobs", proposta: "/propostas", midia: "/midia", producao: "/producao" };
   const cs = await db.comentario.findMany({
     orderBy: { criadoEm: "desc" },
     take: 5,
@@ -114,6 +116,7 @@ export async function comentariosRecentes() {
     autorNome: c.autor?.nome ?? "Alguém",
     texto: c.texto,
     contexto: TIPO_LABEL[c.entidadeTipo] ?? c.entidadeTipo,
+    href: TIPO_ROTA[c.entidadeTipo] ? `${TIPO_ROTA[c.entidadeTipo]}/${c.entidadeId}` : null,
     criadoEm: c.criadoEm,
   }));
 }

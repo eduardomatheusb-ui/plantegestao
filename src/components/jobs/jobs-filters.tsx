@@ -67,6 +67,14 @@ export function JobsFilters({
         <option value="">Todos os clientes</option>
         {clientes.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
       </select>
+
+      <label htmlFor="f-concl" className="sr-only">Conclusão</label>
+      <select id="f-concl" className={sel} defaultValue={searchParams.get("conclusao") ?? ""} onChange={(e) => setParam("conclusao", e.target.value)}>
+        <option value="">Conclusão: todas</option>
+        <option value="com-prazo">Concluídos (com prazo)</option>
+        <option value="no-prazo">Concluídos no prazo</option>
+        <option value="fora-prazo">Concluídos fora do prazo</option>
+      </select>
     </div>
   );
 }
