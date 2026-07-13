@@ -115,10 +115,10 @@ export async function obterClienteVisao(id: string) {
       select: { id: true, titulo: true, prazoPostagem: true, aprovacaoStatus: true, formatos: true },
     }),
     db.job.count({ where: { clienteId: id, arquivado: false, aprovacaoStatus: "enviado" } }),
-    db.contrato.findMany({ where: { clienteId: id, status: "ativo" }, select: { valorMensal: true } }),
+    db.contrato.findMany({ where: { clienteId: id, status: "ativo", tipo: "recorrente" }, select: { valorMensal: true } }),
   ]);
 
-  const mrr = contratos.reduce((s, ct) => s + Number(ct.valorMensal), 0);
+  const mrr = contratos.reduce((s, ct) => s + Number(ct.valorMensal ?? 0), 0);
 
   return {
     cliente: c,
@@ -208,7 +208,7 @@ export async function estacaoResumo(clienteId: string) {
     db.contrato.findMany({
       where: { clienteId },
       orderBy: [{ status: "asc" }, { dataInicio: "desc" }],
-      select: { id: true, descricao: true, valorMensal: true, diaVencimento: true, dataInicio: true, dataFim: true, reajusteEm: true, reajusteObs: true, status: true },
+      select: { id: true, tipo: true, servico: true, descricao: true, valorMensal: true, valorTotal: true, diaVencimento: true, dataInicio: true, dataFim: true, reajusteEm: true, reajusteObs: true, status: true },
     }),
   ]);
 

@@ -357,18 +357,24 @@ model Cliente {
   @@index([nome])
 }
 
-/// Contrato/fee recorrente de um cliente (base do MRR).
+/// Contrato de um cliente. Dois tipos:
+/// - recorrente: fee mensal (valorMensal) → base do MRR.
+/// - pontual: serviço fechado com validade (valorTotal), NÃO entra no MRR.
 model Contrato {
   id            String    @id @default(cuid())
   clienteId     String
+  tipo          String    @default("recorrente") // recorrente | pontual
+  servico       String? // p/ pontual: mídia, identidade visual, site, produção…
   descricao     String?
-  valorMensal   Decimal   @db.Decimal(14, 2)
+  valorMensal   Decimal?  @db.Decimal(14, 2) // recorrente
+  valorTotal    Decimal?  @db.Decimal(14, 2) // pontual (valor fechado do serviço)
   diaVencimento Int? // dia do mês de cobrança (1-31)
   dataInicio    DateTime
-  dataFim       DateTime? // null = vigente
+  dataFim       DateTime? // recorrente: null = vigente. pontual: fim da validade.
   reajusteEm    DateTime? // Estação: data prevista do próximo reajuste
   reajusteObs   String? // Estação: índice/percentual/combinado do reajuste
   status        String    @default("ativo") // ativo | suspenso | encerrado
+  propostaId    String? // proposta de origem (quando fechado a partir de uma)
   criadoPorId   String?
   criadoEm      DateTime  @default(now())
   atualizadoEm  DateTime  @updatedAt
@@ -1096,6 +1102,7 @@ model Lancamento {
 
   categoriaId    String?
   projetoId      String?
+  propostaId     String? // proposta de origem (receita lançada ao fechar o negócio)
   jobId          String?
   osId           String?
   centroCustoId  String?

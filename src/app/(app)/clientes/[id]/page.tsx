@@ -894,15 +894,20 @@ export default async function ClienteEstacaoPage({
                   {estacao.contratosLista.map((ct) => (
                     <li key={ct.id} className="flex items-center justify-between gap-2 py-2 text-sm">
                       <span className="min-w-0">
-                        <span className="font-medium">{ct.descricao || "Contrato"}</span>
+                        <span className="font-medium">{ct.tipo === "pontual" ? (ct.servico || ct.descricao || "Serviço") : (ct.descricao || "Fee mensal")}</span>
                         <span className="block text-xs text-muted-foreground">
+                          {ct.tipo === "pontual" ? "Pontual · " : "Recorrente · "}
                           {formatDate(ct.dataInicio)}{ct.dataFim ? ` → ${formatDate(ct.dataFim)}` : " → vigente"}
                           {ct.diaVencimento ? ` · vence dia ${ct.diaVencimento}` : ""}
                           {ct.reajusteEm ? ` · reajuste ${formatDate(ct.reajusteEm)}${ct.reajusteObs ? ` (${ct.reajusteObs})` : ""}` : ""}
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
-                        <span className="block font-semibold tabular-nums">{formatBRL(Number(ct.valorMensal))}</span>
+                        <span className="block font-semibold tabular-nums">
+                          {ct.tipo === "pontual"
+                            ? `${formatBRL(Number(ct.valorTotal ?? 0))} total`
+                            : `${formatBRL(Number(ct.valorMensal ?? 0))}/mês`}
+                        </span>
                         <span className={cn("text-xs", ct.status === "ativo" ? "text-emerald-600" : "text-muted-foreground")}>{ct.status}</span>
                       </span>
                     </li>

@@ -12,7 +12,7 @@ export async function alertasGestao() {
 
   const [contratosVencendo, clientesAtivos, jobsSemResp] = await Promise.all([
     db.contrato.findMany({
-      where: { status: "ativo", dataFim: { not: null, gte: agora, lte: limiteContrato } },
+      where: { status: "ativo", tipo: "recorrente", dataFim: { not: null, gte: agora, lte: limiteContrato } },
       orderBy: { dataFim: "asc" },
       select: { id: true, dataFim: true, valorMensal: true, cliente: { select: { id: true, nome: true, nomeFantasia: true } } },
     }),

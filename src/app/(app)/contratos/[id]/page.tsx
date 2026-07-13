@@ -39,7 +39,7 @@ export default async function ContratoDetalhePage({ params }: { params: Promise<
     <div className="space-y-6">
       <BrandHero
         titulo={c.cliente?.nomeFantasia || c.cliente?.nome || "Contrato"}
-        subtitulo={`${formatBRL(c.valorMensal)}/mês`}
+        subtitulo={c.tipo === "pontual" ? `${formatBRL(c.valorTotal ?? 0)}${c.servico ? ` · ${c.servico}` : ""}` : `${formatBRL(c.valorMensal ?? 0)}/mês`}
         inicial={iniciais(c.cliente?.nomeFantasia || c.cliente?.nome || "?")}
         statusLabel={rotuloContratoStatus(c.status)}
         statusCor={corContratoStatus(c.status)}
@@ -57,10 +57,20 @@ export default async function ContratoDetalhePage({ params }: { params: Promise<
       <Card>
         <CardContent className="grid grid-cols-2 gap-6 pt-6 sm:grid-cols-3">
           <Info rotulo="Cliente" valor={<Link href={`/cadastros/clientes/${c.cliente?.id}`} className="hover:underline">{c.cliente?.nome}</Link>} />
-          <Info rotulo="Valor mensal" valor={formatBRL(c.valorMensal)} />
-          <Info rotulo="Dia de cobrança" valor={c.diaVencimento ?? "—"} />
+          <Info rotulo="Tipo" valor={c.tipo === "pontual" ? "Pontual (serviço)" : "Recorrente (fee)"} />
+          {c.tipo === "pontual" ? (
+            <>
+              <Info rotulo="Serviço" valor={c.servico ?? "—"} />
+              <Info rotulo="Valor total" valor={formatBRL(c.valorTotal ?? 0)} />
+            </>
+          ) : (
+            <>
+              <Info rotulo="Valor mensal" valor={formatBRL(c.valorMensal ?? 0)} />
+              <Info rotulo="Dia de cobrança" valor={c.diaVencimento ?? "—"} />
+            </>
+          )}
           <Info rotulo="Início" valor={dataBR(c.dataInicio)} />
-          <Info rotulo="Fim" valor={c.dataFim ? dataBR(c.dataFim) : "Vigente"} />
+          <Info rotulo={c.tipo === "pontual" ? "Validade" : "Fim"} valor={c.dataFim ? dataBR(c.dataFim) : "Vigente"} />
           <Info rotulo="Status" valor={rotuloContratoStatus(c.status)} />
           {c.descricao && <div className="sm:col-span-3"><Info rotulo="Escopo" valor={<span className="whitespace-pre-wrap font-normal">{c.descricao}</span>} /></div>}
         </CardContent>

@@ -30,8 +30,17 @@ export async function salvarContrato(id: string | null, _prev: ContratoFormState
     const parsed = schema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Confira os campos." };
 
+    const tipo = formData.get("tipo")?.toString() === "pontual" ? "pontual" : "recorrente";
     const valorMensal = numBR(formData.get("valorMensal")?.toString());
-    if (valorMensal == null || valorMensal <= 0) return { error: "Informe o valor mensal (ex.: 3000)." };
+    const valorTotal = numBR(formData.get("valorTotal")?.toString());
+    const servico = formData.get("servico")?.toString().trim() || null;
+
+    if (tipo === "recorrente" && (valorMensal == null || valorMensal <= 0)) {
+      return { error: "Informe o valor mensal do fee (ex.: 3000)." };
+    }
+    if (tipo === "pontual" && (valorTotal == null || valorTotal <= 0)) {
+      return { error: "Informe o valor total do serviço (ex.: 8000)." };
+    }
 
     const dataInicio = dataOpt(formData.get("dataInicio")?.toString());
     if (!dataInicio) return { error: "Informe a data de início." };
@@ -46,12 +55,17 @@ export async function salvarContrato(id: string | null, _prev: ContratoFormState
 
     const data = {
       ...parsed.data,
-      valorMensal,
+      tipo,
+      servico: tipo === "pontual" ? servico : null,
+      // Recorrente usa valorMensal; pontual usa valorTotal. O outro fica nulo.
+      valorMensal: tipo === "recorrente" ? valorMensal : null,
+      valorTotal: tipo === "pontual" ? valorTotal : null,
       dataInicio,
       dataFim: dataOpt(formData.get("dataFim")?.toString()),
-      diaVencimento,
-      reajusteEm: dataOpt(formData.get("reajusteEm")?.toString()),
-      reajusteObs: formData.get("reajusteObs")?.toString().trim() || null,
+      diaVencimento: tipo === "recorrente" ? diaVencimento : null,
+      reajusteEm: tipo === "recorrente" ? dataOpt(formData.get("reajusteEm")?.toString()) : null,
+      reajusteObs: tipo === "recorrente" ? (formData.get("reajusteObs")?.toString().trim() || null) : null,
+      propostaId: formData.get("propostaId")?.toString().trim() || null,
     };
 
     if (id) {

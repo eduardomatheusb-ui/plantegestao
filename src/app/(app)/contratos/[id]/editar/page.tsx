@@ -22,7 +22,9 @@ export default async function EditarContratoPage({ params }: { params: Promise<{
           <ContratoForm
             id={id}
             inicial={{
-              clienteId: c.clienteId, descricao: c.descricao ?? "", valorMensal: String(c.valorMensal),
+              clienteId: c.clienteId, tipo: c.tipo, servico: c.servico ?? "", descricao: c.descricao ?? "",
+              valorMensal: c.valorMensal != null ? String(c.valorMensal) : "",
+              valorTotal: c.valorTotal != null ? String(c.valorTotal) : "",
               diaVencimento: c.diaVencimento != null ? String(c.diaVencimento) : "",
               dataInicio: dia(c.dataInicio), dataFim: dia(c.dataFim), status: c.status,
               reajusteEm: dia(c.reajusteEm), reajusteObs: c.reajusteObs ?? "",

@@ -40,10 +40,15 @@ export default async function ContratosPage() {
                       {rotuloContratoStatus(c.status)}
                     </span>
                   </div>
-                  {c.descricao && <p className="truncate text-xs text-muted-foreground">{c.descricao}</p>}
+                  <p className="truncate text-xs text-muted-foreground">
+                    {c.tipo === "pontual" ? (c.servico || "Serviço pontual") : "Fee recorrente"}
+                    {c.descricao ? ` · ${c.descricao}` : ""}
+                  </p>
                   <p className="flex items-center gap-1.5 text-sm font-semibold tabular-nums">
                     <Repeat className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                    {formatBRL(c.valorMensal)}<span className="text-xs font-normal text-muted-foreground">/mês</span>
+                    {c.tipo === "pontual"
+                      ? <>{formatBRL(c.valorTotal ?? 0)}<span className="text-xs font-normal text-muted-foreground"> total</span></>
+                      : <>{formatBRL(c.valorMensal ?? 0)}<span className="text-xs font-normal text-muted-foreground">/mês</span></>}
                   </p>
                 </CardContent>
               </Card>
