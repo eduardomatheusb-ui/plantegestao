@@ -601,15 +601,30 @@ O cliente é o **centro** do sistema, e esta é a tela que reúne tudo o que se 
 em um lugar só. Quanto mais completo esse cadastro, mais o TREM entrega em portal, relatórios
 e atendimento. Aqui está a visão 360 e o que cada parte dela destrava.
 
-**Cadastros, Clientes, Abrir** abre a **visão 360**:
+**Cadastros, Clientes, Abrir** abre a **Estação do Cliente** — o painel de comando da conta,
+organizado em **abas** (Visão Geral, Dossiê, Planejamento, Demandas, Aprovações, Reuniões,
+Arquivos, Resultados, Contrato & Financeiro, Histórico):
 
-- **Resumo:** jobs ativos, próximas postagens, aguardando aprovação e **contrato/MRR**.
-- **Trabalho em andamento:** jobs (com status), postagens, projetos.
-- **Brand kit e escopo:** tom de voz, redes sociais, links úteis, escopo (o que está incluso
-  no contrato).
-- **Dados:** documento, contato, e-mail, telefone, endereço.
-- **Portal do cliente:** gerar ou copiar o link do portal (ver seção 23).
-- **Onboarding / implantação:** o checklist de entrada do cliente.
+- **Cabeçalho:** status da conta, desde quando é cliente, próximo encontro, última interação
+  e os **responsáveis pelo atendimento e pela estratégia** (defina nos selects da faixa de
+  contexto — quem tem edição de cadastros pode trocar).
+- **Botões rápidos:** Nova demanda · Registrar reunião · Enviar para aprovação · Adicionar
+  arquivo · Gerar relatório · Editar cadastro.
+- **Visão Geral (cockpit):** demandas abertas, atrasadas, aguardando cliente, ajustes
+  solicitados, entregas da semana, conteúdos programados, campanhas ativas e próxima
+  entrega — além de jobs em andamento, próximas postagens, projetos, **equipe envolvida**
+  (derivada dos jobs ativos), portal e onboarding.
+- **Demandas / Aprovações:** os jobs da conta e o que aguarda o cliente ou está em ajustes,
+  com atalho para nova rodada de aprovação.
+- **Reuniões:** últimas atas + próximo compromisso + registrar reunião já com o cliente
+  pré-selecionado.
+- **Arquivos:** anexos da conta (links e arquivos).
+- **Resultados:** painel do Looker (quando cadastrado) e o relatório do mês.
+- **Contrato & Financeiro** (só p/ quem vê o financeiro): contratos, MRR e condições
+  comerciais.
+- **Histórico:** o log da conta.
+- As abas têm **link direto** (ex.: `?aba=aprovacoes`) — dá para favoritar ou compartilhar
+  com a equipe.
 - **Relatório do mês:** botão que gera o **PDF de prestação de contas** (postagens,
   entregas, tráfego do mês) para enviar ao cliente.
 

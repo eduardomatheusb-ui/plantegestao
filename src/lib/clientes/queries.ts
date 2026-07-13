@@ -87,6 +87,9 @@ export async function obterClienteVisao(id: string) {
       email: true, telefone: true, contatoNome: true, endereco: true, cep: true,
       condicoesComerciais: true, escopo: true, tomDeVoz: true, redesSociais: true,
       linksUteis: true, logoUrl: true, portalToken: true, portalSlug: true,
+      lookerEmbedUrl: true, criadoEm: true,
+      atendimento: { select: { id: true, nome: true } },
+      estrategia: { select: { id: true, nome: true } },
     },
   });
   if (!c) return null;
@@ -127,5 +130,107 @@ export async function obterClienteVisao(id: string) {
       mrr,
       contratosAtivos: contratos.length,
     },
+  };
+}
+
+/** Estação do Cliente — cockpit da Visão Geral + metadados do cabeçalho. */
+export async function estacaoResumo(clienteId: string) {
+  const agora = new Date();
+  const fimSemana = new Date(agora.getTime() + 7 * 24 * 3600 * 1000);
+
+  const [
+    abertas, atrasadas, aguardandoCliente, ajustes, entregasSemana, programados,
+    campanhasAtivas, proximaEntrega, proximoCompromisso, ultimaReuniao,
+    ultimoEventoAprovacao, primeiroContrato, equipeJobs,
+  ] = await Promise.all([
+    db.job.count({ where: { clienteId, arquivado: false, status: { isConcluido: false } } }),
+    db.job.count({ where: { clienteId, arquivado: false, status: { isConcluido: false }, prazo: { lt: agora } } }),
+    db.job.count({ where: { clienteId, arquivado: false, aprovacaoStatus: "enviado" } }),
+    db.job.count({ where: { clienteId, arquivado: false, aprovacaoStatus: "ajustes" } }),
+    db.job.count({ where: { clienteId, arquivado: false, status: { isConcluido: false }, prazo: { gte: agora, lt: fimSemana } } }),
+    db.job.count({ where: { clienteId, arquivado: false, prazoPostagem: { gte: agora } } }),
+    db.campanha.count({ where: { clienteId, status: "ativa" } }),
+    db.job.findFirst({
+      where: { clienteId, arquivado: false, status: { isConcluido: false }, prazo: { gte: agora } },
+      orderBy: { prazo: "asc" },
+      select: { id: true, titulo: true, prazo: true },
+    }),
+    db.compromisso.findFirst({
+      where: { clienteId, inicio: { gte: agora } },
+      orderBy: { inicio: "asc" },
+      select: { id: true, titulo: true, tipo: true, inicio: true },
+    }),
+    db.reuniao.findFirst({
+      where: { clienteId },
+      orderBy: { data: "desc" },
+      select: { id: true, titulo: true, data: true },
+    }),
+    db.aprovacaoEvento.findFirst({
+      where: { job: { clienteId } },
+      orderBy: { criadoEm: "desc" },
+      select: { acao: true, autor: true, criadoEm: true, job: { select: { titulo: true } } },
+    }),
+    db.contrato.findFirst({ where: { clienteId }, orderBy: { dataInicio: "asc" }, select: { dataInicio: true } }),
+    // Equipe envolvida = responsáveis + envolvidos dos jobs ativos (derivada, não armazenada).
+    db.job.findMany({
+      where: { clienteId, arquivado: false, status: { isConcluido: false } },
+      select: {
+        responsavel: { select: { id: true, nome: true } },
+        envolvidos: { select: { usuario: { select: { id: true, nome: true } } } },
+      },
+    }),
+  ]);
+
+  // Listas curtas para as abas (Onda 1 — visões simples; abas completas chegam nas ondas seguintes).
+  const [aguardandoLista, ajustesLista, reunioesLista, contratosLista] = await Promise.all([
+    db.job.findMany({
+      where: { clienteId, arquivado: false, aprovacaoStatus: "enviado" },
+      orderBy: { aprovacaoEm: "desc" }, take: 8,
+      select: { id: true, titulo: true, aprovacaoToken: true, aprovacaoEm: true },
+    }),
+    db.job.findMany({
+      where: { clienteId, arquivado: false, aprovacaoStatus: "ajustes" },
+      orderBy: { atualizadoEm: "desc" }, take: 8,
+      select: { id: true, numero: true, titulo: true },
+    }),
+    db.reuniao.findMany({
+      where: { clienteId },
+      orderBy: { data: "desc" }, take: 6,
+      select: { id: true, titulo: true, data: true },
+    }),
+    db.contrato.findMany({
+      where: { clienteId },
+      orderBy: [{ status: "asc" }, { dataInicio: "desc" }],
+      select: { id: true, descricao: true, valorMensal: true, diaVencimento: true, dataInicio: true, dataFim: true, status: true },
+    }),
+  ]);
+
+  const equipeMap = new Map<string, string>();
+  for (const j of equipeJobs) {
+    if (j.responsavel) equipeMap.set(j.responsavel.id, j.responsavel.nome);
+    for (const e of j.envolvidos) equipeMap.set(e.usuario.id, e.usuario.nome);
+  }
+  const equipe = [...equipeMap.entries()].map(([id, nome]) => ({ id, nome })).slice(0, 10);
+
+  // Última interação registrada: reunião ou resposta/envio de aprovação, o que for mais recente.
+  const candidatos: { data: Date; descricao: string }[] = [];
+  if (ultimaReuniao) candidatos.push({ data: ultimaReuniao.data, descricao: `Reunião — ${ultimaReuniao.titulo}` });
+  if (ultimoEventoAprovacao) {
+    const rot = { enviado: "enviado para aprovação", reenviado: "reenviado para aprovação", aprovado: "aprovado pelo cliente", ajustes: "ajustes solicitados" }[ultimoEventoAprovacao.acao] ?? ultimoEventoAprovacao.acao;
+    candidatos.push({ data: ultimoEventoAprovacao.criadoEm, descricao: `${ultimoEventoAprovacao.job.titulo} — ${rot}` });
+  }
+  const ultimaInteracao = candidatos.sort((a, b) => b.data.getTime() - a.data.getTime())[0] ?? null;
+
+  return {
+    cockpit: { abertas, atrasadas, aguardandoCliente, ajustes, entregasSemana, programados, campanhasAtivas },
+    proximaEntrega,
+    proximoCompromisso,
+    ultimaInteracao,
+    contaDesde: primeiroContrato?.dataInicio ?? null,
+    equipe,
+    aguardandoLista,
+    ajustesLista,
+    reunioesLista,
+    contratosLista,
   };
 }

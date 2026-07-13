@@ -114,6 +114,8 @@ model Usuario {
   compromissosCriados   Compromisso[]             @relation("CompromissoCriadoPor")
   compromissosParticipa CompromissoParticipante[]
   aprovacaoLotesCriados AprovacaoLote[]           @relation("AprovacaoLoteCriadoPor")
+  clientesAtendimento   Cliente[]                 @relation("ClienteAtendimento")
+  clientesEstrategia    Cliente[]                 @relation("ClienteEstrategia")
 
   @@index([papel])
 }
@@ -319,6 +321,9 @@ model Cliente {
   logoUrl             String? // URL do logo do cliente (portal e visão)
   portalSlug          String?  @unique // link amigável do portal (nome + sufixo)
   lookerEmbedUrl      String? // URL de incorporação do Looker Studio (aba Performance do portal)
+  // Estação do Cliente — responsáveis da conta.
+  atendimentoId       String? // responsável pelo atendimento
+  estrategiaId        String? // responsável pela estratégia
   arquivado           Boolean  @default(false)
   criadoEm            DateTime @default(now())
   atualizadoEm        DateTime @updatedAt
@@ -339,6 +344,8 @@ model Cliente {
   reembolsoDespesas ReembolsoDespesa[]
   compromissos      Compromisso[]
   aprovacaoLotes    AprovacaoLote[]
+  atendimento       Usuario?           @relation("ClienteAtendimento", fields: [atendimentoId], references: [id], onDelete: SetNull)
+  estrategia        Usuario?           @relation("ClienteEstrategia", fields: [estrategiaId], references: [id], onDelete: SetNull)
   portalToken       String?            @unique // link público do portal do cliente
 
   @@index([arquivado])
