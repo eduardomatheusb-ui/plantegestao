@@ -7,10 +7,11 @@ Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas p
 > pós-venda. Quanto mais completo o cadastro (cliente, contato, brand kit), mais o sistema
 > trabalha por você (portal, relatórios, alertas, e-mails).
 
-> **Bíblia Operacional:** o manual de operação, estratégia e governança da Plante fica no
-> menu lateral em **Bíblia Operacional** (rota `/manual`) — sempre à mão, para consulta a
-> qualquer momento. Este guia aqui é o "como usar o sistema"; a Bíblia é o "como a agência
-> trabalha".
+> **Bíblia Operacional:** o manual de operação, estratégia e governança da Plante fica em
+> **Bíblia Operacional** — no menu lateral e também no **menu do seu avatar** (rota
+> `/manual`). Na leitura, linhas discretas marcam onde cada página A4 termina; o botão
+> **"Ler em páginas (PDF)"** abre as folhas A4 de verdade para ler ou salvar. Este guia aqui
+> é o "como usar o sistema"; a Bíblia é o "como a agência trabalha".
 
 ---
 
@@ -81,6 +82,13 @@ cedo antes de sair espalhando a atenção pelo sistema.
 
 É a sua tela inicial. Mostra um resumo do seu dia: sua pauta, indicadores rápidos e
 aniversariantes. Use como ponto de partida da manhã.
+
+**Quase tudo é clicável** — os números levam aos itens por trás deles:
+- O donut **"Jobs concluídos no prazo"** abre a lista dos jobs que formam a métrica ("Ver
+  quais"), onde dá para filtrar por **no prazo / fora do prazo**.
+- Os itens da **Minha pauta** abrem o job; os **comentários recentes** abrem a peça
+  comentada; os **últimos documentos** abrem o documento.
+- **"Você tem X documento(s) em atraso"** leva à sua pauta.
 
 ---
 
@@ -167,15 +175,19 @@ um job hoje é o que aparece nos painéis depois.
 
 **Como usar:** **Jobs, Novo job**. Campos importantes:
 - **Tipo de job:** post estático, vídeo, material gráfico e afins. Para social, abre campos de
-  **legenda, formatos/canais e prazo de postagem**.
+  **legenda, formatos/canais e prazo de postagem**. Para tipos de vídeo (vídeo, reels,
+  motion), abre também **"Minutos gravados"** — preencha ao concluir: alimenta a casa do
+  cliente, o consumo de escopo (horas de captação) e os relatórios.
 - **Prioridade:** baixa, normal, alta ou urgente (alta e urgente ganham selo no card).
 - **Cliente** e **campanha/projeto** (opcional).
 - **Responsável** e **envolvidos**.
 - **Recorrência:** semanal, quinzenal ou mensal. O sistema **gera cópias** do job sozinho.
 - **Depende de outro job:** o job fica "bloqueado" até o outro concluir (aparece 🔒 no card).
 - **Publicação (só postagens):** quando a peça for ao ar, marque **"Publicada"** no job (se
-  não marcar, o sistema assume a publicação ao concluir). Se você **mudar a data de postagem**,
-  conta como **remarcação**. Isso alimenta a **aderência ao calendário** no Painel Estratégico.
+  não marcar, o sistema assume a publicação ao concluir) e **cole a URL do post publicado**
+  no campo que aparece — vira o botão **"Ver post"** no job, no portal e no calendário. Se
+  você **mudar a data de postagem**, conta como **remarcação**. Isso alimenta a **aderência
+  ao calendário** no Painel Estratégico.
 - **Concluir:** no cabeçalho do job, o botão **Concluir** leva a peça direto ao status
   **"Concluído"** num clique — carimba a conclusão, marca a postagem como publicada e
   **libera** os jobs que dependiam dele. Depois de concluído, o botão vira **Reabrir**. (Dá
@@ -214,6 +226,10 @@ quiser antes de salvar.
 status dá para **arrastar** o card entre colunas (ou usar o seletor "mover status"). Quando há
 muitos jobs, **cada coluna rola por dentro** e o quadro cabe na tela — a **rolagem lateral**
 (esquerda/direita) fica sempre à mão, sem ter que descer a página inteira.
+
+**Filtros da lista:** busca, status, responsável, cliente e **Conclusão** (concluídos com
+prazo / **no prazo** / **fora do prazo**) — o mesmo recorte do donut da Minha página, para
+auditar as entregas.
 
 > **Minha pauta** e **Por responsável** mostram os jobs em que você é **responsável _ou_
 > envolvido** — então, ao te marcarem como envolvida num reel/edição, ele **aparece na sua
@@ -511,8 +527,10 @@ receita recorrente a agência tem contratada, quem está em atraso e quanto cada
 de margem. É a visão de sustentação do negócio.
 
 - **Contratos** (menu Financeiro): cadastre o **fee mensal recorrente** de cada cliente
-  (valor, início e fim, dia de cobrança, status). O topo mostra **MRR** (receita recorrente
-  mensal) e **ARR** (anual).
+  (valor, início e fim, dia de cobrança, status) e, opcionalmente, o **próximo reajuste**
+  (data + regra, ex.: "IPCA" ou "8%"). O topo mostra **MRR** (receita recorrente mensal) e
+  **ARR** (anual). Contratos perto do fim (**≤ 60 dias**) ou do reajuste (**≤ 45 dias**)
+  geram **alerta** na Estação do Cliente, visível a quem tem acesso ao Financeiro.
 - **Saúde financeira** (menu Gestão): **MRR, ARR, inadimplência**, **margem por cliente** no
   ano (receita menos despesa atribuída) e a lista de **a receber vencido** com dias de atraso.
 
@@ -609,15 +627,28 @@ Arquivos, Resultados, Contrato & Financeiro, Histórico):
   e os **responsáveis pelo atendimento e pela estratégia** (defina nos selects da faixa de
   contexto — quem tem edição de cadastros pode trocar).
 - **Botões rápidos:** Nova demanda · Registrar reunião · Enviar para aprovação · Adicionar
-  arquivo · Gerar relatório · Editar cadastro.
+  arquivo · **Relatório da conta** · Editar cadastro.
 - **Visão Geral (cockpit):** demandas abertas, atrasadas, aguardando cliente, ajustes
   solicitados, entregas da semana, conteúdos programados, campanhas ativas e próxima
   entrega — além de jobs em andamento, próximas postagens, projetos, **equipe envolvida**
   (derivada dos jobs ativos), portal e onboarding.
-- **Saúde da conta:** verde (nos trilhos), amarelo (exige atenção) ou vermelho (risco
-  elevado) — **sempre com o motivo** ("3 entregas atrasadas, aprovação média de 8 dias…").
-  Calculada por entregas no prazo, atraso atual, tempo de aprovação, retrabalho, pagamentos
-  vencidos, participação do cliente e fim de contrato próximo.
+- **Saúde da conta:** verde (**Conta nos trilhos**), amarelo (**Exige atenção**) ou vermelho
+  (**Risco elevado**) — **sempre com o motivo** ("3 entregas atrasadas, aprovação média de 8
+  dias…"). É um placar de pontos de risco, calculado na hora (resolveu, a cor melhora):
+
+  | Eixo | Regra | Pontos |
+  |---|---|---|
+  | Entregas no prazo (90 dias) | abaixo de 80% / abaixo de 60% | +1 / +2 |
+  | Demandas atrasadas agora | mais de 2 / mais de 5 | +1 / +2 |
+  | Tempo médio de aprovação (90d) | acima de 6 dias / acima de 10 dias | +1 / +2 |
+  | Retrabalho (rodadas por peça, 90d) | acima de 2 rodadas | +1 |
+  | Pagamentos vencidos | qualquer um (conta só a quantidade) | +2 |
+  | Participação do cliente (última interação) | há mais de 21 / mais de 45 dias | +1 / +2 |
+  | Contrato encerrando | em até 45 dias | +1 |
+
+  **0–1 ponto = verde · 2–3 = amarelo · 4+ = vermelho.** O motivo contratual ("contrato
+  encerra em X dias") só aparece para quem vê o Financeiro; os demais leem "há um ponto de
+  atenção contratual".
 - **Dossiê:** a memória estratégica da conta — objetivos, público, concorrentes,
   posicionamento, restrições e o campo-regra **"o que precisamos saber antes de produzir"**
   (aparece em destaque também na aba Demandas). Edite em "Editar dossiê".
@@ -641,8 +672,14 @@ Arquivos, Resultados, Contrato & Financeiro, Histórico):
 - **Histórico:** a linha do tempo do relacionamento + o log de alterações do cadastro.
 - As abas têm **link direto** (ex.: `?aba=aprovacoes`) — dá para favoritar ou compartilhar
   com a equipe.
-- **Relatório do mês:** botão que gera o **PDF de prestação de contas** (postagens,
-  entregas, tráfego do mês) para enviar ao cliente.
+
+**Dois relatórios, dois públicos:**
+- **Relatório da conta** (botão no cabeçalho): PDF com a **visão macro interna** — saúde com
+  motivos, panorama, consumo do escopo, indicadores de 90 dias, campanhas, contrato &
+  financeiro (para quem tem acesso), planejamento vigente, "antes de produzir" e os últimos
+  acontecimentos. Para liderança e passagem de conta.
+- **Relatório do mês** (aba Resultados): PDF de **prestação de contas** (postagens, entregas,
+  tráfego do mês) — este é o que vai **para o cliente**. A aba guarda o histórico dos meses.
 
 **Informações financeiras protegidas:** o card de **contrato/MRR** e o campo **"Condições
 comerciais"** (na visão 360 e no cadastro) só aparecem para quem tem acesso ao **Financeiro**.
