@@ -135,26 +135,25 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
     <>
         {/* O que fizemos juntos — contadores de produção do mês (zerado não aparece) */}
         {contadores.length > 0 && (
-          <section className="rounded-2xl border border-border bg-card p-5">
-            <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
+          <section className="overflow-hidden rounded-2xl border-2 border-[#f7ff19]/70 bg-[#f7ff19]/10 p-5 sm:p-6">
+            <h2 className="flex flex-wrap items-center gap-x-2 text-xs font-bold uppercase tracking-[0.14em] text-ink-900 dark:text-brand-yellow">
               <Sparkles className="size-4 text-brand-yellow" aria-hidden="true" /> O que fizemos juntos
-              <span className="font-sans text-xs font-normal text-muted-foreground">· {producao.mesLabel}</span>
+              <span className="font-sans text-[11px] font-medium normal-case tracking-normal text-muted-foreground">· {producao.mesLabel}</span>
             </h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="mt-5 flex flex-wrap gap-x-9 gap-y-5">
               {contadores.map((c) => (
-                <div key={c.label} className="rounded-xl border border-border bg-muted/30 p-3 text-center">
-                  <p className="font-display text-2xl font-bold tabular-nums">{c.valor}</p>
-                  <p className="text-xs text-muted-foreground">{c.label}</p>
+                <div key={c.label}>
+                  <p className="font-display text-4xl font-extrabold leading-none tabular-nums text-ink-900 dark:text-foreground">{c.valor}</p>
+                  <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{c.label}</p>
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">Só aparece o que teve movimento no mês.</p>
           </section>
         )}
 
         {/* Aprovações pendentes — ação do cliente, em destaque */}
         {aprovacoes.length > 0 && (
-          <section className="rounded-2xl border-2 border-brand-yellow bg-brand-yellow/10 p-5">
+          <section className="rounded-2xl border-2 border-brand-yellow bg-[#f7ff19]/10 p-5">
             <h2 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-ink-900 dark:text-brand-yellow">
               <CheckSquare className="size-4" aria-hidden="true" /> Aguardando sua aprovação ({aprovacoes.length})
             </h2>
@@ -173,14 +172,12 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
           </section>
         )}
 
-        {/* Próximas postagens */}
-        <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
-            <CalendarDays className="size-4 text-muted-foreground" aria-hidden="true" /> Próximas postagens
-          </h2>
-          {postagens.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma postagem agendada no momento.</p>
-          ) : (
+        {/* Próximas postagens (só quando há) */}
+        {postagens.length > 0 && (
+          <section className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
+              <CalendarDays className="size-4 text-muted-foreground" aria-hidden="true" /> Próximas postagens
+            </h2>
             <ul className="space-y-2.5">
               {postagens.map((p) => {
                 const formatos = rotulosFormatos(p.formatos);
@@ -202,17 +199,15 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
                 );
               })}
             </ul>
-          )}
-        </section>
+          </section>
+        )}
 
-        {/* Em andamento */}
-        <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
-            <ListChecks className="size-4 text-muted-foreground" aria-hidden="true" /> Em andamento
-          </h2>
-          {jobs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nada em produção no momento.</p>
-          ) : (
+        {/* Em andamento (só quando há) */}
+        {jobs.length > 0 && (
+          <section className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
+              <ListChecks className="size-4 text-muted-foreground" aria-hidden="true" /> Em andamento
+            </h2>
             <ul className="space-y-2.5">
               {jobs.map((j) => (
                 <li key={j.id} className="flex items-center justify-between gap-2 border-b border-border/60 pb-2.5 last:border-0 last:pb-0">
@@ -226,8 +221,8 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
                 </li>
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        )}
 
         {/* Linha do tempo — tudo que já foi entregue, por mês */}
         {gruposTimeline.length > 0 && (
@@ -235,14 +230,15 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
             <h2 className="mb-4 flex items-center gap-2 font-display text-base font-semibold">
               <History className="size-4 text-muted-foreground" aria-hidden="true" /> Linha do tempo
             </h2>
-            <div className="space-y-5">
+            <div className="space-y-6">
               {gruposTimeline.map((g) => (
                 <div key={g.mes}>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.mes}</p>
-                  <ul className="space-y-2.5">
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{g.mes}</p>
+                  {/* Trilho vertical alinhado ao centro dos tiles (left-5 = centro do tile size-10). */}
+                  <ul className="relative space-y-1 before:absolute before:bottom-5 before:left-5 before:top-5 before:w-px before:bg-border">
                     {g.itens.map((it) => (
-                      <li key={it.id} className="flex items-center gap-3">
-                        <span className="grid size-10 shrink-0 place-items-center rounded-xl text-white" style={{ background: corTipoJob(it.tipo) }}>
+                      <li key={it.id} className="group relative flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/50">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-xl text-white shadow-sm ring-4 ring-card" style={{ background: corTipoJob(it.tipo) }}>
                           <IconeTipo tipo={it.tipo} className="size-4" />
                         </span>
                         <span className="min-w-0 flex-1">
