@@ -517,3 +517,19 @@ export async function arquivosCliente(clienteId: string) {
   ]);
   return { acessos, propostas };
 }
+
+/** Estação — planejamento do mês vigente + anteriores. */
+export async function planejamentoCliente(clienteId: string) {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = agora.getMonth() + 1;
+  const [vigente, anteriores] = await Promise.all([
+    db.planejamentoPeriodo.findUnique({ where: { clienteId_ano_mes: { clienteId, ano, mes } } }),
+    db.planejamentoPeriodo.findMany({
+      where: { clienteId, NOT: { ano, mes } },
+      orderBy: [{ ano: "desc" }, { mes: "desc" }], take: 6,
+      select: { id: true, ano: true, mes: true, objetivoPrincipal: true, status: true },
+    }),
+  ]);
+  return { vigente, anteriores, ano, mes };
+}

@@ -9,7 +9,7 @@ import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente, timelineRelacionamento, resultadosCliente, type EventoRelacionamento } from "@/lib/clientes/queries";
 import { salvarEscopoItem, removerEscopoItem, salvarClienteAcesso, removerClienteAcesso } from "@/lib/clientes/actions";
-import { arquivosCliente } from "@/lib/clientes/queries";
+import { arquivosCliente, planejamentoCliente } from "@/lib/clientes/queries";
 import { saudeConta } from "@/lib/clientes/saude-conta";
 import { BUCKETS_ESCOPO } from "@/lib/clientes/escopo";
 import { listarOnboarding } from "@/lib/onboarding/queries";
@@ -132,7 +132,9 @@ export default async function ClienteEstacaoPage({
     consumoEscopo(id),
     podeFinanceiro ? financeiroCliente(id) : Promise.resolve(null),
   ]);
-  const [relacionamento, resultados, saude, arquivos] = await Promise.all([timelineRelacionamento(id), resultadosCliente(id), saudeConta(id), arquivosCliente(id)]);
+  const [relacionamento, resultados, saude, arquivos, planejamento] = await Promise.all([
+    timelineRelacionamento(id), resultadosCliente(id), saudeConta(id), arquivosCliente(id), planejamentoCliente(id),
+  ]);
   const COR_SAUDE = { verde: "#10b981", amarelo: "#f59e0b", vermelho: "#ef4444" } as const;
 
   const st = statusInfo(c.status);
@@ -942,7 +944,59 @@ export default async function ClienteEstacaoPage({
   const abas: AbaEstacao[] = [
     { valor: "visao-geral", rotulo: "Visão Geral", conteudo: abaVisaoGeral },
     { valor: "dossie", rotulo: "Dossiê", conteudo: abaDossie },
-    { valor: "planejamento", rotulo: "Planejamento", conteudo: <EmBreve texto="O planejamento da conta (objetivo do período, pilares de conteúdo, campanhas do mês, verba) chega numa próxima atualização da Estação." /> },
+    { valor: "planejamento", rotulo: "Planejamento", conteudo: (
+      <>
+        <div className="flex justify-end">
+          <Button asChild size="sm"><Link href={`/clientes/${id}/planejamento`}><Pencil className="size-4" /> {planejamento.vigente ? "Editar planejamento" : "Criar planejamento do mês"}</Link></Button>
+        </div>
+        {planejamento.vigente ? (
+          <Card className="border-brand-yellow/50">
+            <CardHeader>
+              <CardTitle className="text-base">
+                Planejamento vigente <span className="ml-1 font-sans text-xs font-normal text-muted-foreground">· {String(planejamento.mes).padStart(2, "0")}/{planejamento.ano}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+              <Campo rotulo="Objetivo principal" valor={planejamento.vigente.objetivoPrincipal} />
+              <Campo rotulo="Pilares de conteúdo" valor={planejamento.vigente.pilares} />
+              <Campo rotulo="Produtos prioritários" valor={planejamento.vigente.produtosPrioritarios} />
+              <Campo rotulo="Datas importantes" valor={planejamento.vigente.datasImportantes} />
+              <Campo rotulo="Ações on-line" valor={planejamento.vigente.acoesOnline} />
+              <Campo rotulo="Ações off-line" valor={planejamento.vigente.acoesOffline} />
+              <Campo rotulo="Produção audiovisual" valor={planejamento.vigente.producaoAudiovisual} />
+              <Campo rotulo="Indicadores acompanhados" valor={planejamento.vigente.indicadores} />
+              {podeFinanceiro && planejamento.vigente.verbaMidia != null && (
+                <Campo rotulo="Verba de mídia" valor={formatBRL(Number(planejamento.vigente.verbaMidia))} />
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <EmBreve texto={`Sem planejamento para ${String(planejamento.mes).padStart(2, "0")}/${planejamento.ano}. Crie o plano do mês — objetivo, pilares, ações e verba — para guiar a produção.`} />
+        )}
+        {ck.campanhasAtivas > 0 && (
+          <p className="text-sm text-muted-foreground">
+            {ck.campanhasAtivas} campanha{ck.campanhasAtivas === 1 ? "" : "s"} ativa{ck.campanhasAtivas === 1 ? "" : "s"} — veja os números na aba <strong>Resultados</strong>.
+          </p>
+        )}
+        {planejamento.anteriores.length > 0 && (
+          <Card>
+            <CardHeader><CardTitle className="text-base">Planejamentos anteriores</CardTitle></CardHeader>
+            <CardContent>
+              <ul className="divide-y divide-border">
+                {planejamento.anteriores.map((p) => (
+                  <li key={p.id} className="py-2 text-sm">
+                    <Link href={`/clientes/${id}/planejamento?ano=${p.ano}&mes=${p.mes}`} className="flex items-center justify-between gap-2 hover:underline">
+                      <span className="min-w-0 truncate">{String(p.mes).padStart(2, "0")}/{p.ano}{p.objetivoPrincipal ? ` — ${p.objetivoPrincipal}` : ""}</span>
+                      <span className="shrink-0 text-xs text-muted-foreground">{p.status}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+      </>
+    ) },
     { valor: "demandas", rotulo: "Demandas", badge: ck.abertas, conteudo: abaDemandas },
     { valor: "aprovacoes", rotulo: "Aprovações", badge: ck.aguardandoCliente + ck.ajustes, conteudo: abaAprovacoes },
     { valor: "reunioes", rotulo: "Reuniões", conteudo: abaReunioes },

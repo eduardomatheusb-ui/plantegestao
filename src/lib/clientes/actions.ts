@@ -111,3 +111,37 @@ export async function removerClienteAcesso(id: string): Promise<void> {
   await registrarLog({ entidadeTipo: "cliente", entidadeId: item.clienteId, usuarioId: acesso.id, acao: "removeu registro de acesso", de: item.plataforma });
   revalidatePath(`/clientes/${item.clienteId}`);
 }
+
+/** Estação: salva (upsert) o planejamento de um mês do cliente. */
+export async function salvarPlanejamento(clienteId: string, formData: FormData): Promise<void> {
+  const acesso = await assertModulo("cadastros", "EDITAR");
+  const ano = parseInt(formData.get("ano")?.toString() ?? "", 10);
+  const mes = parseInt(formData.get("mes")?.toString() ?? "", 10);
+  if (!Number.isFinite(ano) || !Number.isFinite(mes) || mes < 1 || mes > 12) return;
+
+  const txt = (k: string) => formData.get(k)?.toString().trim() || null;
+  const verbaBruta = formData.get("verbaMidia")?.toString().trim().replace(/\./g, "").replace(",", ".");
+  const verbaNum = verbaBruta ? Number(verbaBruta) : NaN;
+
+  const data = {
+    objetivoPrincipal: txt("objetivoPrincipal"),
+    pilares: txt("pilares"),
+    produtosPrioritarios: txt("produtosPrioritarios"),
+    datasImportantes: txt("datasImportantes"),
+    acoesOnline: txt("acoesOnline"),
+    acoesOffline: txt("acoesOffline"),
+    producaoAudiovisual: txt("producaoAudiovisual"),
+    indicadores: txt("indicadores"),
+    verbaMidia: Number.isFinite(verbaNum) && verbaNum >= 0 ? verbaNum : null,
+  };
+
+  await db.planejamentoPeriodo.upsert({
+    where: { clienteId_ano_mes: { clienteId, ano, mes } },
+    create: { clienteId, ano, mes, ...data, criadoPorId: acesso.id },
+    update: data,
+  });
+
+  await registrarLog({ entidadeTipo: "cliente", entidadeId: clienteId, usuarioId: acesso.id, acao: "atualizou o planejamento", para: `${String(mes).padStart(2, "0")}/${ano}` });
+  revalidatePath(`/clientes/${clienteId}`);
+  redirect(`/clientes/${clienteId}?aba=planejamento`);
+}
