@@ -115,7 +115,15 @@
     .sheet {
       width: var(--doc-page-w);
       margin: 0 auto;
-      background: #fff;
+      background-color: #fff;
+      /* Guia de página: linha discreta a cada altura útil de A4 (marca onde ~termina cada folha na leitura). */
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(var(--doc-page-h) - 2 * var(--doc-page-margin) - 1px),
+        rgba(13, 11, 12, 0.13) calc(var(--doc-page-h) - 2 * var(--doc-page-margin) - 1px),
+        rgba(13, 11, 12, 0.13) calc(var(--doc-page-h) - 2 * var(--doc-page-margin))
+      );
       box-shadow: 0 2px 14px rgba(20, 20, 19, 0.12);
       border-radius: 2px;
       box-sizing: border-box;
@@ -132,6 +140,7 @@
       .sheet {
         width: auto; margin: 0; box-shadow: none; border-radius: 0;
         padding: 0 var(--doc-page-margin);
+        background-image: none; /* sem guia na impressão — lá a paginação é real */
       }
       /* The thead/tfoot spacers repeat on every page, so they carry the
        * vertical page margin (which the sheet's own padding cannot, since
