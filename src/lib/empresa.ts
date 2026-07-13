@@ -27,6 +27,8 @@ export const EMPRESA_PADRAO = {
   urlEmissaoNfse: "https://www.nfse.gov.br/EmissorNacional/",
   // Meta de receita do mês (indicadores). Vazio = sem meta definida.
   metaFaturamentoMensal: "",
+  // Link do Google Drive da Bíblia Operacional (embutido na página /manual).
+  manualDriveUrl: "",
 };
 
 export type EmpresaDados = typeof EMPRESA_PADRAO;
@@ -54,5 +56,6 @@ export async function getEmpresa(): Promise<EmpresaDados> {
     regimeTributario: e.regimeTributario ?? "",
     urlEmissaoNfse: e.urlEmissaoNfse || EMPRESA_PADRAO.urlEmissaoNfse,
     metaFaturamentoMensal: e.metaFaturamentoMensal != null ? String(e.metaFaturamentoMensal) : "",
+    manualDriveUrl: e.manualDriveUrl ?? "",
   };
 }

@@ -345,13 +345,13 @@ model Cliente {
   reembolsoDespesas ReembolsoDespesa[]
   compromissos      Compromisso[]
   aprovacaoLotes    AprovacaoLote[]
-  atendimento       Usuario?           @relation("ClienteAtendimento", fields: [atendimentoId], references: [id], onDelete: SetNull)
-  estrategia        Usuario?           @relation("ClienteEstrategia", fields: [estrategiaId], references: [id], onDelete: SetNull)
+  atendimento       Usuario?              @relation("ClienteAtendimento", fields: [atendimentoId], references: [id], onDelete: SetNull)
+  estrategia        Usuario?              @relation("ClienteEstrategia", fields: [estrategiaId], references: [id], onDelete: SetNull)
   dossie            ClienteDossie?
   escopoItens       EscopoItem[]
   acessos           ClienteAcesso[]
   planejamentos     PlanejamentoPeriodo[]
-  portalToken       String?            @unique // link público do portal do cliente
+  portalToken       String?               @unique // link público do portal do cliente
 
   @@index([arquivado])
   @@index([nome])
@@ -871,20 +871,20 @@ model Job {
   criadoEm              DateTime  @default(now())
   atualizadoEm          DateTime  @updatedAt
 
-  cliente           Cliente            @relation(fields: [clienteId], references: [id])
-  projeto           Projeto?           @relation(fields: [projetoId], references: [id], onDelete: SetNull)
-  responsavel       Usuario?           @relation("JobResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
-  criadoPor         Usuario?           @relation("JobCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
-  status            JobStatus          @relation(fields: [statusId], references: [id])
-  tarefas           JobTarefa[]
-  apontamentos      Apontamento[]
-  lancamentos       Lancamento[]
-  envolvidos        JobEnvolvido[]
-  bloqueadoPor      Job?                @relation("JobDependencia", fields: [bloqueadoPorId], references: [id], onDelete: SetNull)
-  bloqueia          Job[]               @relation("JobDependencia")
-  aprovacaoEventos  AprovacaoEvento[]
+  cliente            Cliente             @relation(fields: [clienteId], references: [id])
+  projeto            Projeto?            @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  responsavel        Usuario?            @relation("JobResponsavel", fields: [responsavelId], references: [id], onDelete: SetNull)
+  criadoPor          Usuario?            @relation("JobCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  status             JobStatus           @relation(fields: [statusId], references: [id])
+  tarefas            JobTarefa[]
+  apontamentos       Apontamento[]
+  lancamentos        Lancamento[]
+  envolvidos         JobEnvolvido[]
+  bloqueadoPor       Job?                @relation("JobDependencia", fields: [bloqueadoPorId], references: [id], onDelete: SetNull)
+  bloqueia           Job[]               @relation("JobDependencia")
+  aprovacaoEventos   AprovacaoEvento[]
   aprovacaoLoteItens AprovacaoLoteItem[]
-  reembolsoDespesas ReembolsoDespesa[]
+  reembolsoDespesas  ReembolsoDespesa[]
 
   @@index([clienteId])
   @@index([projetoId])
@@ -1292,6 +1292,8 @@ model Empresa {
   metaFaturamentoMensal Decimal? @db.Decimal(14, 2) // meta de receita do mês (indicadores)
 
   agendaIcsToken String? // token secreto do feed .ics da agenda (assinatura no Google/Apple)
+
+  manualDriveUrl String? // link do Google Drive da Bíblia Operacional (embutido no /manual)
 }
 
 // ─────────────────────────── Agenda compartilhada ───────────────────────────

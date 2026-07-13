@@ -9,9 +9,10 @@ Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas p
 
 > **Bíblia Operacional:** o manual de operação, estratégia e governança da Plante fica em
 > **Bíblia Operacional** — no menu lateral e também no **menu do seu avatar** (rota
-> `/manual`). Na leitura, linhas discretas marcam onde cada página A4 termina; o botão
-> **"Ler em páginas (PDF)"** abre as folhas A4 de verdade para ler ou salvar. Este guia aqui
-> é o "como usar o sistema"; a Bíblia é o "como a agência trabalha".
+> `/manual`). Ela é exibida **dentro do TREM** em páginas A4 fiéis (documento do Google Drive
+> embutido), com rolagem, zoom e busca; o botão **"Abrir no Drive"** abre em tela cheia. O
+> link do documento é configurável em **Administração → Empresa** (campo "Link do Google Drive
+> da Bíblia"). Este guia aqui é o "como usar o sistema"; a Bíblia é o "como a agência trabalha".
 
 ---
 

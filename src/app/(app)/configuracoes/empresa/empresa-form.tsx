@@ -122,6 +122,18 @@ export function EmpresaForm({ inicial }: { inicial: EmpresaDados }) {
         </div>
       </fieldset>
 
+      <fieldset className="space-y-4 rounded-lg border border-border p-4">
+        <legend className="px-1 text-sm font-semibold">Bíblia Operacional</legend>
+        <div className="space-y-2">
+          <Label htmlFor="manualDriveUrl">Link do Google Drive da Bíblia</Label>
+          <Input id="manualDriveUrl" name="manualDriveUrl" type="url" defaultValue={inicial.manualDriveUrl} placeholder="https://drive.google.com/file/d/.../view" />
+          <p className="text-xs text-muted-foreground">
+            Cole o link do arquivo no Drive — ele é exibido dentro do TREM em <strong>Bíblia Operacional</strong>. O arquivo precisa
+            estar compartilhado como <strong>“Qualquer pessoa com o link → Leitor”</strong> para abrir sem pedir login do Google.
+          </p>
+        </div>
+      </fieldset>
+
       <Salvar />
     </form>
   );

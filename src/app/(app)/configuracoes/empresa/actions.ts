@@ -63,6 +63,7 @@ export async function salvarEmpresa(_prev: EmpresaState, formData: FormData): Pr
       incentivadorCultural: formData.get("incentivadorCultural") === "on",
       urlEmissaoNfse: opt(formData.get("urlEmissaoNfse")),
       metaFaturamentoMensal,
+      manualDriveUrl: opt(formData.get("manualDriveUrl")),
     };
 
     const d = { ...parsed.data, ...fiscal };
