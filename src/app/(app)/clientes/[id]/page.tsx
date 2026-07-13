@@ -136,6 +136,9 @@ export default async function ClienteEstacaoPage({
     timelineRelacionamento(id), resultadosCliente(id), saudeConta(id), arquivosCliente(id), planejamentoCliente(id),
   ]);
   const COR_SAUDE = { verde: "#10b981", amarelo: "#f59e0b", vermelho: "#ef4444" } as const;
+  // Motivos contratuais (renovação) são visíveis só para quem vê o Financeiro.
+  const saudeMotivos = podeFinanceiro ? saude.motivos : saude.motivos.filter((m) => !m.startsWith("contrato encerra"));
+  if (!podeFinanceiro && saudeMotivos.length < saude.motivos.length) saudeMotivos.push("há um ponto de atenção contratual (detalhes no Financeiro)");
 
   const st = statusInfo(c.status);
   const ck = estacao.cockpit;
@@ -157,8 +160,8 @@ export default async function ClienteEstacaoPage({
             <p className="text-sm font-semibold">
               Saúde da conta: <span style={{ color: COR_SAUDE[saude.cor] }}>{saude.rotulo}</span>
             </p>
-            {saude.motivos.length > 0 ? (
-              <p className="mt-1 text-sm text-muted-foreground">{saude.motivos.join(" · ")}.</p>
+            {saudeMotivos.length > 0 ? (
+              <p className="mt-1 text-sm text-muted-foreground">{saudeMotivos.join(" · ")}.</p>
             ) : (
               <p className="mt-1 text-sm text-muted-foreground">Nenhum ponto de atenção nos últimos 90 dias.</p>
             )}
@@ -861,20 +864,20 @@ export default async function ClienteEstacaoPage({
 
   const abaContrato = (
     <>
-      {alertasContrato.length > 0 && (
-        <div className="space-y-2">
-          {alertasContrato.map((a, i) => (
-            <div key={i} className={cn("flex items-center gap-2 rounded-lg border px-4 py-3 text-sm", a.tipo === "renovacao" ? "border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200" : "border-border bg-muted/40")}>
-              <AlertTriangle className="size-4 shrink-0" aria-hidden="true" /> {a.texto}
-            </div>
-          ))}
-        </div>
-      )}
-
       {quadroConsumo}
 
       {podeFinanceiro ? (
         <>
+          {/* Alertas contratuais (renovação/reajuste) — só para quem vê o financeiro */}
+          {alertasContrato.length > 0 && (
+            <div className="space-y-2">
+              {alertasContrato.map((a, i) => (
+                <div key={i} className={cn("flex items-center gap-2 rounded-lg border px-4 py-3 text-sm", a.tipo === "renovacao" ? "border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200" : "border-border bg-muted/40")}>
+                  <AlertTriangle className="size-4 shrink-0" aria-hidden="true" /> {a.texto}
+                </div>
+              ))}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Stat icon={Repeat} rotulo={resumo.contratosAtivos ? `Contrato mensal (${resumo.contratosAtivos})` : "Contrato mensal"} valor={resumo.mrr > 0 ? formatBRL(resumo.mrr) : "—"} destaque={resumo.mrr > 0} />
             {fin && <Stat icon={CalendarDays} rotulo={`A receber (${fin.aReceber.qtd})`} valor={fin.aReceber.total > 0 ? formatBRL(fin.aReceber.total) : "—"} />}
@@ -1046,7 +1049,7 @@ export default async function ClienteEstacaoPage({
       {/* Faixa de contexto da conta */}
       <Card>
         <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-6 text-sm">
-          <span className="inline-flex items-center gap-1.5 font-medium" title={saude.motivos.join(" · ") || "Sem pontos de atenção"}>
+          <span className="inline-flex items-center gap-1.5 font-medium" title={saudeMotivos.join(" · ") || "Sem pontos de atenção"}>
             <span className="inline-flex size-2.5 rounded-full" style={{ background: COR_SAUDE[saude.cor] }} aria-hidden="true" />
             {saude.rotulo}
           </span>
