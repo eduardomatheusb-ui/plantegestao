@@ -32,8 +32,9 @@ export function ResponsaveisConta({
     });
   }
 
+  // Sem max-width: o select se ajusta ao nome mais longo (o flex-wrap da faixa cuida do overflow).
   const sel =
-    "h-8 max-w-44 rounded-md border border-input bg-background px-2 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60";
+    "h-8 rounded-md border border-input bg-background py-0 pl-2 pr-7 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60";
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
