@@ -9,6 +9,7 @@ import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente, timelineRelacionamento, resultadosCliente, type EventoRelacionamento } from "@/lib/clientes/queries";
 import { salvarEscopoItem, removerEscopoItem } from "@/lib/clientes/actions";
+import { saudeConta } from "@/lib/clientes/saude-conta";
 import { BUCKETS_ESCOPO } from "@/lib/clientes/escopo";
 import { listarOnboarding } from "@/lib/onboarding/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
@@ -130,7 +131,8 @@ export default async function ClienteEstacaoPage({
     consumoEscopo(id),
     podeFinanceiro ? financeiroCliente(id) : Promise.resolve(null),
   ]);
-  const [relacionamento, resultados] = await Promise.all([timelineRelacionamento(id), resultadosCliente(id)]);
+  const [relacionamento, resultados, saude] = await Promise.all([timelineRelacionamento(id), resultadosCliente(id), saudeConta(id)]);
+  const COR_SAUDE = { verde: "#10b981", amarelo: "#f59e0b", vermelho: "#ef4444" } as const;
 
   const st = statusInfo(c.status);
   const ck = estacao.cockpit;
@@ -140,6 +142,23 @@ export default async function ClienteEstacaoPage({
 
   const abaVisaoGeral = (
     <>
+      {/* Saúde da conta — com o motivo, sempre */}
+      <Card style={{ borderColor: `${COR_SAUDE[saude.cor]}66` }}>
+        <CardContent className="flex flex-wrap items-start gap-3 pt-6">
+          <span className="mt-0.5 inline-flex size-3 shrink-0 rounded-full" style={{ background: COR_SAUDE[saude.cor] }} aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">
+              Saúde da conta: <span style={{ color: COR_SAUDE[saude.cor] }}>{saude.rotulo}</span>
+            </p>
+            {saude.motivos.length > 0 ? (
+              <p className="mt-1 text-sm text-muted-foreground">{saude.motivos.join(" · ")}.</p>
+            ) : (
+              <p className="mt-1 text-sm text-muted-foreground">Nenhum ponto de atenção nos últimos 90 dias.</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Cockpit */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat icon={ListChecks} rotulo="Demandas abertas" valor={ck.abertas} />
@@ -868,6 +887,10 @@ export default async function ClienteEstacaoPage({
       {/* Faixa de contexto da conta */}
       <Card>
         <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-6 text-sm">
+          <span className="inline-flex items-center gap-1.5 font-medium" title={saude.motivos.join(" · ") || "Sem pontos de atenção"}>
+            <span className="inline-flex size-2.5 rounded-full" style={{ background: COR_SAUDE[saude.cor] }} aria-hidden="true" />
+            {saude.rotulo}
+          </span>
           <span className="text-muted-foreground">Conta desde <strong className="text-foreground">{mesAno(contaDesde)}</strong></span>
           {estacao.proximoCompromisso && (
             <span className="text-muted-foreground">Próximo encontro: <strong className="text-foreground">{formatDate(estacao.proximoCompromisso.inicio)}</strong></span>
