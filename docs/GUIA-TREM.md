@@ -764,14 +764,17 @@ O que o **seu cliente** vê pelo link (sem login), com a identidade da Plante:
   conta no balde do seu tipo. "Minutos gravados" vem do campo de mesmo nome no job de vídeo
   (você digita ao concluir); se ninguém preencher, o contador some.
 - **Aguardando aprovação** (peças para ele aprovar).
-- **Próximas postagens** (com status).
-- **Trabalhos em andamento** (com status, sem valores).
+- **Próximas postagens** (com status; peça ainda em criação aparece como "Em produção").
+- **Trabalhos em andamento** (com status, sem valores) — **não repete** o que já está em
+  "Próximas postagens".
 - **Linha do tempo** — tudo que já foi **entregue** (concluído ou publicado), agrupado por
   mês, com ícone e cor por tipo e botão **"Ver post"** quando há link da publicação (seção 6,
   "Marcar como publicada").
 - **Performance** (aba, opcional): um **painel de resultados** do Looker Studio embutido.
 
-O portal **não mostra** nada financeiro. Gere, renove ou desative o link na visão do cliente.
+O portal **não mostra** nada financeiro. Os **títulos aparecem limpos** para o cliente (sem o
+prefixo de data nem o "(Tipo)" que usamos internamente). Gere, renove ou desative o link na
+visão do cliente.
 
 **Aba Performance (Looker Studio):** para o cliente ver os números das campanhas dele
 (Google Analytics, Google Ads, Meta Ads etc.) sem sair do portal, monte um painel no

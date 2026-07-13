@@ -193,7 +193,7 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
                       {formatos.length > 0 && <span className="block truncate text-xs text-muted-foreground">{formatos.join(" · ")}</span>}
                     </span>
                     <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: `${corAprovacao(p.aprovacaoStatus)}22`, color: corAprovacao(p.aprovacaoStatus) }}>
-                      {rotuloAprovacao(p.aprovacaoStatus)}
+                      {p.aprovacaoStatus === "rascunho" ? "Em produção" : rotuloAprovacao(p.aprovacaoStatus)}
                     </span>
                   </li>
                 );

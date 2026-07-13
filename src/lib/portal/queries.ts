@@ -6,6 +6,14 @@ const BUCKET_POSTS = ["post_estatico", "carrossel", "story"];
 const BUCKET_VIDEOS = ["reels", "video", "motion"];
 const BUCKET_MATERIAIS = ["material_grafico", "identidade", "branding"];
 
+/** Limpa o título para o cliente: tira o prefixo "DD/MM —" e o sufixo "(Tipo)" (uso interno). */
+function tituloCliente(t: string): string {
+  return t
+    .replace(/^\d{1,2}\/\d{1,2}\s*[—–-]\s*/, "")
+    .replace(/\s*\((?:reels|carrossel|feed|story|stories|v[ií]deo|motion|post est[aá]tico|material gr[aá]fico)\)\s*$/i, "")
+    .trim() || t;
+}
+
 /**
  * Dados PÚBLICOS do portal de um cliente (sem login, via token).
  * Expõe só o necessário — nada de valores financeiros, custos ou dados internos.
@@ -24,9 +32,9 @@ export async function obterPortal(token: string) {
   const mesLabel = mesRaw.charAt(0).toUpperCase() + mesRaw.slice(1);
 
   const [jobs, postagens, aprovacoes, publicadas, gruposTipo, producoesCount, minutosAgg, timelineJobs] = await Promise.all([
-    // Jobs em andamento (não arquivados, não concluídos)
+    // Jobs em andamento (não concluídos) que NÃO são postagens já listadas em "Próximas postagens".
     db.job.findMany({
-      where: { clienteId: cliente.id, arquivado: false, status: { isConcluido: false } },
+      where: { clienteId: cliente.id, arquivado: false, status: { isConcluido: false }, NOT: { prazoPostagem: { gte: agora } } },
       orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { numero: "desc" }],
       select: { id: true, numero: true, titulo: true, tipo: true, prazo: true, status: { select: { nome: true, cor: true } } },
     }),
@@ -88,11 +96,22 @@ export async function obterPortal(token: string) {
   const timeline = timelineJobs.map((j) => ({
     id: j.id,
     numero: j.numero,
-    titulo: j.titulo,
+    titulo: tituloCliente(j.titulo),
     tipo: j.tipo,
     data: j.publicadoEm ?? j.concluidoEm,
     linkPublicado: j.linkPublicado,
   }));
 
-  return { cliente, jobs, postagens, aprovacoes, publicadas, producao, timeline };
+  // Títulos limpos para a visão do cliente (sem prefixo de data nem "(Tipo)").
+  const limpar = <T extends { titulo: string }>(arr: T[]): T[] => arr.map((x) => ({ ...x, titulo: tituloCliente(x.titulo) }));
+
+  return {
+    cliente,
+    jobs: limpar(jobs),
+    postagens: limpar(postagens),
+    aprovacoes: limpar(aprovacoes),
+    publicadas: limpar(publicadas),
+    producao,
+    timeline,
+  };
 }

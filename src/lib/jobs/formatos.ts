@@ -18,8 +18,8 @@ export function rotuloFormato(key: string): string {
   return MAPA.get(key) ?? key;
 }
 
-/** "instagram_feed,stories" → ["Instagram — Feed", "Stories"] */
+/** "instagram_feed,stories" → ["Instagram — Feed", "Stories"] (ignora chaves desconhecidas). */
 export function rotulosFormatos(formatos: string | null | undefined): string[] {
   if (!formatos) return [];
-  return formatos.split(",").map((k) => k.trim()).filter(Boolean).map(rotuloFormato);
+  return formatos.split(",").map((k) => k.trim()).filter((k) => MAPA.has(k)).map(rotuloFormato);
 }
