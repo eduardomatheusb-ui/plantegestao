@@ -328,3 +328,70 @@ export async function financeiroCliente(clienteId: string) {
     notas,
   };
 }
+
+export type EventoRelacionamento = {
+  data: Date;
+  tipo: "reuniao" | "aprovacao" | "demanda" | "entrega" | "publicacao" | "contrato";
+  descricao: string;
+  href: string | null;
+};
+
+/** Estação — linha do tempo de relacionamento: tudo que aconteceu na conta, em ordem. */
+export async function timelineRelacionamento(clienteId: string): Promise<EventoRelacionamento[]> {
+  const [reunioes, eventosAprov, jobs, contratos] = await Promise.all([
+    db.reuniao.findMany({
+      where: { clienteId },
+      orderBy: { data: "desc" }, take: 30,
+      select: { id: true, titulo: true, data: true },
+    }),
+    db.aprovacaoEvento.findMany({
+      where: { job: { clienteId } },
+      orderBy: { criadoEm: "desc" }, take: 40,
+      select: { criadoEm: true, acao: true, autor: true, job: { select: { id: true, titulo: true } } },
+    }),
+    db.job.findMany({
+      where: { clienteId, arquivado: false },
+      orderBy: { criadoEm: "desc" }, take: 60,
+      select: { id: true, titulo: true, criadoEm: true, concluidoEm: true, publicadoEm: true },
+    }),
+    db.contrato.findMany({
+      where: { clienteId },
+      select: { id: true, descricao: true, dataInicio: true, dataFim: true },
+    }),
+  ]);
+
+  const eventos: EventoRelacionamento[] = [];
+  const agora = new Date();
+
+  for (const r of reunioes) eventos.push({ data: r.data, tipo: "reuniao", descricao: `Reunião — ${r.titulo}`, href: `/reunioes/${r.id}` });
+
+  const ROTULO_ACAO: Record<string, string> = {
+    enviado: "enviado para aprovação",
+    reenviado: "reenviado para aprovação (nova versão)",
+    aprovado: "aprovado pelo cliente",
+    ajustes: "cliente solicitou ajustes",
+  };
+  for (const e of eventosAprov) {
+    eventos.push({
+      data: e.criadoEm, tipo: "aprovacao",
+      descricao: `${e.job.titulo} — ${ROTULO_ACAO[e.acao] ?? e.acao}${e.autor ? ` (${e.autor})` : ""}`,
+      href: `/jobs/${e.job.id}`,
+    });
+  }
+
+  for (const j of jobs) {
+    eventos.push({ data: j.criadoEm, tipo: "demanda", descricao: `Demanda cadastrada — ${j.titulo}`, href: `/jobs/${j.id}` });
+    if (j.concluidoEm) eventos.push({ data: j.concluidoEm, tipo: "entrega", descricao: `Entrega concluída — ${j.titulo}`, href: `/jobs/${j.id}` });
+    if (j.publicadoEm) eventos.push({ data: j.publicadoEm, tipo: "publicacao", descricao: `Publicado — ${j.titulo}`, href: `/jobs/${j.id}` });
+  }
+
+  for (const ct of contratos) {
+    eventos.push({ data: ct.dataInicio, tipo: "contrato", descricao: `Contrato iniciado${ct.descricao ? ` — ${ct.descricao}` : ""}`, href: "/contratos" });
+    if (ct.dataFim && ct.dataFim <= agora) eventos.push({ data: ct.dataFim, tipo: "contrato", descricao: `Contrato encerrado${ct.descricao ? ` — ${ct.descricao}` : ""}`, href: "/contratos" });
+  }
+
+  return eventos
+    .filter((e) => e.data <= agora)
+    .sort((a, b) => b.data.getTime() - a.data.getTime())
+    .slice(0, 60);
+}

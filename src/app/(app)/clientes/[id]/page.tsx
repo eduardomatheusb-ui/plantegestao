@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
-import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente } from "@/lib/clientes/queries";
+import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente, timelineRelacionamento, type EventoRelacionamento } from "@/lib/clientes/queries";
 import { salvarEscopoItem, removerEscopoItem } from "@/lib/clientes/actions";
 import { BUCKETS_ESCOPO } from "@/lib/clientes/escopo";
 import { listarOnboarding } from "@/lib/onboarding/queries";
@@ -72,6 +72,27 @@ function Campo({ rotulo, valor }: { rotulo: string; valor?: string | null }) {
   );
 }
 
+const COR_EVENTO: Record<EventoRelacionamento["tipo"], string> = {
+  reuniao: "#8b5cf6", aprovacao: "#f59e0b", demanda: "#64748b", entrega: "#10b981", publicacao: "#ec4899", contrato: "#0ea5e9",
+};
+
+function FeedRelacionamento({ eventos }: { eventos: EventoRelacionamento[] }) {
+  if (eventos.length === 0) return <p className="text-sm text-muted-foreground">Nenhum evento registrado ainda.</p>;
+  return (
+    <ul className="relative space-y-0.5 before:absolute before:bottom-3 before:left-[5px] before:top-3 before:w-px before:bg-border">
+      {eventos.map((e, i) => (
+        <li key={i} className="relative flex items-start gap-3 py-1.5 pl-0 text-sm">
+          <span className="relative z-10 mt-1.5 size-[11px] shrink-0 rounded-full ring-4 ring-card" style={{ background: COR_EVENTO[e.tipo] }} aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="mr-2 text-xs tabular-nums text-muted-foreground">{formatDate(e.data)}</span>
+            {e.href ? <Link href={e.href} className="hover:underline">{e.descricao}</Link> : e.descricao}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function EmBreve({ texto }: { texto: string }) {
   return (
     <Card>
@@ -109,6 +130,7 @@ export default async function ClienteEstacaoPage({
     consumoEscopo(id),
     podeFinanceiro ? financeiroCliente(id) : Promise.resolve(null),
   ]);
+  const relacionamento = await timelineRelacionamento(id);
 
   const st = statusInfo(c.status);
   const ck = estacao.cockpit;
@@ -481,7 +503,10 @@ export default async function ClienteEstacaoPage({
           )}
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground">A linha do tempo de relacionamento (tudo que aconteceu na conta, em ordem) chega numa próxima atualização.</p>
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2 text-base"><HistoryIcon className="size-4" /> Linha do tempo do relacionamento</CardTitle></CardHeader>
+        <CardContent><FeedRelacionamento eventos={relacionamento} /></CardContent>
+      </Card>
     </>
   );
 
@@ -701,10 +726,16 @@ export default async function ClienteEstacaoPage({
     { valor: "resultados", rotulo: "Resultados", conteudo: abaResultados },
     { valor: "contrato", rotulo: "Contrato & Financeiro", conteudo: abaContrato },
     { valor: "historico", rotulo: "Histórico", conteudo: (
-      <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2 text-base"><HistoryIcon className="size-4" /> Histórico</CardTitle></CardHeader>
-        <CardContent><HistoryPanel entidadeTipo="cliente" entidadeId={id} /></CardContent>
-      </Card>
+      <>
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-base"><HistoryIcon className="size-4" /> Linha do tempo do relacionamento</CardTitle></CardHeader>
+          <CardContent><FeedRelacionamento eventos={relacionamento} /></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-base">Alterações no cadastro</CardTitle></CardHeader>
+          <CardContent><HistoryPanel entidadeTipo="cliente" entidadeId={id} /></CardContent>
+        </Card>
+      </>
     ) },
   ];
   const abaInicial = abas.some((a) => a.valor === aba) ? (aba as string) : "visao-geral";
