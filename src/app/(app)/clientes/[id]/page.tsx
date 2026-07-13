@@ -1037,8 +1037,8 @@ export default async function ClienteEstacaoPage({
             <Button asChild variant="outline" size="sm"><Link href={`/jobs/aprovacao-lote/novo?cliente=${id}`}><Layers className="size-4" /> Enviar para aprovação</Link></Button>
             <Button asChild variant="outline" size="sm"><Link href={`/clientes/${id}?aba=arquivos`}><Paperclip className="size-4" /> Adicionar arquivo</Link></Button>
             <Button asChild variant="outline" size="sm">
-              <a href={`/imprimir/cliente/${id}?ano=${new Date().getFullYear()}&mes=${new Date().getMonth() + 1}`} target="_blank" rel="noopener noreferrer">
-                <FileText className="size-4" /> Gerar relatório
+              <a href={`/imprimir/estacao/${id}`} target="_blank" rel="noopener noreferrer">
+                <FileText className="size-4" /> Relatório da conta
               </a>
             </Button>
             <Button asChild variant="ghost" size="sm"><Link href={`/cadastros/clientes/${id}`}><Pencil className="size-4" /> Editar cadastro</Link></Button>
