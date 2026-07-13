@@ -501,3 +501,19 @@ export async function resultadosCliente(clienteId: string) {
     campanhas: campanhasResumo,
   };
 }
+
+/** Estação — aba Arquivos: acessos registrados + documentos que já vivem no sistema. */
+export async function arquivosCliente(clienteId: string) {
+  const [acessos, propostas] = await Promise.all([
+    db.clienteAcesso.findMany({
+      where: { clienteId },
+      orderBy: { plataforma: "asc" },
+    }),
+    db.proposta.findMany({
+      where: { clienteId },
+      orderBy: { numero: "desc" }, take: 8,
+      select: { id: true, numero: true, titulo: true, status: true },
+    }),
+  ]);
+  return { acessos, propostas };
+}

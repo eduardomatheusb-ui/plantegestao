@@ -8,7 +8,8 @@ import {
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente, timelineRelacionamento, resultadosCliente, type EventoRelacionamento } from "@/lib/clientes/queries";
-import { salvarEscopoItem, removerEscopoItem } from "@/lib/clientes/actions";
+import { salvarEscopoItem, removerEscopoItem, salvarClienteAcesso, removerClienteAcesso } from "@/lib/clientes/actions";
+import { arquivosCliente } from "@/lib/clientes/queries";
 import { saudeConta } from "@/lib/clientes/saude-conta";
 import { BUCKETS_ESCOPO } from "@/lib/clientes/escopo";
 import { listarOnboarding } from "@/lib/onboarding/queries";
@@ -131,12 +132,16 @@ export default async function ClienteEstacaoPage({
     consumoEscopo(id),
     podeFinanceiro ? financeiroCliente(id) : Promise.resolve(null),
   ]);
-  const [relacionamento, resultados, saude] = await Promise.all([timelineRelacionamento(id), resultadosCliente(id), saudeConta(id)]);
+  const [relacionamento, resultados, saude, arquivos] = await Promise.all([timelineRelacionamento(id), resultadosCliente(id), saudeConta(id), arquivosCliente(id)]);
   const COR_SAUDE = { verde: "#10b981", amarelo: "#f59e0b", vermelho: "#ef4444" } as const;
 
   const st = statusInfo(c.status);
   const ck = estacao.cockpit;
   const contaDesde = estacao.contaDesde ?? c.criadoEm;
+  const mesesRelatorio = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(new Date().getFullYear(), new Date().getMonth() - i, 1);
+    return { ano: d.getFullYear(), mes: d.getMonth() + 1, rotulo: mesAno(d) };
+  });
 
   // ── Conteúdo das abas ──────────────────────────────────────────────
 
@@ -530,18 +535,118 @@ export default async function ClienteEstacaoPage({
   );
 
   const abaArquivos = (
-    <Card>
-      <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Paperclip className="size-4" /> Arquivos do cliente</CardTitle></CardHeader>
-      <CardContent><AttachmentsPanel entidadeTipo="cliente" entidadeId={id} /></CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Paperclip className="size-4" /> Arquivos do cliente</CardTitle></CardHeader>
+        <CardContent><AttachmentsPanel entidadeTipo="cliente" entidadeId={id} /></CardContent>
+      </Card>
+
+      {/* Documentos que já vivem no sistema */}
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2 text-base"><FileText className="size-4" /> Documentos no TREM</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Propostas</p>
+            {arquivos.propostas.length === 0 ? <p className="text-sm text-muted-foreground">Nenhuma.</p> : (
+              <ul className="space-y-1 text-sm">
+                {arquivos.propostas.map((p) => (
+                  <li key={p.id}><Link href={`/propostas/${p.id}`} className="hover:underline"><span className="text-muted-foreground tabular-nums">#{p.numero}</span> {p.titulo}</Link></li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Atas de reunião</p>
+            {estacao.reunioesLista.length === 0 ? <p className="text-sm text-muted-foreground">Nenhuma.</p> : (
+              <ul className="space-y-1 text-sm">
+                {estacao.reunioesLista.map((r) => (
+                  <li key={r.id}><Link href={`/reunioes/${r.id}`} className="hover:underline">{r.titulo} <span className="text-xs text-muted-foreground">· {formatDate(r.data)}</span></Link></li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Relatórios mensais</p>
+            <ul className="space-y-1 text-sm">
+              {mesesRelatorio.slice(0, 4).map((m) => (
+                <li key={`${m.ano}-${m.mes}`}>
+                  <a href={`/imprimir/cliente/${id}?ano=${m.ano}&mes=${m.mes}`} target="_blank" rel="noopener noreferrer" className="hover:underline">{m.rotulo}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Acessos — nunca senha, só onde está e quem tem */}
+      <Card>
+        <CardHeader><CardTitle className="text-base">Acessos do cliente</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            ⚠️ Aqui registramos <strong>onde</strong> cada acesso está guardado e <strong>quem</strong> tem — nunca a senha em si.
+          </p>
+          {arquivos.acessos.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum acesso registrado.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <th className="py-2 pr-2 font-medium">Plataforma</th>
+                    <th className="py-2 pr-2 font-medium">Conta</th>
+                    <th className="py-2 pr-2 font-medium">Onde está</th>
+                    <th className="py-2 pr-2 font-medium">Quem tem</th>
+                    {podeEditar && <th className="py-2" />}
+                  </tr>
+                </thead>
+                <tbody>
+                  {arquivos.acessos.map((a) => (
+                    <tr key={a.id} className="border-b border-border/60 last:border-0">
+                      <td className="py-2 pr-2 font-medium">{a.plataforma}</td>
+                      <td className="py-2 pr-2">{a.identificacao ?? "—"}</td>
+                      <td className="py-2 pr-2">{a.ondeGuardado ?? "—"}</td>
+                      <td className="py-2 pr-2">{a.quemTemAcesso ?? "—"}</td>
+                      {podeEditar && (
+                        <td className="py-2 pl-2 text-right">
+                          <form action={removerClienteAcesso.bind(null, a.id)}>
+                            <button type="submit" className="text-xs text-muted-foreground hover:text-destructive">remover</button>
+                          </form>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {podeEditar && (
+            <form action={salvarClienteAcesso.bind(null, id)} className="grid grid-cols-1 items-end gap-2 border-t border-border pt-4 sm:grid-cols-5">
+              <div className="space-y-1">
+                <label htmlFor="ac-plat" className="text-xs text-muted-foreground">Plataforma</label>
+                <input id="ac-plat" name="plataforma" required placeholder="Ex.: Meta Business" className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="ac-id" className="text-xs text-muted-foreground">Conta/página</label>
+                <input id="ac-id" name="identificacao" className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="ac-onde" className="text-xs text-muted-foreground">Onde está guardado</label>
+                <input id="ac-onde" name="ondeGuardado" placeholder="Ex.: cofre do Drive" className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="ac-quem" className="text-xs text-muted-foreground">Quem tem acesso</label>
+                <input id="ac-quem" name="quemTemAcesso" className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" />
+              </div>
+              <Button type="submit" variant="outline" size="sm">Adicionar</Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 
   const op = resultados.operacionais;
   const fmtOp = (v: number | null, sufixo = "") => (v == null ? "—" : `${v}${sufixo}`);
-  const mesesRelatorio = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(new Date().getFullYear(), new Date().getMonth() - i, 1);
-    return { ano: d.getFullYear(), mes: d.getMonth() + 1, rotulo: mesAno(d) };
-  });
 
   const abaResultados = (
     <>

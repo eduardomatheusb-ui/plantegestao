@@ -82,3 +82,32 @@ export async function removerEscopoItem(id: string): Promise<void> {
   await registrarLog({ entidadeTipo: "cliente", entidadeId: item.clienteId, usuarioId: acesso.id, acao: "removeu item de escopo", de: item.rotulo });
   revalidatePath(`/clientes/${item.clienteId}`);
 }
+
+/** Estação: registra ONDE está um acesso do cliente (nunca a senha). */
+export async function salvarClienteAcesso(clienteId: string, formData: FormData): Promise<void> {
+  const acesso = await assertModulo("cadastros", "EDITAR");
+  const plataforma = formData.get("plataforma")?.toString().trim();
+  if (!plataforma) return;
+  await db.clienteAcesso.create({
+    data: {
+      clienteId,
+      plataforma,
+      identificacao: formData.get("identificacao")?.toString().trim() || null,
+      ondeGuardado: formData.get("ondeGuardado")?.toString().trim() || null,
+      quemTemAcesso: formData.get("quemTemAcesso")?.toString().trim() || null,
+      observacao: formData.get("observacao")?.toString().trim() || null,
+    },
+  });
+  await registrarLog({ entidadeTipo: "cliente", entidadeId: clienteId, usuarioId: acesso.id, acao: "registrou acesso", para: plataforma });
+  revalidatePath(`/clientes/${clienteId}`);
+}
+
+/** Estação: remove o registro de um acesso. */
+export async function removerClienteAcesso(id: string): Promise<void> {
+  const acesso = await assertModulo("cadastros", "EDITAR");
+  const item = await db.clienteAcesso.findUnique({ where: { id }, select: { clienteId: true, plataforma: true } });
+  if (!item) return;
+  await db.clienteAcesso.delete({ where: { id } });
+  await registrarLog({ entidadeTipo: "cliente", entidadeId: item.clienteId, usuarioId: acesso.id, acao: "removeu registro de acesso", de: item.plataforma });
+  revalidatePath(`/clientes/${item.clienteId}`);
+}
