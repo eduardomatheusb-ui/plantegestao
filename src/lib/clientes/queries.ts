@@ -395,3 +395,109 @@ export async function timelineRelacionamento(clienteId: string): Promise<EventoR
     .sort((a, b) => b.data.getTime() - a.data.getTime())
     .slice(0, 60);
 }
+
+/** Estação — indicadores operacionais e de comunicação do cliente (janela: últimos 90 dias).
+ *  Mesmas fórmulas do Painel Estratégico (src/lib/painel/queries.ts), com recorte por cliente. */
+export async function resultadosCliente(clienteId: string) {
+  const DIA = 24 * 3600 * 1000;
+  const fim = new Date();
+  const ini = new Date(fim.getTime() - 90 * DIA);
+  const round1 = (n: number) => Math.round(n * 10) / 10;
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  const [concluidosPrazo, cicloRows, publicadas, planejadas, aprovadosEventos, gruposTipo, minutosAgg, campanhas] = await Promise.all([
+    db.job.findMany({ where: { clienteId, concluidoEm: { gte: ini, lt: fim }, prazo: { not: null } }, select: { concluidoEm: true, prazo: true } }),
+    db.job.findMany({ where: { clienteId, concluidoEm: { gte: ini, lt: fim } }, select: { criadoEm: true, concluidoEm: true } }),
+    db.job.findMany({ where: { clienteId, publicadoEm: { gte: ini, lt: fim } }, select: { publicadoEm: true, prazoPostagem: true } }),
+    db.job.findMany({ where: { clienteId, prazoPostagem: { gte: ini, lt: fim } }, select: { remarcacoesPostagem: true } }),
+    db.aprovacaoEvento.findMany({ where: { acao: "aprovado", criadoEm: { gte: ini, lt: fim }, job: { clienteId } }, select: { jobId: true } }),
+    db.job.groupBy({ by: ["tipo"], where: { clienteId, arquivado: false, concluidoEm: { gte: ini, lt: fim } }, _count: { _all: true } }),
+    db.job.aggregate({ _sum: { minutosGravados: true }, where: { clienteId, arquivado: false, concluidoEm: { gte: ini, lt: fim } } }),
+    db.campanha.findMany({
+      where: { clienteId },
+      orderBy: { criadoEm: "desc" }, take: 10,
+      select: {
+        id: true, nome: true, plataforma: true, status: true, verba: true, metaLeads: true, metaCpl: true,
+        resultados: { where: { data: { gte: ini, lt: fim } }, select: { investido: true, alcance: true, cliques: true, leads: true, conversoes: true } },
+      },
+    }),
+  ]);
+
+  // Prazo e fluxo (fórmulas do painel).
+  const noPrazo = concluidosPrazo.filter((j) => j.concluidoEm! <= j.prazo!).length;
+  const pctNoPrazo = concluidosPrazo.length ? Math.round((noPrazo / concluidosPrazo.length) * 100) : null;
+  const cicloMedio = cicloRows.length
+    ? round1(cicloRows.reduce((s, j) => s + (j.concluidoEm!.getTime() - j.criadoEm.getTime()) / DIA, 0) / cicloRows.length)
+    : null;
+  const pubNoDia = publicadas.filter((p) => p.prazoPostagem && p.publicadoEm && sameDay(p.publicadoEm, p.prazoPostagem)).length;
+  const pctPublicadoNoDia = publicadas.length ? Math.round((pubNoDia / publicadas.length) * 100) : null;
+  const remarc = planejadas.filter((p) => p.remarcacoesPostagem > 0).length;
+  const pctRemarcadas = planejadas.length ? Math.round((remarc / planejadas.length) * 100) : null;
+
+  // Retrabalho / aprovação.
+  let pctPrimeiraRodada: number | null = null, rodadasMedia: number | null = null, tempoAprovacao: number | null = null;
+  const jobIds = [...new Set(aprovadosEventos.map((e) => e.jobId))];
+  if (jobIds.length) {
+    const eventos = await db.aprovacaoEvento.findMany({
+      where: { jobId: { in: jobIds } },
+      select: { jobId: true, acao: true, criadoEm: true },
+      orderBy: { criadoEm: "asc" },
+    });
+    const porJob = new Map<string, { acao: string; criadoEm: Date }[]>();
+    for (const e of eventos) {
+      const arr = porJob.get(e.jobId) ?? [];
+      arr.push(e);
+      porJob.set(e.jobId, arr);
+    }
+    let semAjuste = 0, somaRodadas = 0, somaTempo = 0, nTempo = 0;
+    for (const jid of jobIds) {
+      const evs = porJob.get(jid) ?? [];
+      const ajustes = evs.filter((e) => e.acao === "ajustes").length;
+      const envios = evs.filter((e) => e.acao === "enviado" || e.acao === "reenviado").length;
+      if (ajustes === 0) semAjuste++;
+      somaRodadas += Math.max(1, envios || ajustes + 1);
+      const primeiroEnvio = evs.find((e) => e.acao === "enviado")?.criadoEm;
+      const aprovado = [...evs].reverse().find((e) => e.acao === "aprovado")?.criadoEm;
+      if (primeiroEnvio && aprovado) { somaTempo += (aprovado.getTime() - primeiroEnvio.getTime()) / DIA; nTempo++; }
+    }
+    pctPrimeiraRodada = Math.round((semAjuste / jobIds.length) * 100);
+    rodadasMedia = round1(somaRodadas / jobIds.length);
+    tempoAprovacao = nTempo ? round1(somaTempo / nTempo) : null;
+  }
+
+  // Produção realizada (buckets da casa do cliente).
+  const somaTipos = (chaves: string[]) => gruposTipo.filter((g) => chaves.includes(g.tipo)).reduce((s, g) => s + g._count._all, 0);
+  const producao = {
+    posts: somaTipos(BUCKET_TIPOS.posts),
+    videos: somaTipos(BUCKET_TIPOS.videos),
+    materiais: somaTipos(BUCKET_TIPOS.materiais),
+    minutos: minutosAgg._sum.minutosGravados ?? 0,
+  };
+
+  // Campanhas com CPL/CTR (agregado da janela).
+  const campanhasResumo = campanhas.map((c) => {
+    const t = c.resultados.reduce(
+      (a, r) => ({
+        investido: a.investido + Number(r.investido),
+        alcance: a.alcance + r.alcance,
+        cliques: a.cliques + r.cliques,
+        leads: a.leads + r.leads,
+      }),
+      { investido: 0, alcance: 0, cliques: 0, leads: 0 },
+    );
+    return {
+      id: c.id, nome: c.nome, plataforma: c.plataforma, status: c.status,
+      investido: t.investido, leads: t.leads,
+      cpl: t.leads > 0 ? round1(t.investido / t.leads) : null,
+      ctr: t.alcance > 0 ? round1((t.cliques / t.alcance) * 100) : null,
+    };
+  });
+
+  return {
+    janelaDias: 90,
+    operacionais: { pctNoPrazo, cicloMedio, pctPublicadoNoDia, pctRemarcadas, pctPrimeiraRodada, rodadasMedia, tempoAprovacao },
+    producao,
+    campanhas: campanhasResumo,
+  };
+}

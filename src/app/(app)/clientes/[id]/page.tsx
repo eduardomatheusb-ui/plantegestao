@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
-import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente, timelineRelacionamento, type EventoRelacionamento } from "@/lib/clientes/queries";
+import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente, timelineRelacionamento, resultadosCliente, type EventoRelacionamento } from "@/lib/clientes/queries";
 import { salvarEscopoItem, removerEscopoItem } from "@/lib/clientes/actions";
 import { BUCKETS_ESCOPO } from "@/lib/clientes/escopo";
 import { listarOnboarding } from "@/lib/onboarding/queries";
@@ -130,7 +130,7 @@ export default async function ClienteEstacaoPage({
     consumoEscopo(id),
     podeFinanceiro ? financeiroCliente(id) : Promise.resolve(null),
   ]);
-  const relacionamento = await timelineRelacionamento(id);
+  const [relacionamento, resultados] = await Promise.all([timelineRelacionamento(id), resultadosCliente(id)]);
 
   const st = statusInfo(c.status);
   const ck = estacao.cockpit;
@@ -517,25 +517,125 @@ export default async function ClienteEstacaoPage({
     </Card>
   );
 
+  const op = resultados.operacionais;
+  const fmtOp = (v: number | null, sufixo = "") => (v == null ? "—" : `${v}${sufixo}`);
+  const mesesRelatorio = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(new Date().getFullYear(), new Date().getMonth() - i, 1);
+    return { ano: d.getFullYear(), mes: d.getMonth() + 1, rotulo: mesAno(d) };
+  });
+
   const abaResultados = (
     <>
-      <div className="flex justify-end">
-        <Button asChild variant="outline" size="sm">
-          <a href={`/imprimir/cliente/${id}?ano=${new Date().getFullYear()}&mes=${new Date().getMonth() + 1}`} target="_blank" rel="noopener noreferrer">
-            <FileText className="size-4" /> Relatório do mês
-          </a>
-        </Button>
-      </div>
-      {c.lookerEmbedUrl ? (
+      {/* Operacionais — mesmas fórmulas do Painel Estratégico, recortadas pro cliente */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Indicadores operacionais <span className="ml-1 font-sans text-xs font-normal text-muted-foreground">últimos {resultados.janelaDias} dias</span></CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
+            {[
+              { k: "Entregas no prazo", v: fmtOp(op.pctNoPrazo, "%") },
+              { k: "Ciclo médio (dias)", v: fmtOp(op.cicloMedio) },
+              { k: "Publicado no dia", v: fmtOp(op.pctPublicadoNoDia, "%") },
+              { k: "Postagens remarcadas", v: fmtOp(op.pctRemarcadas, "%") },
+              { k: "Aprovado de 1ª", v: fmtOp(op.pctPrimeiraRodada, "%") },
+              { k: "Rodadas por peça", v: fmtOp(op.rodadasMedia) },
+              { k: "Tempo de aprovação (dias)", v: fmtOp(op.tempoAprovacao) },
+            ].map((m) => (
+              <div key={m.k}>
+                <p className="font-display text-2xl font-bold tabular-nums">{m.v}</p>
+                <p className="text-xs text-muted-foreground">{m.k}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Produção realizada */}
+      <Card>
+        <CardHeader><CardTitle className="text-base">Produção realizada <span className="ml-1 font-sans text-xs font-normal text-muted-foreground">últimos {resultados.janelaDias} dias</span></CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
+            {[
+              { k: "Posts", v: resultados.producao.posts },
+              { k: "Vídeos", v: resultados.producao.videos },
+              { k: "Materiais gráficos", v: resultados.producao.materiais },
+              { k: "Minutos gravados", v: resultados.producao.minutos },
+            ].filter((m) => m.v > 0).map((m) => (
+              <div key={m.k}>
+                <p className="font-display text-2xl font-bold tabular-nums">{m.v}</p>
+                <p className="text-xs text-muted-foreground">{m.k}</p>
+              </div>
+            ))}
+          </div>
+          {resultados.producao.posts + resultados.producao.videos + resultados.producao.materiais === 0 && (
+            <p className="text-sm text-muted-foreground">Nada concluído na janela.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Campanhas (tráfego) */}
+      {resultados.campanhas.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Megaphone className="size-4" /> Campanhas</CardTitle></CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2 pr-2 font-medium">Campanha</th>
+                  <th className="py-2 pr-2 font-medium">Status</th>
+                  <th className="py-2 pr-2 font-medium text-right">Investido</th>
+                  <th className="py-2 pr-2 font-medium text-right">Leads</th>
+                  <th className="py-2 pr-2 font-medium text-right">CPL</th>
+                  <th className="py-2 font-medium text-right">CTR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resultados.campanhas.map((cp) => (
+                  <tr key={cp.id} className="border-b border-border/60 last:border-0">
+                    <td className="py-2 pr-2"><Link href={`/trafego/${cp.id}`} className="hover:underline">{cp.nome}</Link> <span className="text-xs text-muted-foreground">· {cp.plataforma}</span></td>
+                    <td className="py-2 pr-2">{cp.status}</td>
+                    <td className="py-2 pr-2 text-right tabular-nums">{cp.investido > 0 ? formatBRL(cp.investido) : "—"}</td>
+                    <td className="py-2 pr-2 text-right tabular-nums">{cp.leads || "—"}</td>
+                    <td className="py-2 pr-2 text-right tabular-nums">{cp.cpl != null ? formatBRL(cp.cpl) : "—"}</td>
+                    <td className="py-2 text-right tabular-nums">{cp.ctr != null ? `${cp.ctr}%` : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Looker */}
+      {c.lookerEmbedUrl && (
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2 text-base"><BarChart3 className="size-4" /> Performance (Looker Studio)</CardTitle></CardHeader>
           <CardContent>
             <iframe src={c.lookerEmbedUrl} className="h-[70vh] min-h-[480px] w-full rounded-lg border border-border" allow="fullscreen" title="Performance" />
           </CardContent>
         </Card>
-      ) : (
-        <EmBreve texto="Sem painel do Looker Studio cadastrado para este cliente. Os indicadores operacionais (% no prazo, tempo de aprovação, retrabalho) chegam numa próxima atualização." />
       )}
+
+      {/* Histórico de relatórios */}
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2 text-base"><FileText className="size-4" /> Relatórios mensais</CardTitle></CardHeader>
+        <CardContent>
+          <ul className="flex flex-wrap gap-2">
+            {mesesRelatorio.map((m) => (
+              <li key={`${m.ano}-${m.mes}`}>
+                <a
+                  href={`/imprimir/cliente/${id}?ano=${m.ano}&mes=${m.mes}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-sm hover:bg-muted"
+                >
+                  <FileText className="size-3.5" aria-hidden="true" /> {m.rotulo}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
     </>
   );
 
