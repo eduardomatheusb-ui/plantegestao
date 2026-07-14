@@ -28,7 +28,12 @@ const LANDING_PADRAO: LandingConfig = {
 
 export function configLanding(landingPage?: string | null): LandingConfig {
   const chave = (landingPage ?? "").trim().toLowerCase();
-  return LANDINGS[chave] ?? LANDING_PADRAO;
+  // Casa por chave exata OU por "contém a chave" — funciona se vier a chave pura
+  // ("guia-eca-digital"), o caminho ("/guia-eca-digital") ou a URL completa.
+  for (const [key, cfg] of Object.entries(LANDINGS)) {
+    if (chave === key || chave.includes(key)) return cfg;
+  }
+  return LANDING_PADRAO;
 }
 
 /** Compara o token recebido com o esperado em tempo constante (evita timing attack). */
