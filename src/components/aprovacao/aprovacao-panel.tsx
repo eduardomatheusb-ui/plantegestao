@@ -46,6 +46,10 @@ export function AprovacaoPanel({
 
   const ativo = status !== "rascunho";
   const precisaAjustes = status === "ajustes";
+  const ultimoDoTipo = (acao: string) =>
+    [...eventos].filter((e) => e.acao === acao).sort((a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime())[0];
+  const ajuste = precisaAjustes ? ultimoDoTipo("ajustes") : null;
+  const aprovacao = status === "aprovado" ? ultimoDoTipo("aprovado") : null;
 
   return (
     <div className="space-y-4">
@@ -54,6 +58,23 @@ export function AprovacaoPanel({
           {rotuloAprovacao(status)}
         </span>
       </div>
+
+      {ajuste && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-300">✏️ O cliente pediu ajustes</p>
+          {ajuste.comentario
+            ? <p className="mt-1 text-sm text-amber-900 dark:text-amber-100">&ldquo;{ajuste.comentario}&rdquo;</p>
+            : <p className="mt-1 text-sm text-amber-900/80 dark:text-amber-100/80">Sem comentário — confirme com o cliente o que mudar.</p>}
+          <p className="mt-1 text-xs text-amber-800/70 dark:text-amber-300/70">{ajuste.autor ?? "cliente"} · {dataBR(ajuste.criadoEm)}</p>
+        </div>
+      )}
+
+      {aprovacao && (
+        <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+          <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">✅ Aprovado por {aprovacao.autor ?? "cliente"} · {dataBR(aprovacao.criadoEm)}</p>
+          {aprovacao.comentario && <p className="mt-1 text-sm text-emerald-900 dark:text-emerald-100">&ldquo;{aprovacao.comentario}&rdquo;</p>}
+        </div>
+      )}
 
       {!ativo && (
         <form action={enviarParaAprovacao.bind(null, jobId)} className="space-y-2">
