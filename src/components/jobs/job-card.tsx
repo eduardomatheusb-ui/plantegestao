@@ -90,14 +90,16 @@ export function JobCard({
 
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         {job.prazo && (
-          <span className={cn("inline-flex items-center gap-1", atrasado && "font-medium text-destructive")} title={social ? "Prazo de criação" : "Prazo"}>
+          <span className={cn("inline-flex items-center gap-1", atrasado && "font-medium text-destructive")}>
             <CalendarClock className="size-3.5" />
+            <span className="text-[10px] uppercase tracking-wide opacity-70">{social ? "criação" : "prazo"}</span>
             {formatDate(job.prazo)}
           </span>
         )}
         {social && job.prazoPostagem && (
-          <span className="inline-flex items-center gap-1 text-fuchsia-600 dark:text-fuchsia-400" title="Vai ao ar">
+          <span className="inline-flex items-center gap-1 text-fuchsia-600 dark:text-fuchsia-400">
             <Send className="size-3.5" />
+            <span className="text-[10px] uppercase tracking-wide opacity-70">no ar</span>
             {formatDate(job.prazoPostagem)}
           </span>
         )}

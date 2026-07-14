@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlarmClock } from "lucide-react";
+import { AlarmClock, Send } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoverStatus } from "./mover-status";
 import { iniciais } from "@/lib/format";
@@ -64,8 +64,16 @@ export function JobsTable({
                     <span className="text-sm text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className={cn("text-sm", atrasado && "font-medium text-destructive")}>
-                  {formatDate(job.prazo)}
+                <TableCell className="text-sm">
+                  <span className={cn(atrasado && "font-medium text-destructive")}>
+                    {job.prazoPostagem && <span className="mr-1 text-[10px] uppercase tracking-wide text-muted-foreground">criação</span>}
+                    {formatDate(job.prazo)}
+                  </span>
+                  {job.prazoPostagem && (
+                    <span className="mt-0.5 flex items-center gap-1 text-xs text-fuchsia-600 dark:text-fuchsia-400">
+                      <Send className="size-3" /> <span className="text-[10px] uppercase tracking-wide opacity-80">no ar</span> {formatDate(job.prazoPostagem)}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <MoverStatus jobId={job.id} statusId={job.statusId} statuses={statuses} />
