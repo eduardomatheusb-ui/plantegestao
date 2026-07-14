@@ -117,8 +117,31 @@ model Usuario {
   clientesAtendimento   Cliente[]                 @relation("ClienteAtendimento")
   clientesEstrategia    Cliente[]                 @relation("ClienteEstrategia")
   planejamentosCriados  PlanejamentoPeriodo[]     @relation("PlanejamentoCriadoPor")
+  feedbacksCriados      Feedback[]                @relation("FeedbackAutor")
+  feedbacksRespondidos  Feedback[]                @relation("FeedbackRespondidoPor")
 
   @@index([papel])
+}
+
+/// Canal interno: a equipe registra erros, dúvidas e sugestões de melhoria.
+model Feedback {
+  id              String   @id @default(cuid())
+  tipo            String   @default("erro") // erro | duvida | sugestao
+  titulo          String
+  descricao       String?
+  pagina          String? // onde aconteceu (tela/URL)
+  status          String   @default("aberto") // aberto | em_analise | resolvido
+  autorId         String?
+  resposta        String?
+  respondidoPorId String?
+  criadoEm        DateTime @default(now())
+  atualizadoEm    DateTime @updatedAt
+
+  autor         Usuario? @relation("FeedbackAutor", fields: [autorId], references: [id], onDelete: SetNull)
+  respondidoPor Usuario? @relation("FeedbackRespondidoPor", fields: [respondidoPorId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([tipo])
 }
 
 /// Chat interno: mural "geral" + conversas diretas. Canal = "geral" ou "dm:<idA>:<idB>" (ids ordenados).

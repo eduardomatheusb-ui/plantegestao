@@ -855,4 +855,17 @@ da equipe em vez de virar mais uma tela para preencher.
 
 ---
 
+## 27. Melhorias e erros (canal da equipe)
+
+Achou um erro, tem uma dúvida ou uma ideia de melhoria? Registre no menu **Melhorias e
+erros** — assim nada se perde em conversa de corredor e a gente acompanha até resolver.
+
+**Como usar:** menu **Melhorias e erros**. Escolha o tipo (**Erro/bug**, **Dúvida** ou
+**Sugestão**), escreva um resumo e, se quiser, os detalhes (o que aconteceu, o que esperava,
+em qual tela). Clique em **Registrar**. Todo mundo vê a lista, separada em **Em aberto** e
+**Resolvidos**, com quem registrou e quando. **Gestores** movem o status (Aberto → Em
+análise → Resolvido) e podem **responder** (a resposta aparece no card e marca como resolvido).
+
+---
+
 *Dúvidas ou algo diferente do guia? O sistema evolui — este documento é atualizado junto.*

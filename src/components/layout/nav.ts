@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  MessageSquarePlus,
   MessageCircle,
   Filter,
   FolderKanban,
@@ -64,6 +65,7 @@ export const NAV: NavGroup[] = [
       { label: "Chat", href: "/chat", icon: MessageCircle, disponivel: true },
       { label: "Agenda", href: "/agenda", icon: CalendarClock, disponivel: true },
       { label: "Bíblia Operacional", href: "/manual", icon: BookMarked, disponivel: true },
+      { label: "Melhorias e erros", href: "/feedback", icon: MessageSquarePlus, disponivel: true },
     ],
   },
   {
