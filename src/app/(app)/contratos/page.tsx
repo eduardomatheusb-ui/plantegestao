@@ -1,30 +1,66 @@
 import Link from "next/link";
-import { Plus, Repeat } from "lucide-react";
+import { Plus, Repeat, ClipboardList } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
-import { listarContratos, resumoMrr } from "@/lib/contratos/queries";
+import { listarContratos, resumoMrr, fichamentoAno, anosComContrato } from "@/lib/contratos/queries";
 import { rotuloContratoStatus, corContratoStatus } from "@/lib/contratos/constantes";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { formatBRL } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatBRL, cn } from "@/lib/utils";
 
-export default async function ContratosPage() {
+export default async function ContratosPage({ searchParams }: { searchParams: Promise<{ ano?: string }> }) {
   await requireModulo("financeiro", "VER");
-  const [contratos, mrr] = await Promise.all([listarContratos(), resumoMrr()]);
+  const sp = await searchParams;
+  const anoSel = sp.ano ? parseInt(sp.ano, 10) : new Date().getFullYear();
+  const [contratos, mrr, fich, anos] = await Promise.all([listarContratos(), resumoMrr(), fichamentoAno(anoSel), anosComContrato()]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         titulo="Contratos"
-        descricao="Contratos recorrentes (fee mensal) e receita previsível."
+        descricao="Fee recorrente (base do MRR) e serviços pontuais fechados."
         acao={<Button asChild><Link href="/contratos/novo"><Plus className="size-4" /> Novo contrato</Link></Button>}
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground">MRR (receita mensal recorrente)</p><p className="mt-0.5 text-2xl font-bold tabular-nums text-emerald-600">{formatBRL(mrr.mrr)}</p></CardContent></Card>
         <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground">ARR (anual)</p><p className="mt-0.5 text-2xl font-bold tabular-nums">{formatBRL(mrr.arr)}</p></CardContent></Card>
-        <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground">Contratos ativos</p><p className="mt-0.5 text-2xl font-bold tabular-nums">{mrr.contratosAtivos}</p></CardContent></Card>
+        <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground">Contratos recorrentes ativos</p><p className="mt-0.5 text-2xl font-bold tabular-nums">{mrr.contratosAtivos}</p></CardContent></Card>
       </div>
+
+      {/* Fichamento anual — o que foi fechado no ano */}
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-2 text-base"><ClipboardList className="size-4" /> Fichamento de {anoSel}</CardTitle>
+          <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1 text-sm">
+            {anos.map((a) => (
+              <Link key={a} href={`/contratos?ano=${a}`} className={cn("rounded-md px-2.5 py-1 font-medium tabular-nums", a === anoSel ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground")}>{a}</Link>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div><p className="text-xs text-muted-foreground">Fechados no ano</p><p className="text-xl font-bold tabular-nums">{fich.qtd}</p></div>
+            <div><p className="text-xs text-muted-foreground">Recorrentes</p><p className="text-xl font-bold tabular-nums">{fich.qtdRecorrente}</p></div>
+            <div><p className="text-xs text-muted-foreground">MRR novo contratado</p><p className="text-xl font-bold tabular-nums text-emerald-600">{formatBRL(fich.mrrNovo)}<span className="text-xs font-normal text-muted-foreground">/mês</span></p></div>
+            <div><p className="text-xs text-muted-foreground">Pontual contratado</p><p className="text-xl font-bold tabular-nums">{formatBRL(fich.pontualTotal)}</p></div>
+          </div>
+          {fich.porServico.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Serviços pontuais fechados</p>
+              <ul className="divide-y divide-border rounded-md border border-border">
+                {fich.porServico.map((s) => (
+                  <li key={s.servico} className="flex items-center justify-between px-3 py-2 text-sm">
+                    <span>{s.servico} <span className="text-xs text-muted-foreground">· {s.qtd}</span></span>
+                    <span className="font-semibold tabular-nums">{formatBRL(s.total)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {fich.qtd === 0 && <p className="text-sm text-muted-foreground">Nenhum contrato fechado em {anoSel}.</p>}
+        </CardContent>
+      </Card>
 
       {contratos.length === 0 ? (
         <p className="text-sm text-muted-foreground">Nenhum contrato ainda. Cadastre o primeiro com &quot;Novo contrato&quot;.</p>
