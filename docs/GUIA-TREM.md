@@ -545,6 +545,10 @@ de margem. É a visão de sustentação do negócio.
     **não entra no MRR**. Pode ser criado direto ou pelo **"Fechar negócio"** da proposta.
   O topo mostra **MRR** (só recorrentes) e **ARR**. Contratos recorrentes perto do fim
   (**≤ 60 dias**) ou do reajuste (**≤ 45 dias**) geram **alerta** na Estação do Cliente.
+- **Fichamento anual** (card na página de Contratos, com **seletor de ano**): fecha o ano com
+  o que foi **contratado** — quantos contratos fechados, quantos recorrentes, o **MRR novo**
+  contratado no ano (soma dos fees dos recorrentes que começaram no ano) e o **total pontual**,
+  com a quebra por serviço dos pontuais. Serve para o balanço anual de fechamentos.
 - **Saúde financeira** (menu Gestão): **MRR, ARR, inadimplência**, **margem por cliente** no
   ano (receita menos despesa atribuída) e a lista de **a receber vencido** com dias de atraso.
 
