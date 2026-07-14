@@ -130,7 +130,7 @@ export function JobForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="responsavelId">Responsável</Label>
+          <Label htmlFor="responsavelId">Responsável <span className="text-xs font-normal text-muted-foreground">(principal)</span></Label>
           <select id="responsavelId" name="responsavelId" className={sel} defaultValue={inicial.responsavelId ?? ""}>
             <option value="">— (eu mesmo)</option>
             {usuarios.map((u) => (<option key={u.id} value={u.id}>{u.nome}</option>))}
@@ -192,11 +192,15 @@ export function JobForm({
         </div>
 
         <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="envolvidos">Envolvidos <span className="text-xs font-normal text-muted-foreground">(segure Ctrl/⌘ para marcar vários)</span></Label>
-          <select id="envolvidos" name="envolvidos" multiple defaultValue={inicial.envolvidosIds ?? []}
-            className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            {usuarios.map((u) => (<option key={u.id} value={u.id}>{u.nome}</option>))}
-          </select>
+          <Label>Corresponsáveis <span className="text-xs font-normal text-muted-foreground">(quem mais participa da demanda — marque quantos quiser)</span></Label>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {usuarios.map((u) => (
+              <label key={u.id} className="flex cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-sm hover:bg-muted">
+                <input type="checkbox" name="envolvidos" value={u.id} defaultChecked={(inicial.envolvidosIds ?? []).includes(u.id)} className="size-4 shrink-0" />
+                <span className="truncate">{u.nome}</span>
+              </label>
+            ))}
+          </div>
         </div>
 
         {social && (

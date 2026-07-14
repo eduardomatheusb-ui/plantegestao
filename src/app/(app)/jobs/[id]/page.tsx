@@ -192,7 +192,7 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
                 </p>
               </div>
               <div className="space-y-1 sm:col-span-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Envolvidos</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Corresponsáveis</p>
                 <p className="text-sm font-medium">
                   {job.envolvidos.length ? job.envolvidos.map((e) => e.usuario.nome).join(", ") : "—"}
                 </p>
