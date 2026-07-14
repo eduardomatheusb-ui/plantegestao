@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Video } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { baseUrl } from "@/lib/email";
 import { listarCompromissosMes, proximosCompromissos } from "@/lib/agenda/queries";
@@ -85,22 +85,32 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
             <p className="text-sm text-muted-foreground">Nenhum compromisso à frente.</p>
           ) : (
             <ul className="divide-y divide-border">
-              {proximos.map((c) => (
-                <li key={c.ocorrenciaKey}>
-                  <Link href={`/agenda/${c.id}/editar`} className="flex items-center gap-3 py-2.5 hover:opacity-80">
+              {proximos.map((c) => {
+                const urlReuniao = c.local?.match(/https?:\/\/[^\s]+/)?.[0] ?? null;
+                return (
+                <li key={c.ocorrenciaKey} className="flex items-center gap-2">
+                  <Link href={`/agenda/${c.id}/editar`} className="flex min-w-0 flex-1 items-center gap-3 py-2.5 hover:opacity-80">
                     <span className="mt-0.5 size-2.5 shrink-0 rounded-full" style={{ backgroundColor: corTipo(c.tipo) }} aria-hidden="true" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{c.titulo}</p>
                       <p className="truncate text-xs text-muted-foreground">
                         {fmtQuando(c)} · {rotuloTipo(c.tipo)}
                         {c.cliente ? ` · ${c.cliente.nomeFantasia || c.cliente.nome}` : ""}
-                        {c.local ? ` · ${c.local}` : ""}
+                        {c.local ? (urlReuniao ? " · Reunião online" : ` · ${c.local}`) : ""}
                         {c.recorrenciaDias ? ` · ${rotuloRecorrencia(c.recorrenciaDias)}` : ""}
                       </p>
                     </div>
                   </Link>
+                  {urlReuniao && (
+                    <a href={urlReuniao} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90"
+                      aria-label={`Entrar na reunião ${c.titulo}`}>
+                      <Video className="size-4" aria-hidden="true" /> Entrar
+                    </a>
+                  )}
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </div>
