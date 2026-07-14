@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { ConverterButton } from "@/components/crm/converter-button";
 import { HistoryPanel } from "@/components/shared/history-panel";
-import { formatBRL } from "@/lib/utils";
+import { formatBRL, formatDate } from "@/lib/utils";
 
 function Info({ rotulo, valor }: { rotulo: string; valor: React.ReactNode }) {
   return (
@@ -56,9 +56,26 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
           <Info rotulo="E-mail" valor={l.email ?? "—"} />
           <Info rotulo="Telefone" valor={l.telefone ?? "—"} />
           <Info rotulo="Origem" valor={l.origem ?? "—"} />
+          {l.interesse && <Info rotulo="Interesse" valor={l.interesse} />}
           <Info rotulo="Valor estimado" valor={l.valorEstimado ? formatBRL(l.valorEstimado) : "—"} />
           <Info rotulo="Cliente" valor={l.cliente ? <Link href={`/cadastros/clientes/${l.cliente.id}`} className="hover:underline">{l.cliente.nome}</Link> : "Ainda não convertido"} />
+          {l.consentLgpd && (
+            <Info
+              rotulo="Consentimento (LGPD)"
+              valor={<span className="text-emerald-600 dark:text-emerald-400">Aceito{l.consentEm ? ` · ${formatDate(l.consentEm)}` : ""}</span>}
+            />
+          )}
           {l.etapa === "perdido" && <Info rotulo="Motivo da perda" valor={l.motivoPerda ?? "—"} />}
+          {l.tags.length > 0 && (
+            <div className="col-span-2 space-y-1 sm:col-span-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tags</p>
+              <div className="flex flex-wrap gap-1.5">
+                {l.tags.map((t) => (
+                  <span key={t} className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{t}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

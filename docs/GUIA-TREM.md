@@ -141,6 +141,13 @@ etapas: **novo, contato, proposta, negociação, ganho ou perdido** (arraste ou 
 **Exemplo:** chegou um contato pelo Instagram. Crie o lead em "novo", registre a conversa,
 mova para "proposta" quando enviar a proposta e "ganho" quando fechar. Vira cliente.
 
+**Leads que chegam pelo site (automático):** os formulários do site da Plante (ex.: a landing
+do **Guia ECA Digital**) caem **direto no funil**, sem digitação. O lead entra em **"novo"**
+já com a **origem** ("Landing Guia ECA Digital"), o **interesse**, as **tags** (lead-site,
+guia-eca-digital, material-gratuito) e o **consentimento LGPD** (com o texto aceito e a data).
+Se a pessoa já existir no CRM (mesmo **e-mail** ou **WhatsApp**), o TREM **não duplica**: só
+acrescenta uma nova entrada na observação e no histórico. Cada preenchimento fica registrado.
+
 > **Boas práticas:** mantenha o funil **atualizado**. É dele que sai a previsão de vendas.
 
 ---
