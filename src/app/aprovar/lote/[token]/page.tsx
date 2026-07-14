@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { obterLoteParaAprovacao } from "@/lib/aprovacao/lote.queries";
 import { RespostaLoteForm, type LoteItemView } from "@/components/aprovacao/resposta-lote-form";
-import { driveEmbed } from "@/lib/anexos/embed";
+import { driveEmbedInfo } from "@/lib/anexos/embed";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Aprovação de conteúdo — Plante" };
@@ -38,7 +38,10 @@ export default async function AprovarLotePage({ params }: { params: Promise<{ to
         alt: a.nome,
         contentType: a.contentType,
       }));
-    const linkDrive = anexos.find((a) => a.tipo === "link" && driveEmbed(a.url));
+    const drive = anexos.reduce<ReturnType<typeof driveEmbedInfo>>(
+      (acc, a) => acc ?? (a.tipo === "link" ? driveEmbedInfo(a.url) : null),
+      null,
+    );
     return {
       jobId: it.jobId,
       numero: it.job.numero,
@@ -46,7 +49,7 @@ export default async function AprovarLotePage({ params }: { params: Promise<{ to
       legenda: it.job.legenda,
       formatos: (it.job.formatos || "").split(",").map((s) => s.trim()).filter(Boolean),
       imagens,
-      videoEmbed: linkDrive ? driveEmbed(linkDrive.url) : null,
+      drive,
       jaRespondido: it.decisao ? { decisao: it.decisao, comentario: it.comentario } : null,
     };
   });

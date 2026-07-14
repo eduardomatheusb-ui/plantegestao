@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { driveEmbed } from "@/lib/anexos/embed";
+import { driveEmbedInfo, type DriveEmbed } from "@/lib/anexos/embed";
 
 // Buckets de tipo de job para os contadores da "casa do cliente".
 const BUCKET_POSTS = ["post_estatico", "carrossel", "story"];
@@ -104,11 +104,11 @@ export async function obterPortal(token: string) {
       })
     : [];
   const imgPorJob = new Map<string, string>();
-  const videoPorJob = new Map<string, string>();
+  const drivePorJob = new Map<string, DriveEmbed>();
   for (const a of anexos) {
-    if (a.tipo === "link" && !videoPorJob.has(a.entidadeId)) {
-      const emb = driveEmbed(a.url);
-      if (emb) videoPorJob.set(a.entidadeId, emb);
+    if (a.tipo === "link" && !drivePorJob.has(a.entidadeId)) {
+      const emb = driveEmbedInfo(a.url);
+      if (emb) drivePorJob.set(a.entidadeId, emb);
     }
     if (imgPorJob.has(a.entidadeId)) continue;
     if (!ehImagem(a.contentType, a.nome, a.url)) continue;
@@ -125,7 +125,7 @@ export async function obterPortal(token: string) {
     data: j.publicadoEm ?? j.concluidoEm,
     linkPublicado: j.linkPublicado,
     imagem: imgPorJob.get(j.id) ?? null,
-    videoEmbed: videoPorJob.get(j.id) ?? null,
+    drive: drivePorJob.get(j.id) ?? null,
   }));
 
   // Títulos limpos para a visão do cliente (sem prefixo de data nem "(Tipo)").

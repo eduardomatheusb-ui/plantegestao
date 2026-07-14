@@ -5,7 +5,7 @@ import { rotulosFormatos, rotuloFormato } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { RespostaForm } from "@/components/aprovacao/resposta-form";
 import { PostPreview } from "@/components/postagens/post-preview/PostPreview";
-import { driveEmbed, aspectoPeca } from "@/lib/anexos/embed";
+import { driveEmbedInfo, aspectoPeca } from "@/lib/anexos/embed";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Aprovação de peça — Plante" };
@@ -111,14 +111,15 @@ export default async function AprovarPage({ params }: { params: Promise<{ token:
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Vídeo e arquivos</h2>
           <div className="grid grid-cols-1 gap-3">
             {anexosNaoImagem.map((a) => {
-              const embed = a.tipo === "link" ? driveEmbed(a.url) : null;
-              if (embed) {
+              const emb = a.tipo === "link" ? driveEmbedInfo(a.url) : null;
+              if (emb) {
+                const pasta = emb.tipo === "pasta";
                 return (
-                  <div key={a.id} className="mx-auto w-full max-w-[360px]">
-                    <div className="overflow-hidden rounded-xl border border-border bg-black" style={{ aspectRatio: aspectoPeca(job.tipo, job.formatos) }}>
-                      <iframe src={embed} className="h-full w-full" allow="autoplay; fullscreen" allowFullScreen title={a.nome} loading="lazy" />
+                  <div key={a.id} className={`mx-auto w-full ${pasta ? "max-w-[520px]" : "max-w-[360px]"}`}>
+                    <div className="overflow-hidden rounded-xl border border-border bg-black" style={{ aspectRatio: pasta ? "4 / 3" : aspectoPeca(job.tipo, job.formatos) }}>
+                      <iframe src={emb.src} className="h-full w-full" allow="autoplay; fullscreen" allowFullScreen title={a.nome} loading="lazy" />
                     </div>
-                    <p className="mt-1.5 text-center text-xs text-muted-foreground">{a.nome}</p>
+                    <p className="mt-1.5 text-center text-xs text-muted-foreground">{pasta ? "📁 " : ""}{a.nome}</p>
                   </div>
                 );
               }

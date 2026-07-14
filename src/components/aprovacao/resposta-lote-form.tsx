@@ -6,7 +6,7 @@ import { CheckCircle2, AlertCircle, ThumbsUp, PenLine } from "lucide-react";
 import { responderLoteAprovacao, type RespostaLoteState } from "@/lib/aprovacao/lote.actions";
 import { PostPreview, type PostPreviewImagem } from "@/components/postagens/post-preview/PostPreview";
 import { rotuloFormato } from "@/lib/jobs/formatos";
-import { aspectoPeca } from "@/lib/anexos/embed";
+import { aspectoPeca, type DriveEmbed } from "@/lib/anexos/embed";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ export type LoteItemView = {
   legenda: string | null;
   formatos: string[];
   imagens: PostPreviewImagem[];
-  videoEmbed: string | null;
+  drive: DriveEmbed | null;
   jaRespondido: { decisao: string; comentario: string | null } | null;
 };
 
@@ -117,10 +117,10 @@ export function RespostaLoteForm({
                 </div>
               )}
 
-              {item.videoEmbed && (
-                <div className="mx-auto w-full max-w-[340px]">
-                  <div className="overflow-hidden rounded-xl border border-border bg-black" style={{ aspectRatio: aspectoPeca(null, item.formatos.join(" ")) }}>
-                    <iframe src={item.videoEmbed} className="h-full w-full" allow="autoplay; fullscreen" allowFullScreen title={item.titulo} loading="lazy" />
+              {item.drive && (
+                <div className={`mx-auto w-full ${item.drive.tipo === "pasta" ? "max-w-[520px]" : "max-w-[340px]"}`}>
+                  <div className="overflow-hidden rounded-xl border border-border bg-black" style={{ aspectRatio: item.drive.tipo === "pasta" ? "4 / 3" : aspectoPeca(null, item.formatos.join(" ")) }}>
+                    <iframe src={item.drive.src} className="h-full w-full" allow="autoplay; fullscreen" allowFullScreen title={item.titulo} loading="lazy" />
                   </div>
                 </div>
               )}

@@ -89,7 +89,7 @@ export default async function PortalPage({ params }: { params: Promise<{ token: 
 }
 
 type Producao = { mesLabel: string; posts: number; videos: number; materiais: number; producoes: number; minutos: number };
-type TimelineItem = { id: string; numero: number; titulo: string; tipo: string; data: Date | null; linkPublicado: string | null; imagem: string | null; videoEmbed: string | null };
+type TimelineItem = { id: string; numero: number; titulo: string; tipo: string; data: Date | null; linkPublicado: string | null; imagem: string | null; drive: { tipo: "arquivo" | "pasta"; src: string } | null };
 
 type AcompanhamentoProps = {
   aprovacoes: { id: string; titulo: string; aprovacaoToken: string | null; prazoPostagem: Date | null }[];
@@ -170,8 +170,8 @@ function Acompanhamento({ aprovacoes, postagens, jobs, producao, timeline }: Aco
                     {g.itens.map((it) => (
                       <article key={it.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                         <div className="relative aspect-[4/5] w-full bg-black">
-                          {it.videoEmbed ? (
-                            <iframe src={it.videoEmbed} className="h-full w-full" allow="fullscreen" allowFullScreen title={it.titulo} loading="lazy" />
+                          {it.drive ? (
+                            <iframe src={it.drive.src} className="h-full w-full" allow="fullscreen" allowFullScreen title={it.titulo} loading="lazy" />
                           ) : it.imagem ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={it.imagem} alt={it.titulo} className="h-full w-full object-cover" />

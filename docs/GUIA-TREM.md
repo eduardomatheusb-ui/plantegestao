@@ -260,7 +260,9 @@ movimento), "recorrente", "bloqueado por #N". Job **concluído** fica em **desta
 > **vídeos/Reels** — cole um **link do Google Drive** (do arquivo, não da pasta) na aba Anexos.
 > O link de um **arquivo do Drive** vira **player embutido**: o cliente **assiste ao Reel**
 > direto na tela de aprovação (e no portal), na proporção certa (9:16 para Reels). Link de
-> **pasta** continua como anexo clicável.
+> **pasta** aparece como uma **grade dos arquivos** embutida (o cliente vê as miniaturas e
+> abre). Para o Reel tocar direto, cole o link do **arquivo** (abra o vídeo no Drive →
+> Compartilhar → Copiar link), não o da pasta.
 
 ---
 
