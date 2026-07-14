@@ -6,7 +6,7 @@ export async function obterParaAprovacao(token: string) {
   const job = await db.job.findUnique({
     where: { aprovacaoToken: token },
     select: {
-      id: true, numero: true, titulo: true, legenda: true, formatos: true,
+      id: true, numero: true, titulo: true, tipo: true, legenda: true, formatos: true,
       prazoPostagem: true, aprovacaoStatus: true, aprovacaoEm: true,
       cliente: { select: { nome: true, nomeFantasia: true, logoUrl: true } },
     },

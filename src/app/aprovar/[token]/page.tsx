@@ -5,6 +5,7 @@ import { rotulosFormatos, rotuloFormato } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { RespostaForm } from "@/components/aprovacao/resposta-form";
 import { PostPreview } from "@/components/postagens/post-preview/PostPreview";
+import { driveEmbed, aspectoPeca } from "@/lib/anexos/embed";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Aprovação de peça — Plante" };
@@ -104,12 +105,23 @@ export default async function AprovarPage({ params }: { params: Promise<{ token:
         </section>
       )}
 
-      {/* Outros arquivos (não-imagem ou links) */}
+      {/* Vídeo (Google Drive) e outros arquivos/links */}
       {anexosNaoImagem.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Arquivos</h2>
-          <div className="grid grid-cols-1 gap-2">
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Vídeo e arquivos</h2>
+          <div className="grid grid-cols-1 gap-3">
             {anexosNaoImagem.map((a) => {
+              const embed = a.tipo === "link" ? driveEmbed(a.url) : null;
+              if (embed) {
+                return (
+                  <div key={a.id} className="mx-auto w-full max-w-[360px]">
+                    <div className="overflow-hidden rounded-xl border border-border bg-black" style={{ aspectRatio: aspectoPeca(job.tipo, job.formatos) }}>
+                      <iframe src={embed} className="h-full w-full" allow="autoplay; fullscreen" allowFullScreen title={a.nome} loading="lazy" />
+                    </div>
+                    <p className="mt-1.5 text-center text-xs text-muted-foreground">{a.nome}</p>
+                  </div>
+                );
+              }
               const src = a.tipo === "arquivo" ? `/api/aprovar/${token}/anexo/${a.id}` : a.url ?? "#";
               return (
                 <a

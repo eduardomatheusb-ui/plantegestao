@@ -256,8 +256,11 @@ movimento), "recorrente", "bloqueado por #N". Job **concluído** fica em **desta
 > **Boas práticas:** sempre preencha **prazo** e **responsável**. É isso que alimenta os
 > indicadores de "no prazo", "carga por pessoa" e os **alertas** de job sem dono.
 >
-> **Anexos:** até **4 MB** por arquivo (upload direto). Arquivos maiores? Cole um **link do
-> Drive** na aba Anexos.
+> **Anexos:** até **4 MB** por arquivo (upload direto). Arquivos maiores — em especial
+> **vídeos/Reels** — cole um **link do Google Drive** (do arquivo, não da pasta) na aba Anexos.
+> O link de um **arquivo do Drive** vira **player embutido**: o cliente **assiste ao Reel**
+> direto na tela de aprovação (e no portal), na proporção certa (9:16 para Reels). Link de
+> **pasta** continua como anexo clicável.
 
 ---
 
