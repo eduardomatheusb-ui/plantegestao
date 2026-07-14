@@ -482,7 +482,10 @@ tem **4 datas** (vencimento, competência, pagamento, faturamento), categoria e 
   um único campo que agrupa **fornecedores, prestadores e colaboradores**.
 - **Parcelado:** na condição de pagamento escolha **Parcelado**, informe o **número de
   parcelas** e clique em **Gerar parcelas**. Dá para **editar cada valor e vencimento** (útil
-  quando as parcelas são diferentes). O sistema cria **um lançamento por parcela**.
+  quando as parcelas são diferentes). O sistema cria **um lançamento por parcela**. É
+  **obrigatório gerar as parcelas** — não dá para salvar "Parcelado" sem elas. Você também pode
+  **parcelar depois**: edite um lançamento único, marque **Parcelado**, gere as parcelas e
+  salve — ele vira a série (o lançamento único é substituído pelas parcelas).
 - **Reembolso de colaborador:** use a **Central de Reembolsos** (seção 15), que já gera o
   lançamento de despesa ao aprovar.
 - Visão **mensal** (navegue pelos meses) e **gráfico**.

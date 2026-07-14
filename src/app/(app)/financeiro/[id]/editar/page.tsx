@@ -90,6 +90,7 @@ export default async function EditarLancamentoPage({ params }: { params: Promise
             prestadores={prestadores}
             colaboradores={colaboradores}
             cancelHref="/financeiro"
+            jaParcelado={!!lanc.parcelaGrupo}
           />
         </CardContent>
       </Card>

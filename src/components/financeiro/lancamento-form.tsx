@@ -61,6 +61,7 @@ export function LancamentoForm({
   prestadores = [],
   colaboradores = [],
   cancelHref,
+  jaParcelado = false,
 }: {
   id: string | null;
   tipo: LancamentoTipo;
@@ -76,6 +77,8 @@ export function LancamentoForm({
   prestadores?: Opt[];
   colaboradores?: Opt[];
   cancelHref: string;
+  /** true quando o lançamento já é uma parcela de uma série (não oferece reparcelar). */
+  jaParcelado?: boolean;
 }) {
   const action = salvarLancamento.bind(null, id, tipo);
   const [state, formAction] = useActionState<LancamentoFormState, FormData>(action, {});
@@ -90,7 +93,9 @@ export function LancamentoForm({
   const [venc, setVenc] = React.useState(inicial.dataVencimento ?? "");
   const [nParcelas, setNParcelas] = React.useState(2);
   const [parcelas, setParcelas] = React.useState<{ valor: string; vencimento: string }[]>([]);
-  const parcelado = condicao === "PARCELADO" && !id;
+  // Mostra o bloco de parcelas na criação E na edição de um lançamento único
+  // (que ainda não é uma parcela de série). Uma parcela existente não reparcela.
+  const parcelado = condicao === "PARCELADO" && !jaParcelado;
 
   function isoAddMonths(iso: string, n: number) {
     const d = new Date(`${iso}T00:00:00`);

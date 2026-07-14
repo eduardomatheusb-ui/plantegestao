@@ -103,17 +103,29 @@ export async function salvarLancamento(
       dataPagamento: quitar ? (data(formData.get("dataPagamento")) ?? new Date()) : data(formData.get("dataPagamento")),
     };
 
-    // Parcelamento: só na criação (não na edição).
+    // Parcelamento: lê as parcelas sempre que a condição for PARCELADO
+    // (na criação OU ao converter um lançamento único em parcelado na edição).
     let parcelas: { valor: number; vencimento: string }[] = [];
-    if (!id && base.condicao === "PARCELADO") {
+    if (base.condicao === "PARCELADO") {
       try { parcelas = JSON.parse(formData.get("parcelas")?.toString() || "[]"); } catch { parcelas = []; }
       parcelas = parcelas.filter((p) => p && p.valor > 0 && p.vencimento);
     }
 
-    if (id) {
+    // Um lançamento que já é parcela de uma série não deve ser reparcelado.
+    const existente = id ? await db.lancamento.findUnique({ where: { id }, select: { parcelaGrupo: true } }) : null;
+    const jaEhParcela = !!existente?.parcelaGrupo;
+
+    // "Parcelado" exige gerar as parcelas — evita lançamento parcelado sem parcelas.
+    if (base.condicao === "PARCELADO" && parcelas.length < 2 && !jaEhParcela) {
+      return { error: "Escolha o número de parcelas e clique em “Gerar parcelas” antes de salvar." };
+    }
+
+    const vaiParcelar = parcelas.length >= 2 && !jaEhParcela;
+
+    if (id && !vaiParcelar) {
       await db.lancamento.update({ where: { id }, data: base });
       await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "editou o lançamento" });
-    } else if (parcelas.length >= 2) {
+    } else if (vaiParcelar) {
       const grupo = randomUUID();
       const total = parcelas.length;
       for (let i = 0; i < total; i++) {
@@ -138,7 +150,13 @@ export async function salvarLancamento(
           },
         });
       }
-      await registrarLog({ entidadeTipo: "lancamento", entidadeId: grupo, usuarioId: user.id, acao: `criou lançamento parcelado (${total}x)` });
+      if (id) {
+        // Conversão na edição: remove o lançamento único que virou a série.
+        await db.lancamento.delete({ where: { id } });
+        await registrarLog({ entidadeTipo: "lancamento", entidadeId: grupo, usuarioId: user.id, acao: `parcelou o lançamento (${total}x)` });
+      } else {
+        await registrarLog({ entidadeTipo: "lancamento", entidadeId: grupo, usuarioId: user.id, acao: `criou lançamento parcelado (${total}x)` });
+      }
     } else {
       const numero = await proximoNumero("LANCAMENTO");
       await db.lancamento.create({ data: { ...base, numero, criadoPorId: user.id } });
