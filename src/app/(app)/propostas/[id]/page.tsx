@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Pencil, Trash2, FileDown, CheckCircle2, Eye, EyeOff, FolderPlus, FileSignature, Handshake } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { db } from "@/lib/db";
-import { acessoAtual } from "@/lib/permissoes.server";
+import { acessoAtual, verTudoNoModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterProposta, listarProdutosAtivos } from "@/lib/propostas/queries";
 import { concluirProposta, excluirProposta, gerarProjetoDaProposta } from "@/lib/propostas/actions";
@@ -46,6 +46,8 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
     acessoAtual(),
   ]);
   if (!proposta) notFound();
+  // Recorte por registro: sem ADMIN em propostas, só quem criou pode abrir.
+  if (!verTudoNoModulo(acesso, "propostas") && proposta.criadoPor?.id !== user.id) notFound();
   const podeFin = podeModulo(acesso.caps, "financeiro", "EDITAR");
   const totalLancado = lancamentos.reduce((s, l) => s + Number(l.valor), 0);
 

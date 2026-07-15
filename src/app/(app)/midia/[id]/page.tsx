@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil, Trash2, CheckCircle2, X, FileDown } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
+import { db } from "@/lib/db";
+import { acessoAtual, verTudoNoModulo } from "@/lib/permissoes.server";
 import { obterMidiaPlano } from "@/lib/midia/queries";
 import { concluirMidia, excluirMidia, removerPeca } from "@/lib/midia/actions";
 import { calcularTotaisMidia } from "@/lib/midia/calculo";
@@ -34,6 +36,12 @@ export default async function MidiaDetalhePage({ params }: { params: Promise<{ i
 
   const plano = await obterMidiaPlano(id);
   if (!plano) notFound();
+  // Recorte por registro: sem ADMIN em mídia, só quem criou ou é responsável.
+  const acesso = await acessoAtual();
+  if (!verTudoNoModulo(acesso, "midia")) {
+    const meu = await db.midiaPlano.findFirst({ where: { id, OR: [{ criadoPorId: user.id }, { responsavelId: user.id }] }, select: { id: true } });
+    if (!meu) notFound();
+  }
 
   const diario = plano.tipo === "RADIO" || plano.tipo === "TV";
   const linhasCalc = plano.grades.flatMap((g) =>

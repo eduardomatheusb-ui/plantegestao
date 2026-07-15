@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
 import { listarPropostas } from "@/lib/propostas/queries";
 import { STATUS_LABEL, STATUS_BADGE } from "@/lib/propostas/status";
 import { PageHeader } from "@/components/shared/page-header";
@@ -16,12 +16,13 @@ type PageProps = { searchParams: Promise<Record<string, string | string[] | unde
 
 export default async function PropostasPage({ searchParams }: PageProps) {
   const sp = await searchParams;
-  await requireModulo("propostas", "VER");
+  const acesso = await requireModulo("propostas", "VER");
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, "GESTOR");
+  const verTudo = verTudoNoModulo(acesso, "propostas");
   const q = typeof sp.q === "string" ? sp.q : undefined;
 
-  const propostas = await listarPropostas({ q });
+  const propostas = await listarPropostas({ q, soDoUsuario: verTudo ? undefined : acesso.id });
 
   return (
     <div className="space-y-6">

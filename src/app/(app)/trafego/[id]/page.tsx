@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
+import { db } from "@/lib/db";
 import { podeModulo } from "@/lib/permissoes";
 import { obterCampanha } from "@/lib/trafego/queries";
 import { TextoComLinks } from "@/components/shared/texto-com-links";
@@ -36,6 +37,10 @@ export default async function CampanhaDetalhePage({ params }: { params: Promise<
   const { id } = await params;
   const c = await obterCampanha(id);
   if (!c) notFound();
+  if (!verTudoNoModulo(acesso, "midia")) {
+    const meu = await db.campanha.findFirst({ where: { id, criadoPorId: acesso.id }, select: { id: true } });
+    if (!meu) notFound();
+  }
 
   const t = c.totais;
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { listarOs } from "@/lib/os/queries";
 import { STATUS_LABEL, STATUS_BADGE } from "@/lib/os/constants";
@@ -17,9 +17,10 @@ type PageProps = { searchParams: Promise<Record<string, string | string[] | unde
 export default async function OsPage({ searchParams }: PageProps) {
   const acesso = await requireModulo("os", "VER");
   const podeEditar = podeModulo(acesso.caps, "os", "EDITAR");
+  const verTudo = verTudoNoModulo(acesso, "os");
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q : undefined;
-  const ordens = await listarOs({ q });
+  const ordens = await listarOs({ q, soDoUsuario: verTudo ? undefined : acesso.id });
 
   return (
     <div className="space-y-6">

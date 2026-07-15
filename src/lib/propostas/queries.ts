@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
 import type { PropostaStatus } from "@prisma/client";
 
-export async function listarPropostas(opts: { q?: string; status?: PropostaStatus; clienteId?: string } = {}) {
+export async function listarPropostas(opts: { q?: string; status?: PropostaStatus; clienteId?: string; soDoUsuario?: string } = {}) {
   const where: Record<string, unknown> = {};
+  if (opts.soDoUsuario) where.criadoPorId = opts.soDoUsuario;
   if (opts.status) where.status = opts.status;
   if (opts.clienteId) where.clienteId = opts.clienteId;
   if (opts.q) {

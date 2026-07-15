@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil, Trash2, FileDown, Receipt, Wallet } from "lucide-react";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
+import { db } from "@/lib/db";
 import { podeModulo } from "@/lib/permissoes";
 import { obterOs } from "@/lib/os/queries";
 import { excluirOs, gerarLancamentoDaOs } from "@/lib/os/actions";
@@ -37,6 +38,10 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
   const { id } = await params;
   const os = await obterOs(id);
   if (!os) notFound();
+  if (!verTudoNoModulo(acesso, "os")) {
+    const meu = await db.ordemServico.findFirst({ where: { id, OR: [{ criadoPorId: acesso.id }, { responsavelId: acesso.id }] }, select: { id: true } });
+    if (!meu) notFound();
+  }
 
   const lanc = os.lancamentos[0];
   const lancMes = lanc

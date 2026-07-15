@@ -68,6 +68,14 @@ export async function requireModulo(
   return acesso;
 }
 
+/**
+ * Recorte por registro: quem tem ADMIN no módulo vê TUDO; os demais só os
+ * próprios registros. Use o `id` do acesso para filtrar as queries.
+ */
+export function verTudoNoModulo(acesso: AcessoUsuario, modulo: ModuloKey): boolean {
+  return podeModulo(acesso.caps, modulo, "ADMIN");
+}
+
 /** Guarda de AÇÃO (server action): exige nível mínimo, senão lança. */
 export async function assertModulo(
   modulo: ModuloKey,

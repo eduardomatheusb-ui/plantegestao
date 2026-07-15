@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
 import type { ProducaoStatus } from "@prisma/client";
 
-export async function listarProducao(opts: { q?: string; status?: ProducaoStatus; clienteId?: string } = {}) {
+export async function listarProducao(opts: { q?: string; status?: ProducaoStatus; clienteId?: string; soDoUsuario?: string } = {}) {
   const where: Record<string, unknown> = {};
+  if (opts.soDoUsuario) where.AND = [{ OR: [{ criadoPorId: opts.soDoUsuario }, { responsavelId: opts.soDoUsuario }] }];
   if (opts.status) where.status = opts.status;
   if (opts.clienteId) where.clienteId = opts.clienteId;
   if (opts.q) {

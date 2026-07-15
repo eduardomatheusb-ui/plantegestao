@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus, Megaphone } from "lucide-react";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
 import { listarCampanhas } from "@/lib/trafego/queries";
 import { rotuloPlataforma, corPlataforma, rotuloStatusCampanha, corStatusCampanha } from "@/lib/trafego/constantes";
 import { PageHeader } from "@/components/shared/page-header";
@@ -9,8 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatBRL } from "@/lib/utils";
 
 export default async function TrafegoPage() {
-  await requireModulo("midia", "VER");
-  const campanhas = await listarCampanhas();
+  const acesso = await requireModulo("midia", "VER");
+  const verTudo = verTudoNoModulo(acesso, "midia");
+  const campanhas = await listarCampanhas({ soDoUsuario: verTudo ? undefined : acesso.id });
 
   return (
     <div className="space-y-6">

@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
 import type { MidiaStatus } from "@prisma/client";
 
-export async function listarMidiaPlanos(opts: { q?: string; status?: MidiaStatus; clienteId?: string } = {}) {
+export async function listarMidiaPlanos(opts: { q?: string; status?: MidiaStatus; clienteId?: string; soDoUsuario?: string } = {}) {
   const where: Record<string, unknown> = {};
+  if (opts.soDoUsuario) where.AND = [{ OR: [{ criadoPorId: opts.soDoUsuario }, { responsavelId: opts.soDoUsuario }] }];
   if (opts.status) where.status = opts.status;
   if (opts.clienteId) where.clienteId = opts.clienteId;
   if (opts.q) {

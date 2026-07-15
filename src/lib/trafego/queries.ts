@@ -1,8 +1,9 @@
 import "server-only";
 import { db } from "@/lib/db";
 
-export async function listarCampanhas() {
+export async function listarCampanhas(opts: { soDoUsuario?: string } = {}) {
   const campanhas = await db.campanha.findMany({
+    where: opts.soDoUsuario ? { criadoPorId: opts.soDoUsuario } : undefined,
     orderBy: [{ status: "asc" }, { atualizadoEm: "desc" }],
     include: {
       cliente: { select: { id: true, nome: true, nomeFantasia: true } },
