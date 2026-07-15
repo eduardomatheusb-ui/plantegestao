@@ -55,7 +55,7 @@ export default async function EditarCompromissoPage({ params }: { params: Promis
         titulo="Editar compromisso"
         descricao={compromisso.criadoPor ? `Criado por ${compromisso.criadoPor.nome}` : undefined}
         acao={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="ghost" size="sm"><Link href="/agenda"><ArrowLeft className="size-4" /> Voltar</Link></Button>
             {podeEditar && (
               <ConfirmButton

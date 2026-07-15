@@ -76,7 +76,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
         titulo="Jobs"
         descricao="A pauta de produção e criação da agência."
         acao={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {podeGerir && (
               <Button asChild variant="outline">
                 <Link href="/jobs/status">
