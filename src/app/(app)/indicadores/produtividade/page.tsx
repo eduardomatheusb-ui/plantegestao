@@ -70,7 +70,7 @@ export default async function ProdutividadePage({ searchParams }: { searchParams
           <Metrica icon={Timer} rotulo="Tempo médio de execução" valor={dias1(d.operacao.tempoMedioGeralDias)} cor="#f59e0b" />
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <Card>
             <CardHeader><CardTitle className="text-base">Tempo médio por tipo</CardTitle></CardHeader>
             <CardContent>

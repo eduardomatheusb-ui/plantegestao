@@ -122,7 +122,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base"><Handshake className="size-4" /> Fechar negócio</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-3">
+        <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="space-y-2 rounded-lg border border-border p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Projeto</p>
             {proposta.projetoId ? (

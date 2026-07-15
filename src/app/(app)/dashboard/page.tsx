@@ -61,7 +61,7 @@ export default async function DashboardPage() {
       />
 
       {/* Linha 1: módulos, prazo, timesheet */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Outros módulos</CardTitle></CardHeader>
           <CardContent>
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Linha 2: minha pauta + meus projetos */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex-row items-center justify-between pb-2">
             <CardTitle className="flex items-center gap-2 text-sm"><ListChecks className="size-4" aria-hidden="true" /> Minha pauta</CardTitle>
@@ -204,7 +204,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Linha 3: últimos documentos + comentários */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Últimos documentos que edita</CardTitle></CardHeader>
           <CardContent>

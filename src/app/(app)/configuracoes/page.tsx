@@ -18,7 +18,7 @@ export default async function ConfiguracoesHubPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <PageHeader titulo="Administração" descricao="Configurações do sistema e controle de acesso." />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {ITENS.map((it) => (
           <Link key={it.href} href={it.href} className="group focus-visible:outline-none">
             <Card className="flex h-full items-start gap-4 p-5 transition-colors group-hover:border-foreground/30 group-focus-visible:ring-2 group-focus-visible:ring-ring">
