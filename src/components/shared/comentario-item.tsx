@@ -8,15 +8,39 @@ import { iniciais } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
-/** Destaca menções @Nome e transforma links (http/https) em cliques. */
-function renderTexto(texto: string) {
-  return texto.split(/(https?:\/\/[^\s]+|@[\p{L}]+)/u).map((p, i) => {
+type Usuario = { id: string; nome: string };
+
+const escaparRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Renderiza o comentário: menções @Nome viram link que abre a conversa (DM)
+ * com a pessoa; links http/https viram cliques. Nomes conhecidos são resolvidos
+ * contra a lista de usuários (nome completo primeiro).
+ */
+function renderTexto(texto: string, usuarios: Usuario[], meuId: string | null) {
+  const conhecidos = [...usuarios].sort((a, b) => b.nome.length - a.nome.length);
+  const alternativas = [
+    ...(conhecidos.length ? [`@(?:${conhecidos.map((u) => escaparRegex(u.nome)).join("|")})`] : []),
+    "@[\\p{L}]+",
+    "https?:\\/\\/[^\\s]+",
+  ];
+  const re = new RegExp(`(${alternativas.join("|")})`, "gu");
+
+  return texto.split(re).map((p, i) => {
+    if (!p) return null;
     if (/^https?:\/\//.test(p)) {
-      return (
-        <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline underline-offset-2 hover:opacity-80">{p}</a>
-      );
+      return <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline underline-offset-2 hover:opacity-80">{p}</a>;
     }
-    if (/^@[\p{L}]+$/u.test(p)) {
+    if (p.startsWith("@")) {
+      const nome = p.slice(1);
+      const u = conhecidos.find((x) => x.nome === nome);
+      if (u && meuId) {
+        const canal = `dm:${[meuId, u.id].sort().join(":")}`;
+        return (
+          <a key={i} href={`/chat?c=${encodeURIComponent(canal)}`} title={`Abrir conversa com ${u.nome}`}
+            className="rounded bg-brand-yellow/25 px-0.5 font-medium text-foreground hover:bg-brand-yellow/40">{p}</a>
+        );
+      }
       return <span key={i} className="rounded bg-brand-yellow/25 px-0.5 font-medium text-foreground">{p}</span>;
     }
     return <span key={i}>{p}</span>;
@@ -24,7 +48,7 @@ function renderTexto(texto: string) {
 }
 
 export function ComentarioItem({
-  id, autorNome, texto, quando, editado, podeEditar, podeRemover,
+  id, autorNome, texto, quando, editado, podeEditar, podeRemover, usuarios = [], meuId = null,
 }: {
   id: string;
   autorNome: string;
@@ -33,6 +57,8 @@ export function ComentarioItem({
   editado: boolean;
   podeEditar: boolean;
   podeRemover: boolean;
+  usuarios?: Usuario[];
+  meuId?: string | null;
 }) {
   const [editando, setEditando] = useState(false);
   const [valor, setValor] = useState(texto);
@@ -86,7 +112,7 @@ export function ComentarioItem({
             </div>
           </div>
         ) : (
-          <p className="whitespace-pre-wrap break-words text-sm text-foreground">{renderTexto(texto)}</p>
+          <p className="whitespace-pre-wrap break-words text-sm text-foreground">{renderTexto(texto, usuarios, meuId)}</p>
         )}
       </div>
     </li>

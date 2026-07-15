@@ -46,6 +46,8 @@ export async function CommentsPanel({
                 editado={!!c.editadoEm}
                 podeEditar={dono || ehGestor}
                 podeRemover={dono || ehGestor}
+                usuarios={usuarios}
+                meuId={user?.id ?? null}
               />
             );
           })}
