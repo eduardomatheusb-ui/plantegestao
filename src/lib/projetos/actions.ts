@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
 import { notificar, notificarMuitos, destinatariosDaEntidade } from "@/lib/notificacoes";
+import { baseUrl } from "@/lib/email";
 import { canalDM } from "@/lib/chat/queries";
 import { assertPapel, getSessionUser, podePapel } from "@/lib/rbac";
 import { STATUS_LABEL } from "./situacao";
@@ -293,7 +294,7 @@ export async function adicionarComentario(
         data: {
           canal: canalDM(user.id, mencionadoId),
           autorId: user.id,
-          corpo: `📌 Te marquei num comentário${url ? ` (${url})` : ""}: "${resumo}"`,
+          corpo: `📌 Te marquei num comentário: "${resumo}"${url ? `\n${baseUrl()}${url}` : ""}`,
         },
       });
     } catch (err) {

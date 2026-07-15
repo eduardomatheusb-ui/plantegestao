@@ -7,6 +7,7 @@ import { enviarMensagem, buscarMensagens, marcarCanalLido, editarMensagem, exclu
 import { recarregarSeStale } from "@/lib/stale-action";
 import { iniciais } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { linkificar } from "@/components/shared/linkificar";
 import type { ConversaView, ChatMensagemView } from "@/lib/chat/queries";
 
 const INTERVALO = 4000;
@@ -224,7 +225,7 @@ export function ChatJanela({
                         </div>
                       ) : (
                         <>
-                          <span className="whitespace-pre-wrap break-words">{m.corpo}</span>
+                          <span className="whitespace-pre-wrap break-words">{linkificar(m.corpo)}</span>
                           <span className={cn("mt-0.5 block text-[10px]", meu ? "text-ink-900/60" : "text-muted-foreground")}>
                             {horario(m.criadoEm)}{m.editadoEm ? " · editado" : ""}
                           </span>

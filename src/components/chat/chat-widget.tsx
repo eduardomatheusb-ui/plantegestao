@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { MessageCircle, X, ArrowLeft, Send, Hash, Loader2, Maximize2, Pencil, Trash2, Check } from "lucide-react";
 import { enviarMensagem, buscarMensagens, buscarConversas, buscarChatNaoLidas, marcarCanalLido, editarMensagem, excluirMensagem } from "@/lib/chat/actions";
+import { linkificar } from "@/components/shared/linkificar";
 import type { ConversaView, ChatMensagemView } from "@/lib/chat/queries";
 import { iniciais } from "@/lib/format";
 import { recarregarSeStale } from "@/lib/stale-action";
@@ -250,7 +251,7 @@ export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; nao
                             </div>
                           ) : (
                             <>
-                              <span className="whitespace-pre-wrap break-words">{m.corpo}</span>
+                              <span className="whitespace-pre-wrap break-words">{linkificar(m.corpo)}</span>
                               <span className={cn("mt-0.5 block text-[10px]", meu ? "text-ink-900/60" : "text-muted-foreground")}>
                                 {horario(m.criadoEm)}{m.editadoEm ? " · editado" : ""}
                               </span>
