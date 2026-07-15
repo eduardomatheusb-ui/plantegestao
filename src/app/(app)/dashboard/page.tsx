@@ -38,7 +38,7 @@ export default async function DashboardPage() {
     ultimosDocumentos(user.id),
     comentariosRecentes(),
     contadores(user.id),
-    metricaJobsNoPrazo(),
+    metricaJobsNoPrazo(user.id),
     getClima(),
     aniversariantesDoMes(),
   ]);

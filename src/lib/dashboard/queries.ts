@@ -125,9 +125,9 @@ export async function comentariosRecentes() {
 export async function contadores(userId: string) {
   const agora = new Date();
   const [propostas, producao, midia, jobsAtraso, propAtraso, midiaAtraso, prodAtraso] = await Promise.all([
-    db.proposta.count({ where: { status: { in: ["EM_ABERTO", "ENVIADA"] } } }),
-    db.producaoOrdem.count({ where: { status: { in: ["EM_ABERTO", "ENVIADA"] } } }),
-    db.midiaPlano.count({ where: { status: { in: ["EM_ABERTO", "ENVIADA"] } } }),
+    db.proposta.count({ where: { status: { in: ["EM_ABERTO", "ENVIADA"] }, criadoPorId: userId } }),
+    db.producaoOrdem.count({ where: { status: { in: ["EM_ABERTO", "ENVIADA"] }, OR: [{ criadoPorId: userId }, { responsavelId: userId }] } }),
+    db.midiaPlano.count({ where: { status: { in: ["EM_ABERTO", "ENVIADA"] }, OR: [{ criadoPorId: userId }, { responsavelId: userId }] } }),
     db.job.count({ where: { responsavelId: userId, arquivado: false, status: { isConcluido: false }, prazo: { lt: agora } } }),
     db.proposta.count({ where: { responsavelId: userId, status: { in: ["EM_ABERTO", "ENVIADA"] }, prazo: { lt: agora } } }),
     db.midiaPlano.count({ where: { responsavelId: userId, status: { in: ["EM_ABERTO", "ENVIADA"] }, prazo: { lt: agora } } }),

@@ -124,9 +124,14 @@ export async function listarJobsParaSelect() {
 }
 
 /** Métrica de dashboard: % de jobs concluídos dentro do prazo. */
-export async function metricaJobsNoPrazo() {
+export async function metricaJobsNoPrazo(userId?: string) {
   const concluidos = await db.job.findMany({
-    where: { concluidoEm: { not: null }, prazo: { not: null } },
+    where: {
+      concluidoEm: { not: null },
+      prazo: { not: null },
+      // Dashboard pessoal: só os jobs onde a pessoa é responsável ou envolvida.
+      ...(userId ? { OR: [{ responsavelId: userId }, { envolvidos: { some: { usuarioId: userId } } }] } : {}),
+    },
     select: { concluidoEm: true, prazo: true },
   });
   if (concluidos.length === 0) return null;
