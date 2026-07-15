@@ -24,7 +24,7 @@ const POR_PAGINA = 25;
 
 export async function listar(
   config: EntityConfig,
-  opts: { q?: string; incluirArquivados?: boolean; page?: number; perPage?: number } = {},
+  opts: { q?: string; incluirArquivados?: boolean; page?: number; perPage?: number; extraWhere?: Record<string, unknown> } = {},
 ) {
   const where: Record<string, unknown> = {};
 
@@ -38,6 +38,9 @@ export async function listar(
       [f]: { contains: opts.q, mode: "insensitive" },
     }));
   }
+
+  // Recorte por registro (ex.: atendimento só vê os clientes dele).
+  if (opts.extraWhere) where.AND = [opts.extraWhere];
 
   const include = config.model === "categoria" ? { pai: { select: { nome: true } } } : undefined;
 

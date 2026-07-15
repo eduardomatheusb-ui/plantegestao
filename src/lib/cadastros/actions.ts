@@ -94,6 +94,8 @@ export async function salvarCadastro(
         acao: `editou ${config.rotulo.toLowerCase()}`,
       });
     } else {
+      // Registra quem cadastrou o cliente (base do recorte de acesso do atendimento).
+      if (config.model === "cliente") data.criadoPorId = user.id;
       const criado = await repo.criar(config, data);
       await registrarLog({
         entidadeTipo: config.model,

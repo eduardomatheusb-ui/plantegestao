@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Pencil, Trash2, Printer } from "lucide-react";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
+import { db } from "@/lib/db";
 import { podeModulo } from "@/lib/permissoes";
 import { obterReuniao } from "@/lib/reunioes/queries";
 import { excluirReuniao, salvarAtaTexto } from "@/lib/reunioes/actions";
@@ -35,6 +36,11 @@ export default async function ReuniaoDetalhePage({ params }: { params: Promise<{
   const { id } = await params;
   const r = await obterReuniao(id);
   if (!r) notFound();
+  // Recorte: sem ADMIN em projetos, só quem criou ou participa do compromisso da ata.
+  if (!verTudoNoModulo(acesso, "projetos")) {
+    const meu = await db.reuniao.findFirst({ where: { id, OR: [{ criadoPorId: acesso.id }, { compromisso: { participantes: { some: { usuarioId: acesso.id } } } }] }, select: { id: true } });
+    if (!meu) notFound();
+  }
 
   return (
     <div className="space-y-6">

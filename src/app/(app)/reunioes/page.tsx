@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus, Calendar, Building2, CalendarClock, NotebookPen } from "lucide-react";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
 import { listarReunioes } from "@/lib/reunioes/queries";
 import { reunioesSemAta } from "@/lib/agenda/queries";
 import { criarAtaDeCompromisso } from "@/lib/reunioes/actions";
@@ -14,8 +14,10 @@ function dataBR(d: Date) {
 }
 
 export default async function ReunioesPage() {
-  await requireModulo("projetos", "VER");
-  const [reunioes, pendentes] = await Promise.all([listarReunioes(), reunioesSemAta()]);
+  const acesso = await requireModulo("projetos", "VER");
+  const verTudo = verTudoNoModulo(acesso, "projetos");
+  const soDoUsuario = verTudo ? undefined : acesso.id;
+  const [reunioes, pendentes] = await Promise.all([listarReunioes({ soDoUsuario }), reunioesSemAta()]);
 
   return (
     <div className="space-y-6">

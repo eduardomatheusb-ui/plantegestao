@@ -5,8 +5,9 @@ import {
   FileText, NotebookPen, Layers, Paperclip, AlertTriangle, PenLine, Megaphone, CalendarClock,
   Users, History as HistoryIcon, BarChart3,
 } from "lucide-react";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
+import { db } from "@/lib/db";
 import { obterClienteVisao, estacaoResumo, consumoEscopo, financeiroCliente, timelineRelacionamento, resultadosCliente, type EventoRelacionamento } from "@/lib/clientes/queries";
 import { salvarEscopoItem, removerEscopoItem, salvarClienteAcesso, removerClienteAcesso } from "@/lib/clientes/actions";
 import { arquivosCliente, planejamentoCliente } from "@/lib/clientes/queries";
@@ -121,6 +122,11 @@ export default async function ClienteEstacaoPage({
 
   const dados = await obterClienteVisao(id);
   if (!dados) notFound();
+  // Recorte: sem ADMIN em cadastros, só quem cadastrou ou é atendimento/estrategista.
+  if (!verTudoNoModulo(acesso, "cadastros")) {
+    const meu = await db.cliente.findFirst({ where: { id, OR: [{ criadoPorId: acesso.id }, { atendimentoId: acesso.id }, { estrategiaId: acesso.id }] }, select: { id: true } });
+    if (!meu) notFound();
+  }
   const { cliente: c, jobsAtivos, projetosAtivos, postagens, resumo } = dados;
 
   const [estacao, onboardingItens, usuarios, statuses, demandas, lotes, consumo, fin] = await Promise.all([

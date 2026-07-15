@@ -10,7 +10,7 @@ import {
   CADASTRO_EDITAR_MINIMO,
   CADASTRO_EXCLUIR_MINIMO,
 } from "@/lib/rbac";
-import { requireModulo } from "@/lib/permissoes.server";
+import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
 import { PageHeader } from "@/components/shared/page-header";
 import { SearchInput } from "@/components/shared/search-input";
 import { DataTable, type Column } from "@/components/shared/data-table";
@@ -29,7 +29,7 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   const config = getEntidade(entidade);
   if (!config) notFound();
 
-  await requireModulo("cadastros", "VER");
+  const acesso = await requireModulo("cadastros", "VER");
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, CADASTRO_EDITAR_MINIMO);
   const podeExcluir = podePapel(user.papel, CADASTRO_EXCLUIR_MINIMO);
@@ -38,7 +38,13 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   const incluirArquivados = sp.arquivados === "1";
   const pageNum = typeof sp.page === "string" ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
 
-  const { rows: rowsRaw, total, page, totalPages } = await repo.listar(config, { q, incluirArquivados, page: pageNum });
+  // Clientes: sem ADMIN em cadastros, o atendimento só vê os que cadastrou ou é atendimento/estrategista.
+  const extraWhere =
+    entidade === "clientes" && !verTudoNoModulo(acesso, "cadastros")
+      ? { OR: [{ criadoPorId: acesso.id }, { atendimentoId: acesso.id }, { estrategiaId: acesso.id }] }
+      : undefined;
+
+  const { rows: rowsRaw, total, page, totalPages } = await repo.listar(config, { q, incluirArquivados, page: pageNum, extraWhere });
   const rows = rowsRaw as Registro[];
 
   const columns: Column<Registro>[] = [

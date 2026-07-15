@@ -116,6 +116,7 @@ model Usuario {
   aprovacaoLotesCriados AprovacaoLote[]           @relation("AprovacaoLoteCriadoPor")
   clientesAtendimento   Cliente[]                 @relation("ClienteAtendimento")
   clientesEstrategia    Cliente[]                 @relation("ClienteEstrategia")
+  clientesCadastrados   Cliente[]                 @relation("ClienteCriadoPor")
   planejamentosCriados  PlanejamentoPeriodo[]     @relation("PlanejamentoCriadoPor")
   feedbacksCriados      Feedback[]                @relation("FeedbackAutor")
   feedbacksRespondidos  Feedback[]                @relation("FeedbackRespondidoPor")
@@ -355,6 +356,7 @@ model Cliente {
   // Estação do Cliente — responsáveis da conta.
   atendimentoId       String? // responsável pelo atendimento
   estrategiaId        String? // responsável pela estratégia
+  criadoPorId         String? // quem cadastrou o cliente
   arquivado           Boolean  @default(false)
   criadoEm            DateTime @default(now())
   atualizadoEm        DateTime @updatedAt
@@ -377,6 +379,7 @@ model Cliente {
   aprovacaoLotes    AprovacaoLote[]
   atendimento       Usuario?              @relation("ClienteAtendimento", fields: [atendimentoId], references: [id], onDelete: SetNull)
   estrategia        Usuario?              @relation("ClienteEstrategia", fields: [estrategiaId], references: [id], onDelete: SetNull)
+  criadoPor         Usuario?              @relation("ClienteCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
   dossie            ClienteDossie?
   escopoItens       EscopoItem[]
   acessos           ClienteAcesso[]
