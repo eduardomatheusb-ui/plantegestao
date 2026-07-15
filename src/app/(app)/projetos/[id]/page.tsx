@@ -12,6 +12,7 @@ import { TONE_BADGE } from "@/lib/projetos/estilo";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { iniciais } from "@/lib/format";
 import { BrandHero } from "@/components/shared/brand-hero";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { FolderKanban } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -148,7 +149,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
             </CardHeader>
             <CardContent>
               {projeto.briefing ? (
-                <p className="whitespace-pre-wrap text-sm text-foreground">{projeto.briefing}</p>
+                <TextoComLinks texto={projeto.briefing} className="text-sm text-foreground" />
               ) : (
                 <p className="text-sm text-muted-foreground">Sem briefing.</p>
               )}

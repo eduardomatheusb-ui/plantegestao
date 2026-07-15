@@ -11,6 +11,7 @@ import { GerarFinanceiro } from "@/components/propostas/gerar-financeiro";
 import { STATUS_LABEL, STATUS_BADGE } from "@/lib/propostas/status";
 import { formatBRL, formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/shared/page-header";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -176,7 +177,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
           {podeEditar ? (
             <IntroducaoEditor id={proposta.id} introducao={proposta.introducao} />
           ) : proposta.introducao ? (
-            <p className="whitespace-pre-wrap text-sm">{proposta.introducao}</p>
+            <TextoComLinks texto={proposta.introducao} className="text-sm" />
           ) : (
             <p className="text-sm text-muted-foreground">Sem introdução.</p>
           )}
@@ -233,7 +234,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
           {podeEditar ? (
             <ConsideracoesEditor id={proposta.id} consideracoes={proposta.consideracoesFinais} />
           ) : proposta.consideracoesFinais ? (
-            <p className="whitespace-pre-wrap text-sm">{proposta.consideracoesFinais}</p>
+            <TextoComLinks texto={proposta.consideracoesFinais} className="text-sm" />
           ) : (
             <p className="text-sm text-muted-foreground">Sem considerações finais.</p>
           )}

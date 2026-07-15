@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { obterCampanha } from "@/lib/trafego/queries";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { excluirCampanha } from "@/lib/trafego/actions";
 import { rotuloPlataforma, rotuloStatusCampanha, corStatusCampanha } from "@/lib/trafego/constantes";
 import { BrandHero } from "@/components/shared/brand-hero";
@@ -74,7 +75,7 @@ export default async function CampanhaDetalhePage({ params }: { params: Promise<
           <div><p className="text-xs uppercase tracking-wide text-muted-foreground">Objetivo</p><p className="mt-0.5 font-medium">{c.objetivo ?? "—"}</p></div>
           <div><p className="text-xs uppercase tracking-wide text-muted-foreground">CTR</p><p className="mt-0.5 font-medium">{t.ctr != null ? `${t.ctr.toFixed(2)}%` : "—"}</p></div>
           <div><p className="text-xs uppercase tracking-wide text-muted-foreground">Conversões</p><p className="mt-0.5 font-medium tabular-nums">{t.conversoes.toLocaleString("pt-BR")}</p></div>
-          {c.observacao && <div className="sm:col-span-4"><p className="text-xs uppercase tracking-wide text-muted-foreground">Observação</p><p className="mt-0.5 whitespace-pre-wrap">{c.observacao}</p></div>}
+          {c.observacao && <div className="sm:col-span-4"><p className="text-xs uppercase tracking-wide text-muted-foreground">Observação</p><TextoComLinks texto={c.observacao} className="mt-0.5" /></div>}
         </CardContent>
       </Card>
 

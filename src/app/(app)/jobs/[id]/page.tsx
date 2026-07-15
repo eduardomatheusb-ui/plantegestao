@@ -11,6 +11,7 @@ import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
 import { formatDate, cn } from "@/lib/utils";
 import { formatHoras } from "@/lib/projetos/situacao";
 import { BrandHero } from "@/components/shared/brand-hero";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { ListChecks } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -243,7 +244,7 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
             </CardHeader>
             <CardContent className="space-y-4">
               {job.briefing ? (
-                <p className="whitespace-pre-wrap text-sm text-foreground">{job.briefing}</p>
+                <TextoComLinks texto={job.briefing} className="text-sm text-foreground" />
               ) : (
                 <p className="text-sm text-muted-foreground">Sem briefing.</p>
               )}

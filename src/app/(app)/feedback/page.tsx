@@ -5,6 +5,7 @@ import { mudarStatusFeedback } from "@/lib/feedback/actions";
 import { ResponderForm } from "@/components/feedback/responder-form";
 import { rotuloTipo, corTipo, rotuloStatus, corStatus, FEEDBACK_STATUS } from "@/lib/feedback/constants";
 import { PageHeader } from "@/components/shared/page-header";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FeedbackForm } from "@/components/feedback/feedback-form";
 import { formatDate } from "@/lib/utils";
@@ -82,12 +83,12 @@ function Secao({
                 </div>
 
                 <p className="text-sm font-medium">{f.titulo}</p>
-                {f.descricao && <p className="whitespace-pre-wrap text-sm text-muted-foreground">{f.descricao}</p>}
+                {f.descricao && <TextoComLinks texto={f.descricao} className="text-sm text-muted-foreground" />}
 
                 {f.resposta && (
                   <div className="rounded-md border-l-2 border-primary bg-muted/40 p-3 text-sm">
                     <p className="mb-0.5 text-xs font-semibold text-muted-foreground">Resposta {f.respondidoPor ? `· ${f.respondidoPor.nome}` : ""}</p>
-                    <p className="whitespace-pre-wrap">{f.resposta}</p>
+                    <TextoComLinks texto={f.resposta} />
                   </div>
                 )}
 

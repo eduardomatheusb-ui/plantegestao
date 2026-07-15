@@ -29,6 +29,7 @@ import { OnboardingPanel } from "@/components/onboarding/onboarding-panel";
 import { PortalPanel } from "@/components/portal/portal-panel";
 import { HistoryPanel } from "@/components/shared/history-panel";
 import { AttachmentsPanel } from "@/components/shared/attachments-panel";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { EstacaoTabs, type AbaEstacao } from "@/components/clientes/estacao-tabs";
 import { ResponsaveisConta } from "@/components/clientes/responsaveis-conta";
 import { iniciais } from "@/lib/format";
@@ -69,7 +70,7 @@ function Campo({ rotulo, valor }: { rotulo: string; valor?: string | null }) {
   return (
     <div className="space-y-0.5">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{rotulo}</p>
-      <p className="whitespace-pre-wrap text-sm">{valor}</p>
+      <TextoComLinks texto={valor} className="text-sm" />
     </div>
   );
 }
@@ -939,7 +940,7 @@ export default async function ClienteEstacaoPage({
           {c.condicoesComerciais && (
             <Card>
               <CardHeader><CardTitle className="text-base">Condições comerciais</CardTitle></CardHeader>
-              <CardContent><p className="whitespace-pre-wrap text-sm">{c.condicoesComerciais}</p></CardContent>
+              <CardContent><TextoComLinks texto={c.condicoesComerciais} className="text-sm" /></CardContent>
             </Card>
           )}
         </>

@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmButton } from "@/components/shared/confirm-button";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { HistoryPanel } from "@/components/shared/history-panel";
 import { OsStatusSelect } from "@/components/os/status-select";
 import { OsItemRow, OsAddItem } from "@/components/os/itens";
@@ -146,7 +147,7 @@ export default async function OsDetalhePage({ params }: { params: Promise<{ id: 
       {os.observacao && (
         <Card>
           <CardHeader><CardTitle>Observação</CardTitle></CardHeader>
-          <CardContent><p className="whitespace-pre-wrap text-sm">{os.observacao}</p></CardContent>
+          <CardContent><TextoComLinks texto={os.observacao} className="text-sm" /></CardContent>
         </Card>
       )}
 

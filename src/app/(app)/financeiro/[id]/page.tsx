@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { HistoryPanel } from "@/components/shared/history-panel";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { NfPainel } from "@/components/os/nf-painel";
 
 function Info({ rotulo, valor }: { rotulo: string; valor: React.ReactNode }) {
@@ -99,7 +100,7 @@ export default async function LancamentoDetalhePage({ params }: { params: Promis
       {l.observacao && (
         <Card>
           <CardHeader><CardTitle>Observação</CardTitle></CardHeader>
-          <CardContent><p className="whitespace-pre-wrap text-sm">{l.observacao}</p></CardContent>
+          <CardContent><TextoComLinks texto={l.observacao} className="text-sm" /></CardContent>
         </Card>
       )}
 

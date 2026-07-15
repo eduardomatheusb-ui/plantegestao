@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { ConverterButton } from "@/components/crm/converter-button";
 import { HistoryPanel } from "@/components/shared/history-panel";
+import { TextoComLinks } from "@/components/shared/texto-com-links";
 import { formatBRL, formatDate } from "@/lib/utils";
 
 function Info({ rotulo, valor }: { rotulo: string; valor: React.ReactNode }) {
@@ -82,7 +83,7 @@ export default async function LeadDetalhePage({ params }: { params: Promise<{ id
       {l.observacao && (
         <Card>
           <CardHeader><CardTitle>Observação</CardTitle></CardHeader>
-          <CardContent><p className="whitespace-pre-wrap text-sm">{l.observacao}</p></CardContent>
+          <CardContent><TextoComLinks texto={l.observacao} className="text-sm" /></CardContent>
         </Card>
       )}
 
