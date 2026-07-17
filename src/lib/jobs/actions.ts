@@ -342,7 +342,25 @@ export async function toggleTarefa(id: string) {
 
   const concluida = !t.concluida;
   await db.jobTarefa.update({ where: { id }, data: { concluida, concluidaEm: concluida ? new Date() : null } });
+  // Concluir/reabrir etapa muda a pauta de quem é dono dela.
   revalidatePath(`/jobs/${t.jobId}`);
+  revalidatePath("/jobs");
+  revalidatePath("/dashboard");
+}
+
+/** Define (ou tira) o dono de uma etapa que já existe. Destrava a pauta por etapa. */
+export async function definirResponsavelTarefa(id: string, responsavelId: string | null) {
+  const user = await userOrThrow();
+  const t = await db.jobTarefa.findUnique({ where: { id }, select: { jobId: true, responsavelId: true, descricao: true } });
+  if (!t) return;
+  const novo = responsavelId || null;
+  await db.jobTarefa.update({ where: { id }, data: { responsavelId: novo } });
+  if (novo && novo !== t.responsavelId) {
+    await notificar({ usuarioId: novo, atorId: user.id, tipo: "atribuicao", titulo: "Etapa atribuída a você", descricao: t.descricao, entidadeTipo: "job", entidadeId: t.jobId, url: `/jobs/${t.jobId}` });
+  }
+  revalidatePath(`/jobs/${t.jobId}`);
+  revalidatePath("/jobs");
+  revalidatePath("/dashboard");
 }
 
 /** Liga/desliga o workflow (tarefas em sequência) do job. */

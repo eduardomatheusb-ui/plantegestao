@@ -1,5 +1,26 @@
 import { db } from "@/lib/db";
 
+/**
+ * Regra da "minha pauta" de um usuário. A pauta é guiada por ETAPAS (tarefas):
+ *  A) tenho uma etapa atribuída a mim ainda não concluída → está na minha pauta;
+ *  B) não tenho etapa minha nesse job → cai na regra antiga: sou responsável do
+ *     job, ou corresponsável que ainda não marcou "concluí minha parte".
+ * Assim, ao concluir a minha etapa, o job sai da minha pauta sozinho.
+ */
+export function filtroPauta(userId: string) {
+  return {
+    OR: [
+      { tarefas: { some: { responsavelId: userId, concluida: false } } },
+      {
+        AND: [
+          { tarefas: { none: { responsavelId: userId } } },
+          { OR: [{ responsavelId: userId }, { envolvidos: { some: { usuarioId: userId, concluidoEm: null } } }] },
+        ],
+      },
+    ],
+  };
+}
+
 export type ListarJobsOpts = {
   q?: string;
   statusId?: string;
@@ -47,8 +68,8 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   const and: Record<string, unknown>[] = [];
   // "Minha pauta": jobs em que sou responsável OU estou entre os envolvidos.
   if (opts.minhasDoUsuario) {
-    // Corresponsável que já concluiu a própria parte sai da pauta dele.
-    and.push({ OR: [{ responsavelId: opts.minhasDoUsuario }, { envolvidos: { some: { usuarioId: opts.minhasDoUsuario, concluidoEm: null } } }] });
+    // Pauta guiada por etapas: fica enquanto eu tiver etapa pendente (ver filtroPauta).
+    and.push(filtroPauta(opts.minhasDoUsuario));
   }
   if (opts.q) {
     and.push({ OR: [

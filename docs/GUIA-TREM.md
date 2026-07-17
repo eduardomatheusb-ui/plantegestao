@@ -244,11 +244,17 @@ auditar as entregas.
 > **aparece na sua pauta** (e você recebe a notificação), sem precisar avisar por fora. O
 > mesmo vale para a "sua pauta" na **Minha página**.
 >
-> **Terminou a sua parte?** No job, clique em **"Concluí minha parte"**. O job **sai da sua
-> pauta** (ele continua vivo com quem faltar — não conclui o job). É pra isso: quando você
-> editou o vídeo e o resto virou função de outra pessoa, não fica acumulando na sua lista.
-> Dá para **Reabrir** a qualquer momento se voltar pra você. Só aparece para quem é
-> **corresponsável** (o responsável segue com o job até ele ser concluído).
+> **A pauta segue as etapas (subtarefas).** No job, cada **etapa** (Roteiro, Edição,
+> Postagem…) pode ter um **dono** — é só escolher no seletor **"quem faz?"** ao lado da
+> etapa (funciona em etapa nova ou já existente). A partir daí: **o job fica na sua pauta
+> enquanto a SUA etapa não estiver concluída**. Marcou a sua etapa como feita → o job
+> **sai da sua pauta sozinho** e continua com quem tem a próxima etapa. Ex.: no reel, a
+> Julia faz o roteiro, a Larissa edita, o Vitor posta — cada um vê o job só na vez dele.
+>
+> **E se o job não tiver etapa sua?** Aí vale a regra simples: ele fica na sua pauta
+> enquanto você for **responsável ou corresponsável**. Terminou e virou função de outro?
+> Clique em **"Concluí minha parte"** no job — ele sai da sua pauta (sem concluir o job),
+> e dá pra **Reabrir** se voltar pra você.
 >
 > Essas pautas listam **pendências**: quando um job é **concluído, ele sai da pauta**
 > automaticamente (mas continua na **Pauta por status**, na coluna Concluído, na **Lista** e no

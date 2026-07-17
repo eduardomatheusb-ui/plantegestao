@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { filtroPauta } from "@/lib/jobs/queries";
 
 /** Limites do dia de hoje (servidor em horário local UTC-3). */
 function hoje() {
@@ -29,8 +30,8 @@ export async function aniversariantesDoMes(): Promise<{ id: string; nome: string
 export async function minhaPauta(userId: string) {
   const jobs = await db.job.findMany({
     // Responsável OU envolvido: a pauta mostra tudo que é meu, não só o que eu subi.
-    // Corresponsável que já marcou "concluí minha parte" sai da pauta (concluidoEm != null).
-    where: { arquivado: false, status: { isConcluido: false }, OR: [{ responsavelId: userId }, { envolvidos: { some: { usuarioId: userId, concluidoEm: null } } }] },
+    // Pauta guiada por etapas (ver filtroPauta): sai quando concluo minha etapa/parte.
+    where: { arquivado: false, status: { isConcluido: false }, ...filtroPauta(userId) },
     orderBy: [{ prazo: { sort: "asc", nulls: "last" } }],
     take: 6,
     include: { cliente: { select: { nome: true } }, status: { select: { nome: true, cor: true } } },

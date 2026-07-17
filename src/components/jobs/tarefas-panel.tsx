@@ -3,8 +3,8 @@ import { db } from "@/lib/db";
 import { adicionarTarefa, toggleTarefa, removerTarefa, definirWorkflow } from "@/lib/jobs/actions";
 import { TarefaAddForm } from "./tarefa-add-form";
 import { TarefaPrazo } from "./tarefa-prazo";
+import { TarefaResponsavel } from "./tarefa-responsavel";
 import { InlineAction } from "@/components/shared/inline-action";
-import { iniciais } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -83,14 +83,7 @@ export async function TarefasPanel({
                   prazo={t.prazo ? ymd(t.prazo) : ""}
                   atrasada={!!t.prazo && !t.concluida && t.prazo.getTime() < Date.now()}
                 />
-                {t.responsavel && (
-                  <span
-                    className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-bold"
-                    title={t.responsavel.nome}
-                  >
-                    {iniciais(t.responsavel.nome)}
-                  </span>
-                )}
+                <TarefaResponsavel tarefaId={t.id} atual={t.responsavelId} usuarios={usuarios} />
                 <InlineAction action={removerTarefa.bind(null, t.id)} title="Remover subtarefa">
                   <Trash2 className="size-3.5" />
                 </InlineAction>
