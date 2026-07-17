@@ -189,10 +189,12 @@ um job hoje é o que aparece nos painéis depois.
 - **Prioridade:** baixa, normal, alta ou urgente (alta e urgente ganham selo no card).
 - **Cliente** e **campanha/projeto** (opcional).
 - **Responsável** e **envolvidos**.
-  - **Regra fixa dos reels:** todo job do tipo **Reels** já entra com a **Larissa como
-    corresponsável** automaticamente (na criação e ao editar) — ela edita todos os reels.
-    Não precisa marcar na mão. Ela some da pauta dela quando concluir a etapa dela ou
-    clicar em **"Concluí minha parte"**, como em qualquer job.
+  - **Reels entram com o audiovisual:** todo job do tipo **Reels** já recebe, como
+    corresponsável, **quem é do audiovisual** — a regra segue a **função** cadastrada
+    (ex.: *Videomaker*), não uma pessoa fixa. Hoje isso é a Larissa (única da área); se
+    entrar outro editor, ele passa a entrar sozinho; se ela mudar de função, sai. Vale na
+    criação e ao editar, sem marcar na mão. A pessoa some da própria pauta ao concluir a
+    etapa dela ou clicar em **"Concluí minha parte"**, como em qualquer job.
 - **Recorrência:** semanal, quinzenal ou mensal. O sistema **gera cópias** do job sozinho.
 - **Depende de outro job:** o job fica "bloqueado" até o outro concluir (aparece 🔒 no card).
 - **Publicação (só postagens):** quando a peça for ao ar, marque **"Publicada"** no job (se

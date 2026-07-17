@@ -1,17 +1,28 @@
+import { db } from "@/lib/db";
+
 /**
- * Corresponsáveis FIXOS por tipo de job (resolvidos por e-mail em runtime).
+ * Corresponsáveis automáticos por ÁREA — não por pessoa.
  *
- * Regra da agência: quem cuida de um tipo de peça entra automaticamente como
- * corresponsável de todo job daquele tipo — na criação e ao editar. É só ajustar
- * a lista abaixo (por e-mail) para incluir/trocar pessoas por tipo.
+ * Cada tipo de job pode ter uma área responsável, identificada pela FUNÇÃO da
+ * pessoa (Colaborador.funcao, o mesmo texto do cadastro). Quem tem login ativo e
+ * função compatível entra sozinho como corresponsável dos jobs daquele tipo — na
+ * criação e ao editar. A regra segue a ÁREA: se entrar outro profissional da
+ * área, ele já participa; se a pessoa mudar de função, ela sai. Nenhum nome fixo.
  *
- * Hoje: a Larissa edita todos os reels → corresponsável fixa de "reels".
+ * Hoje: reels → audiovisual. A Larissa é "Videomaker" e, no momento, a única da
+ * área — mas é a função que manda, não ela.
  */
-export const CORRESP_FIXO_POR_TIPO: Record<string, string[]> = {
-  reels: ["larissa.prudencini@agenciaplante.com.br"],
+export const AREA_POR_TIPO: Record<string, RegExp> = {
+  reels: /videomaker|audiovisual|edi[cç][aã]o|\beditor|motion|filmmaker|cinegrafista|c[aâ]mera/i,
 };
 
-/** E-mails de corresponsáveis fixos para um tipo (vazio se não houver regra). */
-export function corresponsaveisFixos(tipo: string | null | undefined): string[] {
-  return CORRESP_FIXO_POR_TIPO[tipo ?? ""] ?? [];
+/** IDs de usuários (login ativo) da área responsável por um tipo. Vazio se não há regra. */
+export async function corresponsaveisDaArea(tipo: string | null | undefined): Promise<string[]> {
+  const re = AREA_POR_TIPO[tipo ?? ""];
+  if (!re) return [];
+  const cols = await db.colaborador.findMany({
+    where: { ativo: true, usuarioId: { not: null }, usuario: { is: { ativo: true } } },
+    select: { funcao: true, usuarioId: true },
+  });
+  return cols.filter((c) => c.funcao && re.test(c.funcao)).map((c) => c.usuarioId as string);
 }

@@ -9,7 +9,7 @@ import { registrarLog } from "@/lib/log";
 import { notificar, notificarMuitos } from "@/lib/notificacoes";
 import { TIPO_JOB_PADRAO, tipoJobSocial } from "./tipos";
 import { fluxoDoTipo } from "./fluxos";
-import { corresponsaveisFixos } from "./corresponsaveis";
+import { corresponsaveisDaArea } from "./corresponsaveis";
 import { adiar, chaveDia, type UnidadeAdiar } from "@/lib/datas-uteis";
 import { camposConclusao } from "@/lib/conclusao";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
@@ -100,11 +100,9 @@ export async function salvarJob(
     const ehSocial = tipoJobSocial(d.tipo);
     const formatos = ehSocial ? formData.getAll("formatos").map(String).filter(Boolean).join(",") || null : null;
     const envolvidos = [...new Set(formData.getAll("envolvidos").map(String).filter(Boolean))];
-    // Corresponsáveis fixos do tipo (ex.: a Larissa em todo reels): sempre entram.
-    const emailsFixos = corresponsaveisFixos(d.tipo);
-    if (emailsFixos.length) {
-      const fixos = await db.usuario.findMany({ where: { email: { in: emailsFixos }, ativo: true }, select: { id: true } });
-      for (const f of fixos) if (!envolvidos.includes(f.id)) envolvidos.push(f.id);
+    // Corresponsáveis automáticos da área do tipo (ex.: audiovisual em todo reels).
+    for (const uid of await corresponsaveisDaArea(d.tipo)) {
+      if (!envolvidos.includes(uid)) envolvidos.push(uid);
     }
     // Prazo de referência para "fora do prazo": prazo de criação (ou o de postagem, se social).
     const prazoRef = d.prazo ?? (ehSocial ? d.prazoPostagem : null);
