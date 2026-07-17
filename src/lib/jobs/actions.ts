@@ -9,6 +9,7 @@ import { registrarLog } from "@/lib/log";
 import { notificar, notificarMuitos } from "@/lib/notificacoes";
 import { TIPO_JOB_PADRAO, tipoJobSocial } from "./tipos";
 import { fluxoDoTipo } from "./fluxos";
+import { corresponsaveisFixos } from "./corresponsaveis";
 import { adiar, chaveDia, type UnidadeAdiar } from "@/lib/datas-uteis";
 import { camposConclusao } from "@/lib/conclusao";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
@@ -99,6 +100,12 @@ export async function salvarJob(
     const ehSocial = tipoJobSocial(d.tipo);
     const formatos = ehSocial ? formData.getAll("formatos").map(String).filter(Boolean).join(",") || null : null;
     const envolvidos = [...new Set(formData.getAll("envolvidos").map(String).filter(Boolean))];
+    // Corresponsáveis fixos do tipo (ex.: a Larissa em todo reels): sempre entram.
+    const emailsFixos = corresponsaveisFixos(d.tipo);
+    if (emailsFixos.length) {
+      const fixos = await db.usuario.findMany({ where: { email: { in: emailsFixos }, ativo: true }, select: { id: true } });
+      for (const f of fixos) if (!envolvidos.includes(f.id)) envolvidos.push(f.id);
+    }
     // Prazo de referência para "fora do prazo": prazo de criação (ou o de postagem, se social).
     const prazoRef = d.prazo ?? (ehSocial ? d.prazoPostagem : null);
 
@@ -174,12 +181,15 @@ export async function salvarJob(
       destino = `/jobs/${criado.id}`;
     }
 
-    // Envolvidos: substitui o conjunto + avisa os novos.
+    // Envolvidos: adiciona/remove sem apagar quem continua (preserva o
+    // "Concluí minha parte" — concluidoEm — de quem segue no job).
     const antigos = (await db.jobEnvolvido.findMany({ where: { jobId }, select: { usuarioId: true } })).map((e) => e.usuarioId);
-    await db.jobEnvolvido.deleteMany({ where: { jobId } });
-    if (envolvidos.length) {
-      await db.jobEnvolvido.createMany({ data: envolvidos.map((usuarioId) => ({ jobId, usuarioId })), skipDuplicates: true });
-      const novos = envolvidos.filter((u) => !antigos.includes(u) && u !== user.id);
+    const remover = antigos.filter((u) => !envolvidos.includes(u));
+    const adicionar = envolvidos.filter((u) => !antigos.includes(u));
+    if (remover.length) await db.jobEnvolvido.deleteMany({ where: { jobId, usuarioId: { in: remover } } });
+    if (adicionar.length) {
+      await db.jobEnvolvido.createMany({ data: adicionar.map((usuarioId) => ({ jobId, usuarioId })), skipDuplicates: true });
+      const novos = adicionar.filter((u) => u !== user.id);
       await notificarMuitos(novos, { atorId: user.id, tipo: "atribuicao", titulo: `Você foi incluído no job "${d.titulo}"`, entidadeTipo: "job", entidadeId: jobId, url: `/jobs/${jobId}` });
     }
   } catch (e) {
