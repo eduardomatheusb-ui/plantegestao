@@ -20,6 +20,7 @@ import { ConfirmButton } from "@/components/shared/confirm-button";
 import { MoverStatus } from "@/components/jobs/mover-status";
 import { TarefasPanel } from "@/components/jobs/tarefas-panel";
 import { AdiarPrazo } from "@/components/jobs/adiar-prazo";
+import { MinhaParte } from "@/components/jobs/minha-parte";
 import { CommentsPanel } from "@/components/shared/comments-panel";
 import { AttachmentsPanel } from "@/components/shared/attachments-panel";
 import { TimesheetPanel } from "@/components/shared/timesheet-panel";
@@ -48,6 +49,8 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
   const primeiroAberto = statuses.find((s) => !s.isConcluido);
   const hoje = new Date().toISOString().slice(0, 10);
   const atrasado = !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
+  // Sou corresponsável deste job? (habilita o "Concluí minha parte")
+  const meuEnvolvimento = job.envolvidos.find((e) => e.usuarioId === user.id);
   const ehSocial = tipoJobSocial(job.tipo);
   const formatos = ehSocial ? rotulosFormatos(job.formatos) : [];
 
@@ -171,6 +174,11 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tempo apontado</p>
             <p className="font-display text-sm font-semibold tabular-nums">{formatHoras(job.apontadoMin)}</p>
           </div>
+          {meuEnvolvimento && (
+            <div className="col-span-2 sm:col-span-4">
+              <MinhaParte jobId={job.id} concluida={!!meuEnvolvimento.concluidoEm} />
+            </div>
+          )}
           <div className="col-span-2 sm:col-span-4">
             <AdiarPrazo jobId={job.id} />
           </div>

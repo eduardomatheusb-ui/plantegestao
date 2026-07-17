@@ -983,10 +983,13 @@ model AprovacaoLoteItem {
 
 /// Pessoas envolvidas numa postagem/job (além do responsável).
 model JobEnvolvido {
-  jobId     String
-  usuarioId String
-  job       Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  jobId       String
+  usuarioId   String
+  /// Quando a pessoa marcou que a PARTE DELA acabou (o job segue com outros,
+  /// mas sai da pauta dela). Null = ainda na pauta.
+  concluidoEm DateTime?
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@id([jobId, usuarioId])
 }

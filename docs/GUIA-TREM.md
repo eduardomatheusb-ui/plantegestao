@@ -240,9 +240,15 @@ prazo / **no prazo** / **fora do prazo**) — o mesmo recorte do donut da Minha 
 auditar as entregas.
 
 > **Minha pauta** e **Por responsável** mostram os jobs em que você é **responsável _ou_
-> envolvido** — então, ao te marcarem como envolvida num reel/edição, ele **aparece na sua
-> pauta** (e você recebe a notificação), sem precisar avisar por fora. O mesmo vale para a
-> "sua pauta" na **Minha página**.
+> corresponsável** — então, ao te marcarem como corresponsável num reel/edição, ele
+> **aparece na sua pauta** (e você recebe a notificação), sem precisar avisar por fora. O
+> mesmo vale para a "sua pauta" na **Minha página**.
+>
+> **Terminou a sua parte?** No job, clique em **"Concluí minha parte"**. O job **sai da sua
+> pauta** (ele continua vivo com quem faltar — não conclui o job). É pra isso: quando você
+> editou o vídeo e o resto virou função de outra pessoa, não fica acumulando na sua lista.
+> Dá para **Reabrir** a qualquer momento se voltar pra você. Só aparece para quem é
+> **corresponsável** (o responsável segue com o job até ele ser concluído).
 >
 > Essas pautas listam **pendências**: quando um job é **concluído, ele sai da pauta**
 > automaticamente (mas continua na **Pauta por status**, na coluna Concluído, na **Lista** e no

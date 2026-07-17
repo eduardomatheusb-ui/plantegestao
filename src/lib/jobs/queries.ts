@@ -47,7 +47,8 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   const and: Record<string, unknown>[] = [];
   // "Minha pauta": jobs em que sou responsável OU estou entre os envolvidos.
   if (opts.minhasDoUsuario) {
-    and.push({ OR: [{ responsavelId: opts.minhasDoUsuario }, { envolvidos: { some: { usuarioId: opts.minhasDoUsuario } } }] });
+    // Corresponsável que já concluiu a própria parte sai da pauta dele.
+    and.push({ OR: [{ responsavelId: opts.minhasDoUsuario }, { envolvidos: { some: { usuarioId: opts.minhasDoUsuario, concluidoEm: null } } }] });
   }
   if (opts.q) {
     and.push({ OR: [

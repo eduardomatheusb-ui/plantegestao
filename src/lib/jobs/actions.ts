@@ -479,3 +479,35 @@ export async function excluirJobStatus(id: string) {
   revalidatePath("/jobs/status");
   revalidatePath("/jobs");
 }
+
+/**
+ * Corresponsável marca que a PARTE DELE acabou: o job continua vivo (com os
+ * outros), mas sai da pauta dessa pessoa. Pedido da equipe — evita acumular na
+ * pauta o que já virou função de outro.
+ */
+export async function concluirMinhaParte(jobId: string) {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Sessão expirada.");
+  await db.jobEnvolvido.update({
+    where: { jobId_usuarioId: { jobId, usuarioId: user.id } },
+    data: { concluidoEm: new Date() },
+  });
+  await registrarLog({ entidadeTipo: "job", entidadeId: jobId, usuarioId: user.id, acao: "concluiu a própria parte" });
+  revalidatePath("/dashboard");
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${jobId}`);
+}
+
+/** Desfaz o "concluí minha parte": o job volta para a pauta da pessoa. */
+export async function reabrirMinhaParte(jobId: string) {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Sessão expirada.");
+  await db.jobEnvolvido.update({
+    where: { jobId_usuarioId: { jobId, usuarioId: user.id } },
+    data: { concluidoEm: null },
+  });
+  await registrarLog({ entidadeTipo: "job", entidadeId: jobId, usuarioId: user.id, acao: "reabriu a própria parte" });
+  revalidatePath("/dashboard");
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${jobId}`);
+}
