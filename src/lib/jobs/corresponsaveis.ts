@@ -1,28 +1,31 @@
-import { db } from "@/lib/db";
-
 /**
- * Corresponsáveis automáticos por ÁREA — não por pessoa.
+ * Regra de ÁREA por tipo de job — quem entra sozinho como corresponsável.
  *
- * Cada tipo de job pode ter uma área responsável, identificada pela FUNÇÃO da
- * pessoa (Colaborador.funcao, o mesmo texto do cadastro). Quem tem login ativo e
- * função compatível entra sozinho como corresponsável dos jobs daquele tipo — na
- * criação e ao editar. A regra segue a ÁREA: se entrar outro profissional da
- * área, ele já participa; se a pessoa mudar de função, ela sai. Nenhum nome fixo.
+ * A área é identificada pela FUNÇÃO da pessoa (Colaborador.funcao, o mesmo texto
+ * do cadastro): se a função contiver algum dos termos da área, a pessoa entra.
+ * A regra segue a área, nunca uma pessoa — se entrar outro profissional com a
+ * mesma função, ele já participa; se alguém mudar de função, sai.
  *
- * Hoje: reels → audiovisual. A Larissa é "Videomaker" e, no momento, a única da
- * área — mas é a função que manda, não ela.
+ * Os valores aqui são o PADRÃO DE FÁBRICA. O que estiver salvo em
+ * Configurações → Fluxos de trabalho tem prioridade (ver lib/jobs/config.ts).
  */
-export const AREA_POR_TIPO: Record<string, RegExp> = {
-  reels: /videomaker|audiovisual|edi[cç][aã]o|\beditor|motion|filmmaker|cinegrafista|c[aâ]mera/i,
+
+/** Termos de função por tipo de job. Hoje: reels → audiovisual. */
+export const AREA_PADRAO: Record<string, string[]> = {
+  reels: ["videomaker", "audiovisual", "edição", "editor", "motion", "filmmaker", "cinegrafista", "câmera"],
 };
 
-/** IDs de usuários (login ativo) da área responsável por um tipo. Vazio se não há regra. */
-export async function corresponsaveisDaArea(tipo: string | null | undefined): Promise<string[]> {
-  const re = AREA_POR_TIPO[tipo ?? ""];
-  if (!re) return [];
-  const cols = await db.colaborador.findMany({
-    where: { ativo: true, usuarioId: { not: null }, usuario: { is: { ativo: true } } },
-    select: { funcao: true, usuarioId: true },
+/** Minúsculas e sem acento — para comparar "Edição" com "edicao". */
+export function normalizarFuncao(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+/** A função da pessoa pertence à área? (basta conter um dos termos) */
+export function funcaoCombina(funcao: string | null | undefined, termos: string[]): boolean {
+  if (!funcao) return false;
+  const f = normalizarFuncao(funcao);
+  return termos.some((t) => {
+    const termo = normalizarFuncao(t);
+    return termo.length > 0 && f.includes(termo);
   });
-  return cols.filter((c) => c.funcao && re.test(c.funcao)).map((c) => c.usuarioId as string);
 }

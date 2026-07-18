@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, Users, ShieldCheck, ListChecks, Package, ListTree } from "lucide-react";
+import { Building2, Users, ShieldCheck, ListChecks, Package, ListTree, Workflow } from "lucide-react";
 import { requireModulo } from "@/lib/permissoes.server";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card } from "@/components/ui/card";
@@ -11,6 +11,7 @@ const ITENS = [
   { href: "/cadastros/produtos", icon: Package, titulo: "Produtos / Serviços", desc: "Catálogo usado em propostas e orçamentos." },
   { href: "/cadastros/categorias", icon: ListTree, titulo: "Categorias", desc: "Plano de contas (receitas e despesas)." },
   { href: "/jobs/status", icon: ListChecks, titulo: "Status de jobs", desc: "Configure as etapas do fluxo (kanban) dos jobs." },
+  { href: "/configuracoes/fluxos", icon: Workflow, titulo: "Fluxos de trabalho", desc: "Etapas que nascem com cada tipo de job e quem entra automaticamente." },
 ];
 
 export default async function ConfiguracoesHubPage() {

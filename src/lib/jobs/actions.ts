@@ -8,8 +8,7 @@ import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
 import { notificar, notificarMuitos } from "@/lib/notificacoes";
 import { TIPO_JOB_PADRAO, tipoJobSocial } from "./tipos";
-import { fluxoDoTipo } from "./fluxos";
-import { corresponsaveisDaArea } from "./corresponsaveis";
+import { etapasDoTipo, corresponsaveisDaArea } from "./config";
 import { adiar, chaveDia, type UnidadeAdiar } from "@/lib/datas-uteis";
 import { camposConclusao } from "@/lib/conclusao";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
@@ -163,7 +162,7 @@ export async function salvarJob(
           prazo: t.prazoRelativoDias != null ? new Date(inicio.getTime() + t.prazoRelativoDias * 86400000) : null,
         }));
       } else {
-        tarefasCriar = fluxoDoTipo(d.tipo).map((descricao, i) => ({ descricao, ordem: i }));
+        tarefasCriar = (await etapasDoTipo(d.tipo)).map((descricao, i) => ({ descricao, ordem: i }));
       }
       const criado = await db.job.create({
         data: {

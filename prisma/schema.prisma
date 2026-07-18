@@ -1541,3 +1541,27 @@ model ReembolsoDespesa {
   @@index([reembolsoId])
   @@index([clienteId])
 }
+
+/// Fluxo de etapas padrão de um TIPO de job — o roteiro que nasce junto com o job.
+/// Uma linha por tipo; `etapas` é um JSON com a lista ordenada (ex.: ["Briefing","Edição"]).
+/// A linha EXISTIR significa "configurado na tela" — inclusive lista vazia, quando o admin
+/// não quer etapa nenhuma. Sem linha, vale o padrão de fábrica (lib/jobs/fluxos.ts).
+model TipoJobFluxo {
+  id           String   @id @default(cuid())
+  tipo         String   @unique
+  etapas       String
+  atualizadoEm DateTime @updatedAt
+}
+
+/// Regra de corresponsável automático de um TIPO de job, por ÁREA.
+/// `funcoes` = termos de função separados por vírgula (ex.: "videomaker, audiovisual").
+/// Quem tem login ativo e função compatível entra sozinho como corresponsável.
+/// Sem linha aqui, vale o padrão de fábrica (lib/jobs/corresponsaveis.ts).
+model TipoJobArea {
+  id           String   @id @default(cuid())
+  tipo         String   @unique
+  funcoes      String
+  atualizadoEm DateTime @updatedAt
+
+  @@index([tipo])
+}

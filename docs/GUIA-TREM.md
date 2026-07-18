@@ -189,6 +189,9 @@ um job hoje é o que aparece nos painéis depois.
 - **Prioridade:** baixa, normal, alta ou urgente (alta e urgente ganham selo no card).
 - **Cliente** e **campanha/projeto** (opcional).
 - **Responsável** e **envolvidos**.
+  - **Você mesmo edita essa regra:** em **Administração → Fluxos de trabalho** dá para
+    escolher, por tipo de job, as **etapas** que nascem com ele e **quem entra automático**
+    (pela função). Não precisa de programador — veja a seção *Fluxos de trabalho*.
   - **Reels entram com o audiovisual:** todo job do tipo **Reels** já recebe, como
     corresponsável, **quem é do audiovisual** — a regra segue a **função** cadastrada
     (ex.: *Videomaker*), não uma pessoa fixa. Hoje isso é a Larissa (única da área); se
@@ -803,6 +806,20 @@ mundo, então vale critério.
   **editar** (nome e e-mail), **definir senha**, **vincular a um colaborador**, **desativar**
   ou **excluir**. O responsável da conta e o último admin têm proteção.
 - **Perfis de acesso:** controle fino por módulo (Nenhum, Ver, Editar, Admin).
+- **Fluxos de trabalho:** o que antes só o programador mudava. Por **tipo de job** (Reels,
+  Carrossel, Vídeo…), você define:
+  - **As etapas que nascem com o job** — o roteiro que a equipe vai marcando. Escreva
+    **uma etapa por linha**, na ordem em que acontecem; apague a linha para tirar a etapa e
+    mova a linha para trocar a ordem. Pode deixar em branco se o tipo não deve nascer com
+    etapa nenhuma.
+  - **Quem entra automaticamente** como corresponsável — marque a **função** de quem cuida
+    daquele tipo de peça (ex.: *Videomaker* no Reels). A regra segue a **função**, não a
+    pessoa: quem entrar depois com essa função já participa sozinho, e quem mudar de função
+    sai. A tela mostra na hora **quem entra hoje** naquele tipo.
+
+  Dois cuidados: a mudança vale para os **próximos jobs** (os já criados não mudam sozinhos),
+  e todo tipo que você nunca mexeu fica marcado como **padrão** — o botão **"Voltar ao
+  padrão"** desfaz a personalização e devolve o comportamento original de fábrica.
 - **Empresa:** dados da empresa (usados nos PDFs), dados fiscais (NFS-e), link de emissão de
   nota e a **meta de faturamento mensal**.
 - **IA (opcional):** para ligar o "Gerar com IA" (ata e briefing), adicione a chave
