@@ -100,9 +100,18 @@ export default async function ImprimirRelatorioFinanceiroPage({
           .no-print { display:none !important; }
           body { background:#fff !important; }
           * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+          /* Tabela longa PODE atravessar páginas: o cabeçalho se repete e nenhuma
+             linha é partida ao meio. Não usar break-inside:avoid na seção inteira —
+             a tabela seria empurrada para a página seguinte, sobrando espaço em branco. */
           thead { display: table-header-group; }
-          tr { break-inside: avoid; }
-          section { break-inside: avoid-page; }
+          tr, img { break-inside: avoid; }
+
+          /* Título nunca fica órfão no pé da página, separado da sua tabela. */
+          h2 { break-after: avoid; }
+
+          /* Só os blocos curtos ficam inteiros: resumo, gráfico, caixa de resultado. */
+          .evitar-quebra, footer { break-inside: avoid; }
         }
       `}</style>
       <PrintButton />
@@ -127,7 +136,7 @@ export default async function ImprimirRelatorioFinanceiroPage({
         <p className="mt-4 text-xs text-neutral-500">{meta.sub}</p>
 
         {/* Resumo do topo — a leitura rápida antes do detalhe. */}
-        <section className="mt-3 grid grid-cols-4 gap-2">
+        <section className="evitar-quebra mt-3 grid grid-cols-4 gap-2">
           <Tile rotulo="Receitas" valor={dre.totalReceitas} tom="receita" />
           <Tile rotulo="Despesas" valor={dre.totalDespesas} tom="despesa" />
           <Tile rotulo="Resultado" valor={dre.resultado} tom="neutro" />
@@ -189,7 +198,7 @@ export default async function ImprimirRelatorioFinanceiroPage({
               </table>
             </section>
 
-            <section className="mt-6 flex items-center justify-between rounded-md border-2 border-[#050505] px-4 py-3">
+            <section className="evitar-quebra mt-6 flex items-center justify-between rounded-md border-2 border-[#050505] px-4 py-3">
               <span className="font-display text-base font-bold">RESULTADO DO EXERCÍCIO</span>
               <span className={`font-display text-2xl font-bold tabular-nums ${dre.resultado < 0 ? "text-red-700" : "text-emerald-700"}`}>
                 {dre.resultado < 0 ? "−" : ""}{formatBRL(Math.abs(dre.resultado))}
@@ -201,7 +210,7 @@ export default async function ImprimirRelatorioFinanceiroPage({
         {/* Fluxo de caixa — gráfico de 12 meses + tabela. */}
         {rel === "fluxo-caixa" && (
           <>
-            <section className="mt-6">
+            <section className="evitar-quebra mt-6">
               <h2 className="font-display text-base font-bold">Receitas × Despesas no ano</h2>
               <div className="mt-3 flex items-end gap-1.5 border-b border-neutral-300 pb-1">
                 {fluxo.map((m) => (
