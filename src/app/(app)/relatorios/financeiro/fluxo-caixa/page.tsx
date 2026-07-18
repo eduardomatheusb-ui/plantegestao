@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { YearNav } from "@/components/relatorios/year-nav";
-import { ExportCSV } from "@/components/relatorios/export-csv";
+import { ExportRelatorio } from "@/components/relatorios/export-relatorio";
 import { formatBRL, cn } from "@/lib/utils";
 
 export default async function FluxoCaixaPage({ searchParams }: { searchParams: Promise<{ ano?: string }> }) {
@@ -29,7 +29,7 @@ export default async function FluxoCaixaPage({ searchParams }: { searchParams: P
       <PageHeader
         titulo="Fluxo de Caixa"
         descricao="Resultado mês a mês e saldo acumulado no ano."
-        acao={<div className="flex flex-wrap gap-2"><ExportCSV rel="fluxo-caixa" ano={ano} /><Button asChild variant="outline"><Link href="/relatorios"><ArrowLeft className="size-4" />Relatórios</Link></Button></div>}
+        acao={<div className="flex flex-wrap gap-2"><ExportRelatorio rel="fluxo-caixa" ano={ano} /><Button asChild variant="outline"><Link href="/relatorios"><ArrowLeft className="size-4" />Relatórios</Link></Button></div>}
       />
       <YearNav ano={ano} />
 

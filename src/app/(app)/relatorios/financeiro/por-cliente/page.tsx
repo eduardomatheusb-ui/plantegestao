@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { YearNav } from "@/components/relatorios/year-nav";
 import { ParamSelect } from "@/components/relatorios/param-select";
-import { ExportCSV } from "@/components/relatorios/export-csv";
+import { ExportRelatorio } from "@/components/relatorios/export-relatorio";
 import { LancamentosReportTable } from "@/components/relatorios/lancamentos-table";
 import { EmptyState } from "@/components/shared/empty-state";
 
@@ -27,7 +27,7 @@ export default async function PorClientePage({ searchParams }: { searchParams: P
         descricao="Todas as receitas e despesas de um cliente no ano."
         acao={
           <div className="flex flex-wrap gap-2">
-            {clienteId && <ExportCSV rel="por-cliente" ano={ano} cliente={clienteId} />}
+            {clienteId && <ExportRelatorio rel="por-cliente" ano={ano} cliente={clienteId} />}
             <Button asChild variant="outline"><Link href="/relatorios"><ArrowLeft className="size-4" />Relatórios</Link></Button>
           </div>
         }

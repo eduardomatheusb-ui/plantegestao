@@ -662,12 +662,20 @@ parte financeira e a de trabalho em um só lugar, com navegação por ano.
 **Menu Financeiro, Relatórios.** DRE, Fluxo de Caixa, Lançamentos, por Cliente, Terceiros,
 com navegação por ano. Há também relatórios de trabalho (jobs, projetos, mídia).
 
-**Exportar para Excel.** Todo relatório financeiro tem o botão **"Exportar CSV"** no canto
-superior. O arquivo sai **exatamente com os filtros da tela** — o ano que você está vendo e,
-em *Por Cliente* / *Terceiros*, o cliente ou fornecedor selecionado (nesses dois, o botão só
-aparece depois de escolher). O arquivo abre direto no Excel em português (separador `;`,
-valores com vírgula e acentos corretos), pronto para mandar ao contador ou girar em tabela
-dinâmica.
+**Exportar: CSV e PDF.** Todo relatório financeiro tem dois botões no canto superior —
+**CSV** e **PDF**. Os dois saem **exatamente com os filtros da tela**: o ano que você está
+vendo e, em *Por Cliente* / *Terceiros*, o cliente ou fornecedor selecionado (nesses dois, os
+botões só aparecem depois de escolher).
+
+- **CSV** — abre direto no Excel em português (separador `;`, valores com vírgula e acentos
+  corretos). Use para mandar ao contador ou girar em tabela dinâmica.
+- **PDF** — abre o relatório **diagramado com a identidade da Plante** (logo, cabeçalho e
+  rodapé com razão social e CNPJ), pronto para reunião, sócio ou banco. A página abre numa
+  aba nova com o botão **"Imprimir / Salvar PDF"** no canto — no diálogo de impressão,
+  escolha *Salvar como PDF*. O layout traz um **resumo no topo** (receitas, despesas,
+  resultado e realizado), e cada relatório ganha o seu detalhe: o **DRE** mostra a
+  participação de cada categoria em barra e %, o **Fluxo de Caixa** traz um gráfico de
+  receitas × despesas nos 12 meses, e os demais trazem a tabela completa dos lançamentos.
 
 ---
 
