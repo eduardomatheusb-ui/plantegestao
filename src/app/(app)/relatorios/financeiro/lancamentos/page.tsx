@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { requireUser } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { buscarLancamentosAno } from "@/lib/relatorios/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { ExportRelatorio } from "@/components/relatorios/export-relatorio";
 import { LancamentosReportTable } from "@/components/relatorios/lancamentos-table";
 
 export default async function LancamentosReportPage({ searchParams }: { searchParams: Promise<{ ano?: string }> }) {
-  await requireUser();
+  await requireModulo("relatorios", "VER");
   const sp = await searchParams;
   const ano = Number(sp.ano) || new Date().getFullYear();
   const lancs = await buscarLancamentosAno(ano);

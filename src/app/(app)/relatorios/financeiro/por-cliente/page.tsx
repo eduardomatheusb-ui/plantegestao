@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { requireUser } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { buscarLancamentosCliente } from "@/lib/relatorios/queries";
 import { listarClientesAtivos } from "@/lib/projetos/queries";
 import { PageHeader } from "@/components/shared/page-header";
@@ -12,7 +12,7 @@ import { LancamentosReportTable } from "@/components/relatorios/lancamentos-tabl
 import { EmptyState } from "@/components/shared/empty-state";
 
 export default async function PorClientePage({ searchParams }: { searchParams: Promise<{ ano?: string; cliente?: string }> }) {
-  await requireUser();
+  await requireModulo("relatorios", "VER");
   const sp = await searchParams;
   const ano = Number(sp.ano) || new Date().getFullYear();
   const clienteId = sp.cliente;

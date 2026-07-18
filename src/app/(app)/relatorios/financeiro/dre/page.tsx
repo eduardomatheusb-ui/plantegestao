@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { requireUser } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { buscarLancamentosAno, paraLancRel } from "@/lib/relatorios/queries";
 import { agruparDRE } from "@/lib/relatorios/calculo";
 import { PageHeader } from "@/components/shared/page-header";
@@ -12,7 +12,7 @@ import { ExportRelatorio } from "@/components/relatorios/export-relatorio";
 import { formatBRL, cn } from "@/lib/utils";
 
 export default async function DREPage({ searchParams }: { searchParams: Promise<{ ano?: string }> }) {
-  await requireUser();
+  await requireModulo("relatorios", "VER");
   const sp = await searchParams;
   const ano = Number(sp.ano) || new Date().getFullYear();
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { requireUser } from "@/lib/rbac";
+import { requireModulo } from "@/lib/permissoes.server";
 import { buscarLancamentosFornecedor } from "@/lib/relatorios/queries";
 import { listarFornecedoresAtivos } from "@/lib/financeiro/queries";
 import { PageHeader } from "@/components/shared/page-header";
@@ -12,7 +12,7 @@ import { LancamentosReportTable } from "@/components/relatorios/lancamentos-tabl
 import { EmptyState } from "@/components/shared/empty-state";
 
 export default async function TerceirosPage({ searchParams }: { searchParams: Promise<{ ano?: string; fornecedor?: string }> }) {
-  await requireUser();
+  await requireModulo("relatorios", "VER");
   const sp = await searchParams;
   const ano = Number(sp.ano) || new Date().getFullYear();
   const fornecedorId = sp.fornecedor;
