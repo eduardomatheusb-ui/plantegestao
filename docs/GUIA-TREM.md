@@ -662,6 +662,13 @@ parte financeira e a de trabalho em um só lugar, com navegação por ano.
 **Menu Financeiro, Relatórios.** DRE, Fluxo de Caixa, Lançamentos, por Cliente, Terceiros,
 com navegação por ano. Há também relatórios de trabalho (jobs, projetos, mídia).
 
+**Exportar para Excel.** Todo relatório financeiro tem o botão **"Exportar CSV"** no canto
+superior. O arquivo sai **exatamente com os filtros da tela** — o ano que você está vendo e,
+em *Por Cliente* / *Terceiros*, o cliente ou fornecedor selecionado (nesses dois, o botão só
+aparece depois de escolher). O arquivo abre direto no Excel em português (separador `;`,
+valores com vírgula e acentos corretos), pronto para mandar ao contador ou girar em tabela
+dinâmica.
+
 ---
 
 ## 21. Clientes

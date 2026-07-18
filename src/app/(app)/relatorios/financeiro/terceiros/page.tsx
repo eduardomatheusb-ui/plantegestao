@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { YearNav } from "@/components/relatorios/year-nav";
 import { ParamSelect } from "@/components/relatorios/param-select";
+import { ExportCSV } from "@/components/relatorios/export-csv";
 import { LancamentosReportTable } from "@/components/relatorios/lancamentos-table";
 import { EmptyState } from "@/components/shared/empty-state";
 
@@ -24,7 +25,12 @@ export default async function TerceirosPage({ searchParams }: { searchParams: Pr
       <PageHeader
         titulo="Movimentação de Terceiros"
         descricao="Movimentação financeira por fornecedor no ano."
-        acao={<Button asChild variant="outline"><Link href="/relatorios"><ArrowLeft className="size-4" />Relatórios</Link></Button>}
+        acao={
+          <div className="flex flex-wrap gap-2">
+            {fornecedorId && <ExportCSV rel="terceiros" ano={ano} fornecedor={fornecedorId} />}
+            <Button asChild variant="outline"><Link href="/relatorios"><ArrowLeft className="size-4" />Relatórios</Link></Button>
+          </div>
+        }
       />
       <div className="flex flex-wrap items-center gap-3">
         <ParamSelect paramKey="fornecedor" options={fornecedores} placeholder="Selecione um fornecedor…" ariaLabel="Fornecedor" />
