@@ -131,8 +131,24 @@ function subtrairDiasUteis(d: Date, n: number, feriados: Set<string>): Date {
   return x;
 }
 
+const FUSO = "America/Sao_Paulo";
+const FMT_DIA = new Intl.DateTimeFormat("en-CA", {
+  timeZone: FUSO,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/**
+ * Dia do calendário de Brasília, normalizado para meia-noite UTC.
+ *
+ * O servidor do Netlify roda em UTC (3h à frente). Sem isto, um job com prazo
+ * em 20/07 às 23h de Brasília seria lido como 21/07 e sairia da lista de
+ * atrasados — o resumo erraria o dia em todo prazo do fim da noite.
+ */
 function inicioDoDia(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const [ano, mes, dia] = FMT_DIA.format(d).split("-").map(Number);
+  return new Date(Date.UTC(ano, mes - 1, dia));
 }
 
 /** Dias corridos entre duas datas (a - b), ignorando horário. */
@@ -152,16 +168,15 @@ function nomeCliente(c: { nome: string; nomeFantasia: string | null } | null): s
 /** Monta o pacote completo. Uma consulta grande de jobs + agregados. */
 export async function montarPacoteOperacoes(): Promise<PacoteOperacoes> {
   const agora = new Date();
-  const hoje = inicioDoDia(agora);
-  const iniMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
-  const proxMes = new Date(agora.getFullYear(), agora.getMonth() + 1, 1);
+  const hoje = inicioDoDia(agora); // dia de Brasília, não do servidor
+  const iniMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), 1));
+  const proxMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() + 1, 1));
 
   const feriadosRows = await db.feriado.findMany({ select: { data: true } });
   const feriados = new Set(feriadosRows.map((f) => chaveDia(f.data)));
 
   const limiteAprovacao = subtrairDiasUteis(agora, JANELAS.aprovacaoParadaDiasUteis, feriados);
   const limiteAtualizacao = subtrairDiasUteis(agora, JANELAS.semAtualizacaoDiasUteis, feriados);
-  const limiteVencendo = new Date(hoje.getTime() + JANELAS.vencendoEmDias * DIA_MS);
   const limiteContrato = new Date(agora.getTime() + JANELAS.contratoVencendoDias * DIA_MS);
   const limiteParado = new Date(agora.getTime() - JANELAS.clienteParadoDias * DIA_MS);
 
@@ -241,7 +256,7 @@ export async function montarPacoteOperacoes(): Promise<PacoteOperacoes> {
       if (dias > 0) {
         atrasados.push(linha(j, `Prazo interno venceu há ${dias} dia(s).`));
         somaCarga(pessoa, "atrasados");
-      } else if (j.prazo <= limiteVencendo) {
+      } else if (dias >= -JANELAS.vencendoEmDias) {
         vencendo.push(
           linha(j, dias === 0 ? "Prazo interno vence hoje." : `Prazo interno vence em ${-dias} dia(s).`),
         );
@@ -271,7 +286,7 @@ export async function montarPacoteOperacoes(): Promise<PacoteOperacoes> {
               : `Data de ir ao ar passou há ${dias} dia(s) e ninguém tocou no job desde antes disso — provável falta de marcação, não atraso.`,
           ),
         );
-      } else if (j.prazoPostagem <= limiteVencendo) {
+      } else if (dias >= -JANELAS.vencendoEmDias) {
         postagemAtrasada.push(
           linha(j, dias === 0 ? "Vai ao ar hoje e ainda não foi publicado." : `Vai ao ar em ${-dias} dia(s).`),
         );
