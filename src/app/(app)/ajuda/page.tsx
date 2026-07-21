@@ -17,7 +17,7 @@ const SECAO_MODULO: Record<number, ModuloKey | null> = {
   8: "jobs", 9: null, 10: "propostas", 11: "midia", 12: "midia", 13: "producao",
   14: "projetos", 15: "financeiro", 16: null, 17: "financeiro", 18: "financeiro",
   19: "relatorios", 20: "relatorios", 21: "cadastros", 22: "cadastros", 23: "admin",
-  24: null, 25: null, 26: null,
+  24: null, 25: null, 26: null, 27: null, 28: "admin",
 };
 
 function lerGuia(): string {

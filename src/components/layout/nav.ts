@@ -33,6 +33,7 @@ import {
   LayoutTemplate,
   ShieldCheck,
   BookMarked,
+  Bot,
   type LucideIcon,
 } from "lucide-react";
 import { nivelAtende, type ModuloKey, type Capacidades } from "@/lib/permissoes";
@@ -95,6 +96,7 @@ export const NAV: NavGroup[] = [
     titulo: "Gestão",
     itens: [
       { label: "Painel Estratégico", href: "/painel-estrategico", icon: TrendingUp, modulo: "admin", nivelMin: "ADMIN", disponivel: true },
+      { label: "Agente de Operações", href: "/agentes/operacoes", icon: Bot, modulo: "admin", nivelMin: "ADMIN", disponivel: true },
       { label: "Indicadores", href: "/indicadores", icon: Gauge, modulo: "relatorios", disponivel: true },
       { label: "Produtividade", href: "/indicadores/produtividade", icon: Activity, modulo: "relatorios", disponivel: true },
       { label: "Saúde financeira", href: "/saude-financeira", icon: HeartPulse, modulo: "financeiro", disponivel: true },

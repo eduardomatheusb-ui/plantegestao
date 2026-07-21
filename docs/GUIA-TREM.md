@@ -43,6 +43,8 @@ Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas p
 24. [Portal do cliente (o que o cliente vê)](#24-portal-do-cliente)
 25. [Acessibilidade](#25-acessibilidade)
 26. [Boas práticas gerais](#26-boas-práticas-gerais)
+27. [Melhorias e erros (canal da equipe)](#27-melhorias-e-erros-canal-da-equipe)
+28. [Agente de Operações (pacote de dados)](#28-agente-de-operações-pacote-de-dados)
 
 ---
 
@@ -915,6 +917,68 @@ erros** — assim nada se perde em conversa de corredor e a gente acompanha até
 em qual tela). Clique em **Registrar**. Todo mundo vê a lista, separada em **Em aberto** e
 **Resolvidos**, com quem registrou e quando. **Gestores** movem o status (Aberto → Em
 análise → Resolvido) e podem **responder** (a resposta aparece no card e marca como resolvido).
+
+---
+
+## 28. Agente de Operações (pacote de dados)
+
+Tela de direção que junta, numa página só, tudo que está fora do lugar na operação: job
+atrasado, sem responsável, travado, com briefing vazio, cliente que não respondeu a
+aprovação, escopo do mês estourado e contrato vencendo.
+
+**Onde:** menu **Gestão › Agente de Operações**. Exige nível **Administrador** no módulo
+Administração.
+
+**O que ela é hoje:** a primeira fase do agente de IA. Por enquanto ela **só mostra os
+dados** — nenhuma IA escreve nada aqui. A ideia é conferir se o material está certo
+**antes** de pedir para a IA resumir: se o dado estiver errado nesta tela, o texto da IA
+estaria errado também, só que com aparência de relatório pronto.
+
+**Como ler:**
+
+- **Números do topo** — cada quadrado é uma contagem. Em vermelho, o que precisa de decisão
+  hoje.
+- **Tabelas** — toda linha traz a coluna **Evidência**, dizendo por que aquele job entrou na
+  lista. Nada aparece sem motivo declarado.
+- **Escopo estourado** — contratado × utilizado no mês, pela mesma régua da Estação do
+  Cliente. É conta, não opinião.
+- **Carga por pessoa** — é **contagem de jobs, não horas**. O TREM não registra estimativa
+  de esforço nem capacidade semanal; qualquer número em horas seria invenção.
+- **O que o sistema não sabe** — a parte mais importante da tela. Lista o que não está
+  registrado no TREM e que, por isso, ninguém (nem a IA) tem como afirmar.
+
+**Janelas usadas:** *atrasado* = prazo interno já venceu; *vencendo* = vence em até 2 dias;
+*cliente não respondeu* = 1 dia útil sem resposta à aprovação; *parado* = 2 dias úteis sem
+nenhuma alteração no job.
+
+**Sobre prazo:** o campo **prazo** do job é o **prazo interno da equipe**. A data prometida
+ao cliente só existe em postagens (**prazo de postagem**). Por isso a tela mostra quantos
+jobs estão sem data de cliente registrada — é uma lacuna real, não um erro da tela.
+
+**Copiar JSON:** copia o pacote inteiro — é o material que o agente entrega à IA.
+
+### O resumo chega sozinho
+
+Você não precisa abrir esta tela. **Todo dia útil às 8h** o agente monta o pacote, escreve o
+resumo e entrega:
+
+- **Notificação no TREM** (sino), com a linha-resumo do dia;
+- **E-mail** com o texto completo, se o envio estiver configurado.
+
+Vai para quem tem **Administrador** no módulo Administração — o mesmo recorte desta tela. O
+resumo mostra todos os clientes e a carga de cada pessoa, então não pode chegar mais longe
+do que a tela que ele resume.
+
+**O resumo tem três partes:** o que precisa de decisão hoje, os padrões que os números
+mostram, e o que o sistema não permite afirmar.
+
+**Funciona com ou sem IA.** Sem a chave da Anthropic configurada, o resumo sai numa versão
+seca — mesmos números, texto mais duro. Com a chave, a IA escreve em linguagem corrida e
+conecta as informações. Em nenhum dos casos ela inventa: o texto vem só do que está
+registrado, e o próprio resumo declara o que não sabe.
+
+**O agente nunca age.** Não muda prazo, não mexe em status, não fala com cliente. Ele
+descreve e recomenda; decidir é sempre de uma pessoa.
 
 ---
 

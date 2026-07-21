@@ -33,6 +33,7 @@ const AJUDA_ANCORA: Record<string, string> = {
 const SECAO: Record<string, string> = {
   chat: "Chat",
   ajuda: "Ajuda",
+  agentes: "Agentes de IA",
   manual: "Bíblia Operacional",
   crm: "CRM",
   calendario: "Calendário editorial",
@@ -60,6 +61,8 @@ const SECAO: Record<string, string> = {
 const SUBPAGINA: Record<string, string> = {
   novo: "Novo",
   editar: "Editar",
+  graficas: "Comparar gráficas",
+  operacoes: "Operações",
   status: "Status",
   trabalho: "Trabalho",
   financeiro: "Financeiro",
