@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Plus, Pencil, Archive, ArchiveRestore, Trash2 } from "lucide-react";
-import { getEntidade, type Registro } from "@/lib/cadastros/registry";
+import { getEntidade, moduloDaEntidade, type Registro } from "@/lib/cadastros/registry";
 import * as repo from "@/lib/cadastros/repo";
 import { arquivarCadastro, excluirCadastro } from "@/lib/cadastros/actions";
 import {
@@ -29,7 +29,7 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   const config = getEntidade(entidade);
   if (!config) notFound();
 
-  const acesso = await requireModulo("cadastros", "VER");
+  const acesso = await requireModulo(moduloDaEntidade(config), "VER");
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, CADASTRO_EDITAR_MINIMO);
   const podeExcluir = podePapel(user.papel, CADASTRO_EXCLUIR_MINIMO);

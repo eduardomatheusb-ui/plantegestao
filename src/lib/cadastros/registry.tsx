@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL } from "@/lib/utils";
+import type { ModuloKey } from "@/lib/permissoes";
 
 // ───────────────────────────── Tipos ─────────────────────────────
 
@@ -54,6 +55,14 @@ export type EntityConfig = {
   rotulo: string; // singular
   rotuloPlural: string;
   descricao?: string;
+  /**
+   * Módulo que controla o acesso. Padrão: "cadastros".
+   *
+   * Contas bancárias e centros de custo são cadastros de estrutura financeira:
+   * ficam sob o módulo "financeiro" para que abrir o cadastro de clientes à
+   * equipe não abra junto o dinheiro da agência.
+   */
+  modulo?: ModuloKey;
   campos: FieldDef[];
   schema: z.ZodTypeAny;
   colunas: Coluna[];
@@ -460,6 +469,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
     rotulo: "Centro de custo",
     rotuloPlural: "Centros de custo",
     descricao: "Para rateio financeiro.",
+    modulo: "financeiro",
     softDelete: { field: "ativo", arquivadoValue: false },
     buscaFields: ["nome"],
     ordenarPor: "nome",
@@ -477,6 +487,7 @@ export const ENTIDADES: Record<string, EntityConfig> = {
     rotulo: "Conta bancária",
     rotuloPlural: "Contas bancárias",
     descricao: "Saldo inicial para o financeiro.",
+    modulo: "financeiro",
     softDelete: { field: "ativo", arquivadoValue: false },
     buscaFields: ["nome"],
     ordenarPor: "nome",
@@ -502,6 +513,11 @@ export const ENTIDADES: Record<string, EntityConfig> = {
 
 export function getEntidade(slug: string): EntityConfig | null {
   return ENTIDADES[slug] ?? null;
+}
+
+/** Módulo que controla o acesso a esta entidade (padrão: cadastros). */
+export function moduloDaEntidade(config: EntityConfig): ModuloKey {
+  return config.modulo ?? "cadastros";
 }
 
 /** Subconjunto serializável dos campos (para passar ao formulário client). */

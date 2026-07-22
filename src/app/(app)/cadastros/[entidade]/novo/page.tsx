@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { getEntidade, camposSerializaveis } from "@/lib/cadastros/registry";
+import { getEntidade, camposSerializaveis, moduloDaEntidade } from "@/lib/cadastros/registry";
 import { carregarOpcoesDinamicas } from "@/lib/cadastros/options";
 import { requirePapel, CADASTRO_EDITAR_MINIMO } from "@/lib/rbac";
-import { acessoAtual } from "@/lib/permissoes.server";
+import { acessoAtual, requireModulo } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { PageHeader } from "@/components/shared/page-header";
 import { CrudForm } from "@/components/shared/crud-form";
@@ -18,6 +18,7 @@ export default async function NovoCadastroPage({
   if (!config) notFound();
 
   await requirePapel(CADASTRO_EDITAR_MINIMO);
+  await requireModulo(moduloDaEntidade(config), "EDITAR");
   const acesso = await acessoAtual();
   const admin = acesso.admin;
   const podeFinanceiro = podeModulo(acesso.caps, "financeiro", "VER");

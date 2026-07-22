@@ -109,8 +109,8 @@ export const NAV: NavGroup[] = [
       { label: "Reembolsos", href: "/reembolsos", icon: HandCoins, disponivel: true },
       { label: "Contratos", href: "/contratos", icon: FileSignature, modulo: "financeiro", disponivel: true },
       { label: "Relatórios", href: "/relatorios", icon: BarChart3, modulo: "relatorios", disponivel: true },
-      { label: "Centros de custo", href: "/cadastros/centros-custo", icon: Target, modulo: "cadastros", disponivel: true },
-      { label: "Contas bancárias", href: "/cadastros/contas", icon: Landmark, modulo: "cadastros", disponivel: true },
+      { label: "Centros de custo", href: "/cadastros/centros-custo", icon: Target, modulo: "financeiro", disponivel: true },
+      { label: "Contas bancárias", href: "/cadastros/contas", icon: Landmark, modulo: "financeiro", disponivel: true },
     ],
   },
   {
