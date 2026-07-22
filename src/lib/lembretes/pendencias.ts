@@ -4,10 +4,10 @@ import path from "node:path";
 import { db } from "@/lib/db";
 
 /**
- * Lembrete de uso do sistema — o popup diário.
+ * Lembrete de uso do sistema: o popup diário.
  *
  * O agente das 8h conta à direção que o sistema não está sendo alimentado.
- * Quem precisa mudar de hábito, porém, é quem preenche — e essa pessoa nunca vê
+ * Quem precisa mudar de hábito, porém, é quem preenche, e essa pessoa nunca vê
  * aquele resumo. Este lembrete fecha o laço: mostra a CADA UM o que é dele.
  *
  * Princípios (é o que separa lembrete útil de papel de parede):
@@ -32,7 +32,7 @@ export type Novidade = { data: string; titulo: string; itens: string[] };
 
 export type Placar = { rotulo: string; feitas: number; total: number; pct: number } | null;
 
-/** Reconhecimento do próprio avanço — nunca comparação com colegas. */
+/** Reconhecimento do próprio avanço, nunca comparação com colegas. */
 export type Conquista = {
   tom: "zerou" | "avancou";
   titulo: string;
@@ -68,7 +68,7 @@ function semHtml(v: string | null | undefined): string {
   return v.replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
 }
 
-/** Tira a marcação de markdown — o popup exibe texto puro, não HTML. */
+/** Tira a marcação de markdown, porque o popup exibe texto puro, não HTML. */
 function semMarkdown(v: string): string {
   return v
     .replace(/\*\*(.+?)\*\*/g, "$1")
@@ -80,9 +80,9 @@ function semMarkdown(v: string): string {
 /**
  * Novidades do sistema, lidas de docs/NOVIDADES.md.
  *
- * Formato: "## AAAA-MM-DD — Título" e, abaixo, itens em "- ". Um item pode
+ * Formato: "## AAAA-MM-DD - Título" e, abaixo, itens em "- ". Um item pode
  * ocupar várias linhas (o markdown é quebrado em 90 colunas): as linhas
- * seguintes, indentadas, são coladas no mesmo item — senão o texto aparece
+ * seguintes, indentadas, são coladas no mesmo item, senão o texto aparece
  * cortado no meio da frase.
  */
 export function lerNovidades(): Novidade[] {
@@ -182,7 +182,7 @@ export async function montarLembrete(usuarioId: string): Promise<Lembrete> {
       chave: "marcar-publicado",
       titulo: `${semMarcar.length} ${semMarcar.length === 1 ? "postagem sua já passou da data" : "postagens suas já passaram da data"} e não ${semMarcar.length === 1 ? "está marcada" : "estão marcadas"} como publicada`,
       detalhe:
-        "Sem essa marcação, o sistema não sabe se a peça foi ao ar — e os relatórios de prazo saem errados.",
+        "Sem essa marcação, o sistema não sabe se a peça foi ao ar, e os relatórios de prazo saem errados.",
       href: "/jobs",
       acao: "Marcar publicadas",
     });

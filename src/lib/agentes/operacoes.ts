@@ -4,7 +4,7 @@ import { BUCKET_TIPOS, rotuloBucket } from "@/lib/clientes/escopo";
 import { chaveDia, ehDiaUtil } from "@/lib/datas-uteis";
 
 /**
- * Pacote de dados do Agente de Operações — Fase 0 (sem IA).
+ * Pacote de dados do Agente de Operações, Fase 0 (sem IA).
  *
  * Monta, direto do banco, exatamente o material que seria entregue ao Claude
  * para escrever o resumo diário da direção. Aqui ele é apenas exibido: se o
@@ -72,15 +72,15 @@ export type PacoteOperacoes = {
     reajustesAtrasados: number;
     clientesParados: number;
   };
-  /** Padrão do "sem atualização" — 92 linhas não se lê; a proporção sim. */
+  /** Padrão do "sem atualização": 92 linhas não se lê; a proporção sim. */
   semAtualizacaoResumo: { total: number; maisDe7Dias: number; maisDe14Dias: number };
-  /** Cadastros sem nenhum job e sem contrato ativo — base antiga, não carteira. */
+  /** Cadastros sem nenhum job e sem contrato ativo: base antiga, não carteira. */
   cadastrosSemMovimento: number;
   atrasados: JobLinha[];
   vencendo: JobLinha[];
-  /** Data de ir ao ar passou E alguém mexeu no job depois — atraso provável de verdade. */
+  /** Data de ir ao ar passou E alguém mexeu no job depois, atraso provável de verdade. */
   postagemAtrasada: JobLinha[];
-  /** Data passou e ninguém tocou no job desde antes dela — provável falta de marcação. */
+  /** Data passou e ninguém tocou no job desde antes dela, provável falta de marcação. */
   postagemNaoMarcada: JobLinha[];
   semResponsavel: JobLinha[];
   bloqueados: JobLinha[];
@@ -106,7 +106,7 @@ export type PacoteOperacoes = {
     vencendo: number;
     semBriefing: number;
   }[];
-  /** O que o sistema NÃO sabe — para não ser inventado depois. */
+  /** O que o sistema NÃO sabe, para não ser inventado depois. */
   lacunas: { titulo: string; detalhe: string; quantidade: number | null }[];
 };
 
@@ -144,7 +144,7 @@ const FMT_DIA = new Intl.DateTimeFormat("en-CA", {
  *
  * O servidor do Netlify roda em UTC (3h à frente). Sem isto, um job com prazo
  * em 20/07 às 23h de Brasília seria lido como 21/07 e sairia da lista de
- * atrasados — o resumo erraria o dia em todo prazo do fim da noite.
+ * atrasados, e o resumo erraria o dia em todo prazo do fim da noite.
  */
 function inicioDoDia(d: Date): Date {
   const [ano, mes, dia] = FMT_DIA.format(d).split("-").map(Number);
@@ -232,10 +232,10 @@ export async function montarPacoteOperacoes(): Promise<PacoteOperacoes> {
   const semAtualizacao: JobLinha[] = [];
   const briefingFraco: JobLinha[] = [];
   const remarcados: JobLinha[] = [];
-  /** Dias sem toque de cada job parado — para reportar o padrão, não 92 linhas. */
+  /** Dias sem toque de cada job parado, para reportar o padrão, não 92 linhas. */
   const diasSemToque: number[] = [];
 
-  // Carga por pessoa (contagem — o TREM não registra horas estimadas).
+  // Carga por pessoa (contagem, porque o TREM não registra horas estimadas).
   const carga = new Map<string, { abertos: number; atrasados: number; vencendo: number; semBriefing: number }>();
   const somaCarga = (nome: string, campo: "abertos" | "atrasados" | "vencendo" | "semBriefing") => {
     const atual = carga.get(nome) ?? { abertos: 0, atrasados: 0, vencendo: 0, semBriefing: 0 };
@@ -283,7 +283,7 @@ export async function montarPacoteOperacoes(): Promise<PacoteOperacoes> {
             j,
             tocadoDepois
               ? `Data de ir ao ar passou há ${dias} dia(s); o job foi mexido depois, então o atraso tende a ser real.`
-              : `Data de ir ao ar passou há ${dias} dia(s) e ninguém tocou no job desde antes disso — provável falta de marcação, não atraso.`,
+              : `Data de ir ao ar passou há ${dias} dia(s) e ninguém tocou no job desde antes disso. Provável falta de marcação, não atraso.`,
           ),
         );
       } else if (dias >= -JANELAS.vencendoEmDias) {
@@ -378,7 +378,7 @@ export async function montarPacoteOperacoes(): Promise<PacoteOperacoes> {
       const min = minutosMes.find((m) => m.clienteId === item.clienteId)?._sum.minutosGravados ?? 0;
       utilizado = Math.round((min / 60) * 10) / 10;
     }
-    // bucket "outro" é conta manual — sem número automático, fica de fora.
+    // bucket "outro" é conta manual, sem número automático, fica de fora.
     if (utilizado == null) continue;
     if (utilizado > item.quantidadeMensal) {
       escopoEstourado.push({
@@ -423,7 +423,7 @@ export async function montarPacoteOperacoes(): Promise<PacoteOperacoes> {
   ]);
 
   // "Cliente parado" só faz sentido para quem é carteira: já teve job ou tem
-  // contrato ativo. Cadastro antigo marcado como ativo não é alerta, é cadastro —
+  // contrato ativo. Cadastro antigo marcado como ativo não é alerta, é cadastro.
   // sem esse filtro o alerta viraria uma lista de 80 nomes que ninguém lê.
   const ehCarteira = (c: (typeof clientes)[number]) => c.jobs.length > 0 || c.contratos.length > 0;
   const cadastrosSemMovimento = clientes.filter((c) => !ehCarteira(c)).length;
@@ -457,20 +457,20 @@ export async function montarPacoteOperacoes(): Promise<PacoteOperacoes> {
     {
       titulo: "Cadastros de cliente sem nenhum movimento",
       detalhe:
-        "Clientes com status 'ativo' que nunca tiveram job nem têm contrato ativo. São base antiga, não carteira — " +
+        "Clientes com status 'ativo' que nunca tiveram job nem têm contrato ativo. São base antiga, não carteira, " +
         "ficaram fora do alerta de cliente parado para não virar ruído.",
       quantidade: cadastrosSemMovimento,
     },
     {
       titulo: "Data prometida ao cliente não registrada",
       detalhe:
-        "O campo `prazo` é o prazo interno da equipe. Fora de postagem, o TREM não guarda a data que o cliente ouviu — " +
+        "O campo `prazo` é o prazo interno da equipe. Fora de postagem, o TREM não guarda a data que o cliente ouviu, " +
         "logo, não dá para medir risco com o cliente nesses jobs sem inventar.",
       quantidade: semDataDoCliente,
     },
     {
       titulo: "Jobs abertos sem prazo nenhum",
-      detalhe: "Sem prazo não entram em nenhum cálculo de atraso — ficam invisíveis para o agente.",
+      detalhe: "Sem prazo não entram em nenhum cálculo de atraso e ficam invisíveis para o agente.",
       quantidade: semPrazoNenhum,
     },
     {

@@ -103,8 +103,8 @@ export default async function AgenteOperacoesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        titulo="Agente de Operações — pacote de dados"
-        descricao="Fase 0: o material bruto que seria entregue à IA para escrever o resumo da direção. Ainda sem IA — se o pacote estiver errado, nenhum texto conserta."
+        titulo="Agente de Operações: pacote de dados"
+        descricao="Fase 0: o material bruto que seria entregue à IA para escrever o resumo da direção. Ainda sem IA. Se o pacote estiver errado, nenhum texto conserta."
       />
 
       <Card>
@@ -148,14 +148,14 @@ export default async function AgenteOperacoesPage() {
       />
       <BlocoJobs
         titulo="Postagem atrasada"
-        descricao="Data de ir ao ar passou e alguém mexeu no job depois — o atraso tende a ser real."
+        descricao="Data de ir ao ar passou e alguém mexeu no job depois, então o atraso tende a ser real."
         linhas={p.postagemAtrasada}
         total={r.postagemAtrasada}
         tom="destructive"
       />
       <BlocoJobs
         titulo="Falta marcar como publicado"
-        descricao="A data passou e ninguém tocou no job desde antes dela. Quase sempre é marcação que faltou, não peça que deixou de ir ao ar — por isso está separado do atraso de verdade."
+        descricao="A data passou e ninguém tocou no job desde antes dela. Quase sempre é marcação que faltou, não peça que deixou de ir ao ar, por isso está separado do atraso de verdade."
         linhas={p.postagemNaoMarcada}
         total={r.postagemNaoMarcada}
         tom="warning"
@@ -191,7 +191,7 @@ export default async function AgenteOperacoesPage() {
       <BlocoJobs
         titulo="Parados"
         descricao={
-          `${p.semAtualizacaoResumo.total} de ${r.jobsAbertos} jobs abertos estão sem nenhuma alteração — ` +
+          `${p.semAtualizacaoResumo.total} de ${r.jobsAbertos} jobs abertos estão sem nenhuma alteração, ` +
           `${p.semAtualizacaoResumo.maisDe7Dias} há mais de 7 dias e ${p.semAtualizacaoResumo.maisDe14Dias} há mais de 14. ` +
           "Nessa proporção, isso é um padrão (o sistema não está acompanhando o trabalho), não uma lista de pendências."
         }
@@ -208,7 +208,7 @@ export default async function AgenteOperacoesPage() {
       />
       <BlocoJobs
         titulo="Remarcados"
-        descricao="Data de postagem remarcada várias vezes — costuma indicar um gargalo, não um atraso."
+        descricao="Data de postagem remarcada várias vezes, o que costuma indicar um gargalo, não um atraso."
         linhas={p.remarcados}
         total={r.remarcados}
         tom="warning"
@@ -270,7 +270,7 @@ export default async function AgenteOperacoesPage() {
                 <ul className="space-y-1">
                   {p.reajustesAtrasados.map((c, i) => (
                     <li key={`${c.cliente}-${i}`} className="text-muted-foreground">
-                      <span className="text-foreground">{c.cliente}</span> — previsto para{" "}
+                      <span className="text-foreground">{c.cliente}</span>, previsto para{" "}
                       {dataCurta(c.reajusteEm)}, há {c.diasDesde} dia(s)
                       {c.observacao ? ` · ${c.observacao}` : ""}
                     </li>
@@ -287,7 +287,7 @@ export default async function AgenteOperacoesPage() {
                   {p.contratosVencendo.map((c, i) => (
                     <li key={`${c.cliente}-${i}`} className="text-muted-foreground">
                       <span className="text-foreground">{c.cliente}</span>
-                      {c.servico ? ` (${c.servico})` : ""} — termina em {dataCurta(c.dataFim)}, faltam{" "}
+                      {c.servico ? ` (${c.servico})` : ""}, termina em {dataCurta(c.dataFim)}, faltam{" "}
                       {c.diasRestantes} dia(s)
                     </li>
                   ))}
@@ -307,7 +307,7 @@ export default async function AgenteOperacoesPage() {
             </div>
             <p className="text-sm text-muted-foreground">
               Clientes de carteira (com job ou contrato ativo) sem nada mexido há {p.janelas.clienteParadoDias} dias.
-              Outros {p.cadastrosSemMovimento} cadastros marcados como ativos nunca tiveram job nem contrato — são base
+              Outros {p.cadastrosSemMovimento} cadastros marcados como ativos nunca tiveram job nem contrato. São base
               antiga, ficaram fora daqui de propósito.
             </p>
           </CardHeader>
@@ -315,7 +315,7 @@ export default async function AgenteOperacoesPage() {
             <ul className="space-y-1">
               {p.clientesParados.map((c, i) => (
                 <li key={`${c.cliente}-${i}`} className="text-muted-foreground">
-                  <span className="text-foreground">{c.cliente}</span> —{" "}
+                  <span className="text-foreground">{c.cliente}</span>:{" "}
                   {c.diasSemMexer == null ? "nenhum job registrado" : `há ${c.diasSemMexer} dia(s)`}
                 </li>
               ))}
@@ -328,7 +328,7 @@ export default async function AgenteOperacoesPage() {
         <CardHeader className="pb-3">
           <CardTitle>Carga por pessoa</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Contagem de jobs — não horas. O TREM não registra estimativa de esforço nem capacidade semanal.
+            Contagem de jobs, não horas. O TREM não registra estimativa de esforço nem capacidade semanal.
           </p>
         </CardHeader>
         <CardContent className="pt-0">
@@ -365,7 +365,7 @@ export default async function AgenteOperacoesPage() {
         <CardHeader className="pb-3">
           <CardTitle>O que o sistema não sabe</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Lacunas de dado. Estão aqui justamente para que a IA não invente depois — e para orientar o que vale
+            Lacunas de dado. Estão aqui justamente para que a IA não invente depois, e para orientar o que vale
             passar a registrar.
           </p>
         </CardHeader>
@@ -374,7 +374,7 @@ export default async function AgenteOperacoesPage() {
             <div key={l.titulo}>
               <p className="font-medium">
                 {l.titulo}
-                {l.quantidade != null && <span className="text-muted-foreground"> — {l.quantidade}</span>}
+                {l.quantidade != null && <span className="text-muted-foreground">: {l.quantidade}</span>}
               </p>
               <p className="text-muted-foreground">{l.detalhe}</p>
             </div>

@@ -4,13 +4,13 @@ import { iaConfigurada, gerarTextoIA } from "@/lib/ia";
 import { montarPacoteOperacoes, type PacoteOperacoes } from "@/lib/agentes/operacoes";
 
 /**
- * Resumo de operações — o agente propriamente dito.
+ * Resumo de operações: o agente propriamente dito.
  *
  * Lê o pacote de dados, escreve o resumo e entrega por notificação + e-mail.
  * Roda sozinho (função agendada) para a direção não precisar consultar tela.
  *
  * Regra de ouro: SUGERE, não age. Não muda status, não fala com cliente, não
- * altera nada — só descreve e recomenda.
+ * altera nada, só descreve e recomenda.
  *
  * Sem ANTHROPIC_API_KEY o agente continua funcionando: cai no resumo
  * determinístico (mais seco, mesmos números). A IA melhora o texto, não é
@@ -27,12 +27,12 @@ REGRAS INEGOCIÁVEIS
 1. Use SOMENTE os dados fornecidos. Nunca invente cliente, job, número ou causa.
 2. OS NÚMEROS JÁ VÊM CALCULADOS. O bloco "contagens" é a verdade: copie os valores como estão.
    Nunca recalcule, nunca some, nunca arredonde, nunca reagrupe. Se "contagens.atrasados" diz 12,
-   escreva 12 — mesmo que você tenha recebido só 8 exemplos na lista.
+   escreva 12, mesmo que você tenha recebido só 8 exemplos na lista.
    Cada job também já vem na categoria certa: se está na lista "atrasados", ele ESTÁ atrasado;
    não o descreva como "vence hoje" nem o mova para outro grupo. O sistema classifica, você explica.
 3. Separe claramente o que é FATO (está no dado) do que é INTERPRETAÇÃO sua.
 4. NUNCA afirme que uma peça deixou de ir ao ar. O sistema não registra publicação de forma
-   confiável — a lista "postagemNaoMarcada" é falta de marcação, não atraso de entrega. Trate
+   confiável, e a lista "postagemNaoMarcada" é falta de marcação, não atraso de entrega. Trate
    como higiene de registro, jamais como falha com o cliente.
 5. Quando um problema atingir grande parte do total, descreva como PADRÃO, não como lista.
    Ex.: "92 de 101 jobs sem toque" é um sintoma do sistema não ser alimentado, não 92 pendências.
@@ -40,6 +40,8 @@ REGRAS INEGOCIÁVEIS
    dado ausente, e mencione a lacuna quando ela limitar a leitura.
 7. Não use tom acusatório. Avalie registros e processo, nunca a pessoa.
 8. Não exagere risco nem esconda problema.
+9. NUNCA use travessão (— ou –) nem ponto de exclamação. É exigência de quem lê.
+   Use vírgula, dois-pontos, parênteses ou ponto final. Frase curta resolve.
 
 FORMATO
 - Um parágrafo curto de abertura com a situação geral.
@@ -48,7 +50,7 @@ FORMATO
 - "O que não dá para afirmar": as lacunas que limitam este resumo.
 Sem saudação, sem despedida, sem emoji. Texto puro, no máximo 350 palavras.`;
 
-/** Recorte enxuto do pacote — o prompt não precisa das 40 linhas de cada lista. */
+/** Recorte enxuto do pacote: o prompt não precisa das 40 linhas de cada lista. */
 function compactar(p: PacoteOperacoes) {
   const enxuto = (l: PacoteOperacoes["atrasados"], n = 8) =>
     l.slice(0, n).map((j) => ({
@@ -96,7 +98,7 @@ export function resumoSemIA(p: PacoteOperacoes): string {
 
   const decisoes: string[] = [];
   for (const j of p.atrasados.slice(0, 5)) {
-    decisoes.push(`#${j.numero} ${j.titulo} (${j.cliente}, ${j.responsavel ?? "sem responsável"}) — ${j.motivo}`);
+    decisoes.push(`#${j.numero} ${j.titulo} (${j.cliente}, ${j.responsavel ?? "sem responsável"}): ${j.motivo}`);
   }
   for (const c of p.contratosVencendo.slice(0, 2)) {
     decisoes.push(`Contrato do cliente ${c.cliente} termina em ${c.diasRestantes} dia(s).`);
@@ -105,7 +107,7 @@ export function resumoSemIA(p: PacoteOperacoes): string {
     decisoes.push(`Reajuste do contrato de ${c.cliente} passou da data há ${c.diasDesde} dia(s).`);
   }
   for (const j of p.aguardandoCliente.slice(0, 2)) {
-    decisoes.push(`#${j.numero} ${j.titulo} (${j.cliente}) — ${j.motivo}`);
+    decisoes.push(`#${j.numero} ${j.titulo} (${j.cliente}): ${j.motivo}`);
   }
   for (const e of p.escopoEstourado.slice(0, 3)) {
     decisoes.push(`${e.cliente} passou do escopo de ${e.item}: ${e.utilizado} de ${e.contratado} contratado(s).`);
@@ -122,7 +124,7 @@ export function resumoSemIA(p: PacoteOperacoes): string {
   if (s.total > 0) {
     const prop = Math.round((s.total / Math.max(1, r.jobsAbertos)) * 100);
     padroes.push(
-      `${s.total} de ${r.jobsAbertos} jobs abertos (${prop}%) estão sem nenhuma alteração — ` +
+      `${s.total} de ${r.jobsAbertos} jobs abertos (${prop}%) estão sem nenhuma alteração, ` +
         `${s.maisDe7Dias} há mais de 7 dias e ${s.maisDe14Dias} há mais de 14. ` +
         `Nessa proporção, o sinal é que o sistema não está acompanhando o trabalho.`,
     );
@@ -130,7 +132,7 @@ export function resumoSemIA(p: PacoteOperacoes): string {
   if (r.postagemNaoMarcada > 0) {
     padroes.push(
       `${r.postagemNaoMarcada} peça(s) passaram da data de ir ao ar sem ninguém tocar no job. ` +
-        `Isso é falta de marcar como publicado — não há como afirmar que deixaram de ir ao ar.`,
+        `Isso é falta de marcar como publicado. Não há como afirmar que deixaram de ir ao ar.`,
     );
   }
   if (r.briefingFraco > 0) {
@@ -139,7 +141,7 @@ export function resumoSemIA(p: PacoteOperacoes): string {
   const top = p.cargaPorPessoa[0];
   if (top && r.jobsAbertos > 0 && top.abertos / r.jobsAbertos > 0.4) {
     padroes.push(
-      `${top.pessoa} concentra ${top.abertos} dos ${r.jobsAbertos} jobs abertos — carga bem desequilibrada.`,
+      `${top.pessoa} concentra ${top.abertos} dos ${r.jobsAbertos} jobs abertos, carga bem desequilibrada.`,
     );
   }
   if (padroes.length) linhas.push("", "PADRÕES", ...padroes.map((d) => `- ${d}`));
@@ -201,7 +203,7 @@ export async function gerarResumoOperacional(): Promise<ResumoOperacional> {
   return {
     texto,
     comIA,
-    titulo: `Resumo de operações — ${data}`,
+    titulo: `Resumo de operações de ${data}`,
     descricao: linhaResumo(pacote),
     pacote,
   };
@@ -230,7 +232,7 @@ export type EntregaResumo = {
 /**
  * Entrega o resumo à direção: notificação no TREM + e-mail.
  *
- * Vai só para quem tem ADMIN no módulo `admin` — o mesmo recorte da tela
+ * Vai só para quem tem ADMIN no módulo `admin`, o mesmo recorte da tela
  * /agentes/operacoes. O resumo mostra todos os clientes e a carga de cada
  * pessoa; não pode chegar mais longe do que a tela que ele resume.
  */
@@ -294,7 +296,7 @@ export async function entregarResumoOperacional(opts: { forcar?: boolean } = {})
           body: JSON.stringify({
             from: process.env.EMAIL_FROM,
             to: [u.email],
-            subject: `${titulo} — TREM`,
+            subject: `${titulo} (TREM)`,
             html:
               `<div style="font-family:Arial,sans-serif;color:#1a1a1a;line-height:1.5;max-width:620px">` +
               `<h2 style="margin:0 0 4px">${escaparHtml(titulo)}</h2>` +
@@ -303,14 +305,14 @@ export async function entregarResumoOperacional(opts: { forcar?: boolean } = {})
               `<p style="margin:22px 0 0"><a href="${base}/agentes/operacoes" style="background:#F7FF19;color:#050505;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px;display:inline-block">Ver os dados completos</a></p>` +
               `<p style="margin:18px 0 0;color:#888;font-size:12px">` +
               (comIA
-                ? "Resumo escrito por IA a partir dos registros do TREM. É sugestão — confira antes de agir."
+                ? "Resumo escrito por IA a partir dos registros do TREM. É sugestão, confira antes de agir."
                 : "Resumo automático (sem IA configurada). Números direto dos registros do TREM.") +
               `</p></div>`,
           }),
         });
         emails++;
       } catch {
-        /* e-mail é best-effort — a notificação no TREM já foi criada */
+        /* e-mail é best-effort, a notificação no TREM já foi criada */
       }
     }
   }

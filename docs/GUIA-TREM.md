@@ -931,21 +931,21 @@ aprovação, escopo do mês estourado e contrato vencendo.
 Administração.
 
 **O que ela é hoje:** a primeira fase do agente de IA. Por enquanto ela **só mostra os
-dados** — nenhuma IA escreve nada aqui. A ideia é conferir se o material está certo
+dados**, e nenhuma IA escreve nada aqui. A ideia é conferir se o material está certo
 **antes** de pedir para a IA resumir: se o dado estiver errado nesta tela, o texto da IA
 estaria errado também, só que com aparência de relatório pronto.
 
 **Como ler:**
 
-- **Números do topo** — cada quadrado é uma contagem. Em vermelho, o que precisa de decisão
+- **Números do topo**: cada quadrado é uma contagem. Em vermelho, o que precisa de decisão
   hoje.
-- **Tabelas** — toda linha traz a coluna **Evidência**, dizendo por que aquele job entrou na
+- **Tabelas**: toda linha traz a coluna **Evidência**, dizendo por que aquele job entrou na
   lista. Nada aparece sem motivo declarado.
-- **Escopo estourado** — contratado × utilizado no mês, pela mesma régua da Estação do
+- **Escopo estourado**: contratado × utilizado no mês, pela mesma régua da Estação do
   Cliente. É conta, não opinião.
-- **Carga por pessoa** — é **contagem de jobs, não horas**. O TREM não registra estimativa
+- **Carga por pessoa**: é **contagem de jobs, não horas**. O TREM não registra estimativa
   de esforço nem capacidade semanal; qualquer número em horas seria invenção.
-- **O que o sistema não sabe** — a parte mais importante da tela. Lista o que não está
+- **O que o sistema não sabe**: a parte mais importante da tela. Lista o que não está
   registrado no TREM e que, por isso, ninguém (nem a IA) tem como afirmar.
 
 **Janelas usadas:** *atrasado* = prazo interno já venceu; *vencendo* = vence em até 2 dias;
@@ -954,9 +954,9 @@ nenhuma alteração no job.
 
 **Sobre prazo:** o campo **prazo** do job é o **prazo interno da equipe**. A data prometida
 ao cliente só existe em postagens (**prazo de postagem**). Por isso a tela mostra quantos
-jobs estão sem data de cliente registrada — é uma lacuna real, não um erro da tela.
+jobs estão sem data de cliente registrada. É uma lacuna real, não um erro da tela.
 
-**Copiar JSON:** copia o pacote inteiro — é o material que o agente entrega à IA.
+**Copiar JSON:** copia o pacote inteiro, que é o material que o agente entrega à IA.
 
 ### O resumo chega sozinho
 
@@ -966,7 +966,7 @@ resumo e entrega:
 - **Notificação no TREM** (sino), com a linha-resumo do dia;
 - **E-mail** com o texto completo, se o envio estiver configurado.
 
-Vai para quem tem **Administrador** no módulo Administração — o mesmo recorte desta tela. O
+Vai para quem tem **Administrador** no módulo Administração, o mesmo recorte desta tela. O
 resumo mostra todos os clientes e a carga de cada pessoa, então não pode chegar mais longe
 do que a tela que ele resume.
 
@@ -974,7 +974,7 @@ do que a tela que ele resume.
 mostram, e o que o sistema não permite afirmar.
 
 **Funciona com ou sem IA.** Sem a chave da Anthropic configurada, o resumo sai numa versão
-seca — mesmos números, texto mais duro. Com a chave, a IA escreve em linguagem corrida e
+seca, com os mesmos números e texto mais duro. Com a chave, a IA escreve em linguagem corrida e
 conecta as informações. Em nenhum dos casos ela inventa: o texto vem só do que está
 registrado, e o próprio resumo declara o que não sabe.
 
@@ -986,24 +986,24 @@ descreve e recomenda; decidir é sempre de uma pessoa.
 ## 29. Lembrete diário: o que só você pode preencher
 
 Ao abrir o TREM, **uma vez por dia**, aparece um cartão com o que está faltando **do seu
-lado** — nada da agência inteira, só o que é seu.
+lado**. Nada da agência inteira, só o que é seu.
 
 **Ele só aparece quando há algo.** Dia sem pendência, ninguém é incomodado. Se apareceu, é
 porque tem coisa sua ali.
 
-**No máximo 3 itens por vez.** Se você tiver mais, o resto fica para amanhã — a ideia é
+**No máximo 3 itens por vez.** Se você tiver mais, o resto fica para amanhã, porque a ideia é
 resolver aos poucos, não assustar. Cada item leva direto à tela onde se resolve.
 
 **O que ele cobra:**
 
 - postagem sua que passou da data e não foi marcada como publicada;
 - job seu sem briefing (ou com briefing de uma linha);
-- job seu sem prazo — sem prazo ele fica invisível para todo mundo;
+- job seu sem prazo, porque assim ele fica invisível para todo mundo;
 - job seu parado há mais de 7 dias;
 - cliente seu (atendimento ou estratégia) sem dossiê preenchido.
 
 **Parabéns pelo avanço.** Se você resolveu pendências desde a última vez que passou por aqui,
-a primeira coisa que aparece é o reconhecimento disso — antes de qualquer cobrança. Quem
+a primeira coisa que aparece é o reconhecimento disso, antes de qualquer cobrança. Quem
 zerou tudo recebe o troféu.
 
 **Placar.** Junto vem a sua proporção de postagens marcadas no mês. Não é para punir: é para
@@ -1016,14 +1016,14 @@ outra neste lembrete.
 **Bíblia Operacional.** Quem nunca abriu recebe o convite para abrir. O sistema registra a
 leitura no primeiro acesso à tela.
 
-**Novidades.** Quando o TREM ganha função nova, o resumo aparece aqui — uma vez, para quem
-ainda não viu. O conteúdo vem de `docs/NOVIDADES.md`: um bloco `## AAAA-MM-DD — Título` por
+**Novidades.** Quando o TREM ganha função nova, o resumo aparece aqui uma vez, para quem
+ainda não viu. O conteúdo vem de `docs/NOVIDADES.md`: um bloco `## AAAA-MM-DD - Título` por
 entrega, escrito na linguagem de quem usa.
 
 **Por que isso existe:** o Agente de Operações (seção 28) conta à direção que o sistema não
-está sendo alimentado. Mas quem preenche não vê aquele resumo. Este lembrete fecha o laço —
+está sendo alimentado. Mas quem preenche não vê aquele resumo. Este lembrete fecha o laço:
 a direção enxerga o todo, cada pessoa enxerga a sua parte.
 
 ---
 
-*Dúvidas ou algo diferente do guia? O sistema evolui — este documento é atualizado junto.*
+*Dúvidas ou algo diferente do guia? O sistema evolui, e este documento é atualizado junto.*

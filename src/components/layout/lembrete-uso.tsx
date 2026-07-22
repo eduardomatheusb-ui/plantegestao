@@ -31,7 +31,7 @@ import type { Lembrete } from "@/lib/lembretes/pendencias";
  *
  * O tom importa tanto quanto o conteúdo: quem abre isso de manhã precisa sair
  * com vontade de resolver, não com sensação de cobrança. Por isso o avanço vem
- * antes da pendência, e a pendência vem com o porquê — nunca só com o número.
+ * antes da pendência, e a pendência vem com o porquê, nunca só com o número.
  */
 
 const ICONE: Record<string, LucideIcon> = {
@@ -70,7 +70,7 @@ export function LembreteUso({ lembrete }: { lembrete: Lembrete }) {
   return (
     <Dialog open={aberto} onOpenChange={(v) => !v && fechar()}>
       <DialogContent className="max-h-[88vh] max-w-xl gap-0 overflow-hidden p-0">
-        {/* Faixa da marca — dá identidade sem competir com o conteúdo. */}
+        {/* Faixa da marca: dá identidade sem competir com o conteúdo. */}
         <div className="h-1.5 w-full bg-accent" aria-hidden="true" />
 
         <div className="max-h-[calc(88vh-0.375rem)] overflow-y-auto p-6">
@@ -81,7 +81,7 @@ export function LembreteUso({ lembrete }: { lembrete: Lembrete }) {
             </DialogTitle>
             <DialogDescription>
               {temPendencia
-                ? "Alguns registros só você pode completar — e o resto da agência depende deles."
+                ? "Alguns registros só você pode completar, e o resto da agência depende deles."
                 : "Passando rapidinho para te contar uma coisa."}
             </DialogDescription>
           </DialogHeader>
@@ -139,7 +139,7 @@ export function LembreteUso({ lembrete }: { lembrete: Lembrete }) {
               </ul>
               {restantes > 0 && (
                 <p className="mt-2.5 text-xs text-muted-foreground">
-                  Tem mais {restantes} {restantes === 1 ? "pendência" : "pendências"} suas — vou mostrando aos
+                  Tem mais {restantes} {restantes === 1 ? "pendência" : "pendências"} suas. Vou mostrando aos
                   poucos, para não virar lista infinita.
                 </p>
               )}
