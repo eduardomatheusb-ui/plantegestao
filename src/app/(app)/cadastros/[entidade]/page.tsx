@@ -17,6 +17,7 @@ import { DataTable, type Column } from "@/components/shared/data-table";
 import { ConfirmButton } from "@/components/shared/confirm-button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
+import { SelecaoLote, CaixaLinha, CaixaTodos } from "@/components/cadastros/selecao-lote";
 
 type PageProps = {
   params: Promise<{ entidade: string }>;
@@ -47,7 +48,23 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   const { rows: rowsRaw, total, page, totalPages } = await repo.listar(config, { q, incluirArquivados, page: pageNum, extraWhere });
   const rows = rowsRaw as Registro[];
 
+  // Seleção em lote só faz sentido para quem pode agir sobre os registros.
+  const podeLote = podeEditar && (!!config.softDelete || podeExcluir);
+  const idsDaPagina = rows.map((r) => r.id);
+
   const columns: Column<Registro>[] = [
+    ...(podeLote
+      ? [
+          {
+            header: <CaixaTodos ids={idsDaPagina} />,
+            headClassName: "w-px",
+            className: "w-px",
+            cell: (row: Registro) => (
+              <CaixaLinha id={row.id} rotulo={String(row.nome ?? config.rotulo.toLowerCase())} />
+            ),
+          } satisfies Column<Registro>,
+        ]
+      : []),
     ...config.colunas.map((c) => ({
       header: c.header,
       className: c.className,
@@ -152,10 +169,17 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
         )}
       </div>
 
-      <DataTable
-        columns={columns}
-        rows={rows}
-        vazio={
+      <SelecaoLote
+        slug={entidade}
+        rotulo={config.rotulo}
+        rotuloPlural={config.rotuloPlural}
+        temSoftDelete={!!config.softDelete}
+        podeExcluir={podeExcluir}
+      >
+        <DataTable
+          columns={columns}
+          rows={rows}
+          vazio={
           <EmptyState
             titulo={q ? "Nenhum resultado" : `Nenhum ${config.rotulo.toLowerCase()} cadastrado`}
             descricao={
@@ -165,19 +189,20 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
                   ? `Comece criando o primeiro ${config.rotulo.toLowerCase()}.`
                   : undefined
             }
-            acao={
-              podeEditar && !q ? (
-                <Button asChild>
-                  <Link href={`/cadastros/${entidade}/novo`}>
-                    <Plus className="size-4" />
-                    Novo {config.rotulo.toLowerCase()}
-                  </Link>
-                </Button>
-              ) : undefined
-            }
-          />
-        }
-      />
+              acao={
+                podeEditar && !q ? (
+                  <Button asChild>
+                    <Link href={`/cadastros/${entidade}/novo`}>
+                      <Plus className="size-4" />
+                      Novo {config.rotulo.toLowerCase()}
+                    </Link>
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
+        />
+      </SelecaoLote>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between gap-3 text-sm">

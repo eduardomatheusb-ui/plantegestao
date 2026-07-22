@@ -784,8 +784,23 @@ Estes são os cadastros de apoio que sustentam o resto do sistema: quem você pa
 trabalha com você, onde o dinheiro entra e como ele é classificado. Todos seguem o mesmo
 formato de lista e formulário.
 
-**Fornecedores, Colaboradores, Prestadores, Veículos, Centros de custo, Contas bancárias,
-Categorias (plano de contas), Feriados.** Todos com lista (busca e paginação de 25) e formulário.
+**Fornecedores, Colaboradores, Prestadores, Veículos, Categorias (plano de contas),
+Feriados.** Todos com lista (busca e paginação de 25) e formulário.
+
+> **Centros de custo e Contas bancárias** ficam no menu **Financeiro**, e não aqui: são
+> estrutura do dinheiro da agência, então respondem à permissão de Financeiro. Quem cuida
+> de cliente não passa a ver conta bancária.
+
+**Selecionar vários de uma vez.** Cada linha tem uma caixa à esquerda, e a do cabeçalho marca
+a página inteira. Ao marcar qualquer registro, aparece uma barra no rodapé com **Arquivar**,
+**Reativar** e **Excluir**, que agem sobre tudo que estiver selecionado. Serve para limpar
+base antiga sem abrir um por um.
+
+- Toda ação em lote pede confirmação antes, e o limite é de 200 registros por vez.
+- **Excluir vai um por um por dentro.** Registro com vínculo (fornecedor com despesa,
+  categoria em uso) não é excluído, e no fim aparece a lista de quais ficaram de fora e por
+  quê. O resto passa normalmente.
+- Cada alteração fica no histórico do registro, com quem fez e quando.
 
 - **Feriados:** datas que entram no cálculo de prazos em **dias úteis** (adiamento de prazo
   dos jobs). Cadastre os feriados nacionais e locais que a agência não trabalha.

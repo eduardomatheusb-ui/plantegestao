@@ -7,6 +7,15 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-07-23 - Seleção em lote nos cadastros
+
+- Nas listas de cadastro dá para marcar vários registros e **arquivar, reativar ou
+  excluir todos de uma vez**, em vez de abrir um por um.
+- A caixa do cabeçalho marca a página inteira, e a barra de ações aparece no rodapé
+  assim que você seleciona algo.
+- **Centros de custo** e **Contas bancárias** saíram de Cadastros e agora ficam no menu
+  **Financeiro**, com a permissão de Financeiro.
+
 ## 2026-07-22 - Lembrete diário e Agente de Operações
 
 - Ao abrir o TREM, você recebe uma vez por dia um lembrete do que só você pode

@@ -3,7 +3,8 @@ import { EmptyState } from "./empty-state";
 import { cn } from "@/lib/utils";
 
 export type Column<T> = {
-  header: string;
+  /** Texto do cabeçalho. Aceita ReactNode (ex.: caixa de "selecionar todos"). */
+  header: React.ReactNode;
   cell: (row: T) => React.ReactNode;
   className?: string;
   headClassName?: string;
@@ -61,7 +62,8 @@ export function DataTable<T extends { id: string }>({
         {rows.map((row) => (
           <div key={row.id} className="rounded-lg border border-border bg-card p-3">
             {columns.map((col, i) => {
-              const temRotulo = col.header.trim().length > 0;
+              // Cabeçalho que não é texto (caixa de seleção) não vira rótulo no card.
+              const temRotulo = typeof col.header === "string" && col.header.trim().length > 0;
               return (
                 <div
                   key={i}
