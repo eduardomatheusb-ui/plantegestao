@@ -7,14 +7,17 @@ import { Topbar } from "@/components/layout/topbar";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { AvisoSessao } from "@/components/layout/aviso-sessao";
+import { LembreteUso } from "@/components/layout/lembrete-uso";
+import { montarLembrete } from "@/lib/lembretes/pendencias";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
-  const [acesso, naoLidas, recentes, chatNaoLidas] = await Promise.all([
+  const [acesso, naoLidas, recentes, chatNaoLidas, lembrete] = await Promise.all([
     carregarAcesso(user.id),
     contarNaoLidas(user.id),
     listarNotificacoes(user.id, 6),
     contarChatNaoLidas(user.id),
+    montarLembrete(user.id),
   ]);
 
   return (
@@ -41,6 +44,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
       <ChatWidget meuId={user.id} naoLidasIniciais={chatNaoLidas} />
       <AvisoSessao />
+      <LembreteUso lembrete={lembrete} />
     </div>
   );
 }

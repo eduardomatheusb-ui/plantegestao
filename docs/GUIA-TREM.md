@@ -45,6 +45,7 @@ Este é o manual prático do TREM: o que cada parte faz, **como usar**, **boas p
 26. [Boas práticas gerais](#26-boas-práticas-gerais)
 27. [Melhorias e erros (canal da equipe)](#27-melhorias-e-erros-canal-da-equipe)
 28. [Agente de Operações (pacote de dados)](#28-agente-de-operações-pacote-de-dados)
+29. [Lembrete diário: o que só você pode preencher](#29-lembrete-diário-o-que-só-você-pode-preencher)
 
 ---
 
@@ -979,6 +980,41 @@ registrado, e o próprio resumo declara o que não sabe.
 
 **O agente nunca age.** Não muda prazo, não mexe em status, não fala com cliente. Ele
 descreve e recomenda; decidir é sempre de uma pessoa.
+
+---
+
+## 29. Lembrete diário: o que só você pode preencher
+
+Ao abrir o TREM, **uma vez por dia**, aparece um cartão com o que está faltando **do seu
+lado** — nada da agência inteira, só o que é seu.
+
+**Ele só aparece quando há algo.** Dia sem pendência, ninguém é incomodado. Se apareceu, é
+porque tem coisa sua ali.
+
+**No máximo 3 itens por vez.** Se você tiver mais, o resto fica para amanhã — a ideia é
+resolver aos poucos, não assustar. Cada item leva direto à tela onde se resolve.
+
+**O que ele cobra:**
+
+- postagem sua que passou da data e não foi marcada como publicada;
+- job seu sem briefing (ou com briefing de uma linha);
+- job seu sem prazo — sem prazo ele fica invisível para todo mundo;
+- job seu parado há mais de 7 dias;
+- cliente seu (atendimento ou estratégia) sem dossiê preenchido.
+
+**Placar.** Junto vem a sua proporção de postagens marcadas no mês. Não é para punir: é para
+você ver o progresso. Quem está em dia vê isso confirmado.
+
+**Bíblia Operacional.** Quem nunca abriu recebe o convite para abrir. O sistema registra a
+leitura no primeiro acesso à tela.
+
+**Novidades.** Quando o TREM ganha função nova, o resumo aparece aqui — uma vez, para quem
+ainda não viu. O conteúdo vem de `docs/NOVIDADES.md`: um bloco `## AAAA-MM-DD — Título` por
+entrega, escrito na linguagem de quem usa.
+
+**Por que isso existe:** o Agente de Operações (seção 28) conta à direção que o sistema não
+está sendo alimentado. Mas quem preenche não vê aquele resumo. Este lembrete fecha o laço —
+a direção enxerga o todo, cada pessoa enxerga a sua parte.
 
 ---
 

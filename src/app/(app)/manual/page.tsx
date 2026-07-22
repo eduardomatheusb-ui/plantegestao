@@ -22,11 +22,19 @@ function driveEmbed(url: string | null | undefined): string | null {
 }
 
 export default async function ManualPage() {
-  await requireUser();
-  const [empresa, acesso] = await Promise.all([
+  const user = await requireUser();
+  const [empresa, acesso, leitura] = await Promise.all([
     db.empresa.findUnique({ where: { id: "singleton" }, select: { manualDriveUrl: true } }),
     acessoAtual(),
+    db.usuario.findUnique({ where: { id: user.id }, select: { manualLidoEm: true } }),
   ]);
+
+  // Registra a leitura (no máximo uma gravação por dia) — alimenta o lembrete
+  // que cobra de quem nunca abriu a Bíblia.
+  const hoje = new Date().toDateString();
+  if (!leitura?.manualLidoEm || leitura.manualLidoEm.toDateString() !== hoje) {
+    await db.usuario.update({ where: { id: user.id }, data: { manualLidoEm: new Date() } });
+  }
   const embed = driveEmbed(empresa?.manualDriveUrl);
   const ehAdmin = podeModulo(acesso.caps, "admin", "ADMIN");
 

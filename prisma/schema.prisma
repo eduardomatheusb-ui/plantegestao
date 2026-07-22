@@ -77,6 +77,11 @@ model Usuario {
   totpSecret        String?
   totpAtivo         Boolean   @default(false)
   totpRecoveryCodes String?
+  // Lembrete de uso do sistema (popup diário): quando a pessoa viu pela última
+  // vez, quando abriu a Bíblia e até onde já leu as novidades.
+  lembreteVistoEm   DateTime?
+  manualLidoEm      DateTime?
+  novidadesVistasEm DateTime?
   criadoEm          DateTime  @default(now())
   atualizadoEm      DateTime  @updatedAt
 
