@@ -199,7 +199,18 @@ export async function montarLembrete(usuarioId: string): Promise<Lembrete> {
     });
   }
 
-  const pendencias = candidatas.slice(0, MAX_PENDENCIAS);
+  // Rodízio por dia: com a ordem fixa, quem tem mais de 3 pendências veria
+  // sempre as mesmas e as últimas nunca apareceriam. Girando pelo número do
+  // dia, todas passam pela frente da pessoa ao longo da semana.
+  const [ay, am, ad] = hojeStr.split("-").map(Number);
+  const numeroDoDia = Math.floor(Date.UTC(ay, am - 1, ad) / DIA_MS);
+  const pendencias =
+    candidatas.length <= MAX_PENDENCIAS
+      ? candidatas
+      : Array.from(
+          { length: MAX_PENDENCIAS },
+          (_, i) => candidatas[((numeroDoDia * MAX_PENDENCIAS) % candidatas.length + i) % candidatas.length],
+        );
 
   // Novidades ainda não vistas por esta pessoa.
   const todas = lerNovidades();

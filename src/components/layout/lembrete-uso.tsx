@@ -72,8 +72,8 @@ export function LembreteUso({ lembrete }: { lembrete: Lembrete }) {
 
         {restantes > 0 && (
           <p className="text-xs text-muted-foreground">
-            Tem mais {restantes} {restantes === 1 ? "pendência" : "pendências"} suas — mostro amanhã, uma coisa de
-            cada vez.
+            Tem mais {restantes} {restantes === 1 ? "pendência" : "pendências"} suas — vou mostrando aos poucos, nos
+            próximos dias.
           </p>
         )}
 
