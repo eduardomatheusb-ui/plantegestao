@@ -30,7 +30,14 @@ export type Pendencia = {
 
 export type Novidade = { data: string; titulo: string; itens: string[] };
 
-export type Placar = { rotulo: string; valor: string; bom: boolean } | null;
+export type Placar = { rotulo: string; feitas: number; total: number; pct: number } | null;
+
+/** Reconhecimento do próprio avanço — nunca comparação com colegas. */
+export type Conquista = {
+  tom: "zerou" | "avancou";
+  titulo: string;
+  detalhe: string;
+} | null;
 
 export type Lembrete = {
   mostrar: boolean;
@@ -40,6 +47,7 @@ export type Lembrete = {
   novidades: Novidade[];
   manualNuncaLido: boolean;
   placar: Placar;
+  conquista: Conquista;
 };
 
 const DIA_MS = 86_400_000;
@@ -60,9 +68,22 @@ function semHtml(v: string | null | undefined): string {
   return v.replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
 }
 
+/** Tira a marcação de markdown — o popup exibe texto puro, não HTML. */
+function semMarkdown(v: string): string {
+  return v
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/`(.+?)`/g, "$1")
+    .replace(/\*(.+?)\*/g, "$1")
+    .trim();
+}
+
 /**
  * Novidades do sistema, lidas de docs/NOVIDADES.md.
- * Formato: "## AAAA-MM-DD — Título" e, abaixo, linhas começando com "- ".
+ *
+ * Formato: "## AAAA-MM-DD — Título" e, abaixo, itens em "- ". Um item pode
+ * ocupar várias linhas (o markdown é quebrado em 90 colunas): as linhas
+ * seguintes, indentadas, são coladas no mesmo item — senão o texto aparece
+ * cortado no meio da frase.
  */
 export function lerNovidades(): Novidade[] {
   let md = "";
@@ -76,12 +97,20 @@ export function lerNovidades(): Novidade[] {
   for (const linha of md.split("\n")) {
     const cab = linha.match(/^##\s+(\d{4}-\d{2}-\d{2})\s*[—-]\s*(.+)$/);
     if (cab) {
-      atual = { data: cab[1], titulo: cab[2].trim(), itens: [] };
+      atual = { data: cab[1], titulo: semMarkdown(cab[2]), itens: [] };
       novidades.push(atual);
       continue;
     }
+    if (!atual) continue;
     const item = linha.match(/^[-*]\s+(.+)$/);
-    if (item && atual) atual.itens.push(item[1].trim());
+    if (item) {
+      atual.itens.push(semMarkdown(item[1]));
+      continue;
+    }
+    // Continuação do item anterior (linha indentada, não vazia).
+    if (/^\s+\S/.test(linha) && atual.itens.length > 0) {
+      atual.itens[atual.itens.length - 1] += " " + semMarkdown(linha);
+    }
   }
   return novidades;
 }
@@ -106,6 +135,7 @@ export async function montarLembrete(usuarioId: string): Promise<Lembrete> {
     novidades: [],
     manualNuncaLido: false,
     placar: null,
+    conquista: null,
   };
   if (!usuario) return vazio;
 
@@ -229,18 +259,66 @@ export async function montarLembrete(usuarioId: string): Promise<Lembrete> {
     },
     select: { publicadoEm: true },
   });
+  const marcadas = postagensDoMes.filter((p) => p.publicadoEm).length;
   let placar: Placar = null;
   if (postagensDoMes.length >= 3) {
-    const marcadas = postagensDoMes.filter((p) => p.publicadoEm).length;
-    const pct = Math.round((marcadas / postagensDoMes.length) * 100);
     placar = {
-      rotulo: "Postagens suas marcadas como publicadas neste mês",
-      valor: `${marcadas} de ${postagensDoMes.length} (${pct}%)`,
-      bom: pct >= 80,
+      rotulo: "postagens suas marcadas como publicadas neste mês",
+      feitas: marcadas,
+      total: postagensDoMes.length,
+      pct: Math.round((marcadas / postagensDoMes.length) * 100),
     };
   }
 
-  const mostrar = pendencias.length > 0 || novidades.length > 0 || manualNuncaLido;
+  // ── Reconhecimento do avanço: compara a pessoa com ELA MESMA no último dia
+  // em que apareceu por aqui. Nunca com colegas.
+  const diaHoje = new Date(numeroDoDia * DIA_MS);
+  const anterior = await db.lembreteHistorico.findFirst({
+    where: { usuarioId, dia: { lt: diaHoje } },
+    orderBy: { dia: "desc" },
+    select: { pendencias: true, postagensMarcadas: true },
+  });
+
+  let conquista: Conquista = null;
+  if (anterior) {
+    const resolvidas = anterior.pendencias - candidatas.length;
+    const novasMarcadas = marcadas - anterior.postagensMarcadas;
+    if (candidatas.length === 0 && anterior.pendencias > 0) {
+      conquista = {
+        tom: "zerou",
+        titulo: "Você zerou suas pendências",
+        detalhe: "Não sobrou nada do seu lado. A agência inteira enxerga o seu trabalho hoje.",
+      };
+    } else if (resolvidas > 0) {
+      conquista = {
+        tom: "avancou",
+        titulo: `Você resolveu ${resolvidas} ${resolvidas === 1 ? "pendência" : "pendências"}`,
+        detalhe: "Desde a última vez que passou por aqui. Continua assim.",
+      };
+    } else if (novasMarcadas > 0) {
+      conquista = {
+        tom: "avancou",
+        titulo: `Você marcou ${novasMarcadas} ${novasMarcadas === 1 ? "postagem" : "postagens"} como publicada`,
+        detalhe: "É o registro que faz o trabalho aparecer nos relatórios.",
+      };
+    }
+  }
+
+  // Guarda a foto de hoje (uma por dia) para o reconhecimento de amanhã.
+  await db.lembreteHistorico.upsert({
+    where: { usuarioId_dia: { usuarioId, dia: diaHoje } },
+    create: {
+      usuarioId,
+      dia: diaHoje,
+      pendencias: candidatas.length,
+      postagensMarcadas: marcadas,
+      postagensTotal: postagensDoMes.length,
+    },
+    update: { pendencias: candidatas.length, postagensMarcadas: marcadas, postagensTotal: postagensDoMes.length },
+  });
+
+  const mostrar =
+    pendencias.length > 0 || novidades.length > 0 || manualNuncaLido || conquista !== null;
 
   return {
     mostrar,
@@ -250,5 +328,6 @@ export async function montarLembrete(usuarioId: string): Promise<Lembrete> {
     novidades,
     manualNuncaLido,
     placar,
+    conquista,
   };
 }

@@ -1002,8 +1002,16 @@ resolver aos poucos, não assustar. Cada item leva direto à tela onde se resolv
 - job seu parado há mais de 7 dias;
 - cliente seu (atendimento ou estratégia) sem dossiê preenchido.
 
+**Parabéns pelo avanço.** Se você resolveu pendências desde a última vez que passou por aqui,
+a primeira coisa que aparece é o reconhecimento disso — antes de qualquer cobrança. Quem
+zerou tudo recebe o troféu.
+
 **Placar.** Junto vem a sua proporção de postagens marcadas no mês. Não é para punir: é para
 você ver o progresso. Quem está em dia vê isso confirmado.
+
+**Ninguém é comparado com ninguém.** O sistema guarda uma foto por dia de cada pessoa só
+para comparar você com você mesmo. Não existe ranking, e nenhuma pessoa vê o número da
+outra neste lembrete.
 
 **Bíblia Operacional.** Quem nunca abriu recebe o convite para abrir. O sistema registra a
 leitura no primeiro acesso à tela.

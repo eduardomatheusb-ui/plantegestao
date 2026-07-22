@@ -85,9 +85,10 @@ model Usuario {
   criadoEm          DateTime  @default(now())
   atualizadoEm      DateTime  @updatedAt
 
-  perfil      PerfilAcesso? @relation(fields: [perfilId], references: [id], onDelete: SetNull)
-  logs        Log[]
-  colaborador Colaborador?
+  perfil            PerfilAcesso?       @relation(fields: [perfilId], references: [id], onDelete: SetNull)
+  logs              Log[]
+  colaborador       Colaborador?
+  lembreteHistorico LembreteHistorico[]
 
   projetosResponsavel   Projeto[]                 @relation("ProjetoResponsavel")
   projetosCriados       Projeto[]                 @relation("ProjetoCriadoPor")
@@ -130,6 +131,26 @@ model Usuario {
 }
 
 /// Canal interno: a equipe registra erros, dúvidas e sugestões de melhoria.
+/// Foto diária do lembrete de uso, por pessoa.
+///
+/// Existe para o sistema poder dizer "você avançou desde ontem" — comparando a
+/// pessoa com ela mesma. Nunca serve para ranquear ou comparar colegas: só é
+/// lido pelo próprio usuário, no popup dele.
+model LembreteHistorico {
+  id                String   @id @default(cuid())
+  usuarioId         String
+  dia               DateTime // meia-noite UTC do dia de Brasília
+  pendencias        Int
+  postagensMarcadas Int      @default(0)
+  postagensTotal    Int      @default(0)
+  criadoEm          DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, dia])
+  @@index([usuarioId, dia])
+}
+
 model Feedback {
   id              String   @id @default(cuid())
   tipo            String   @default("erro") // erro | duvida | sugestao
