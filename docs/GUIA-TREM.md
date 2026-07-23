@@ -521,6 +521,18 @@ tem **4 datas** (vencimento, competência, pagamento, faturamento), categoria e 
 - **Exportar CSV** baixa os lançamentos do mês para Excel ou BI.
 - No celular, os lançamentos viram **cards**.
 
+**Fazer em lote.** Cada linha tem uma caixa à esquerda, e a do cabeçalho marca o mês inteiro.
+Ao selecionar, aparece uma barra no rodapé:
+
+- **Marcar pago:** dá baixa em todos os selecionados de uma vez, com a data de hoje.
+  Transferências e o que já está quitado são ignorados (o sistema avisa quantos).
+- **Categoria / centro:** aplica a mesma categoria ou o mesmo centro de custo a todos.
+  Ajuda a organizar o plano de contas sem abrir um por um.
+- **Excluir:** apaga vários (só Sócio-diretor). Vai um por um por dentro, e avisa se algum
+  não pôde ser excluído por ter vínculo.
+
+Cada alteração fica no histórico do lançamento, e o limite é de 300 por vez.
+
 > **Boas práticas:** sempre informe o **cliente** no lançamento de receita. É isso que
 > alimenta **margem por cliente** e **inadimplência**. Mantenha **datas de pagamento**
 > corretas: os indicadores usam elas.

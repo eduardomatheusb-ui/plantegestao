@@ -17,6 +17,12 @@ import { ConfirmButton } from "@/components/shared/confirm-button";
 import { InlineAction } from "@/components/shared/inline-action";
 import { MonthNav } from "@/components/financeiro/month-nav";
 import { FinanceiroChart } from "@/components/financeiro/chart";
+import {
+  SelecaoLancamentos,
+  CaixaLancamento,
+  CaixaTodosLancamentos,
+} from "@/components/financeiro/selecao-lancamentos";
+import { db } from "@/lib/db";
 import { formatBRL, formatDate, cn } from "@/lib/utils";
 
 type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -46,13 +52,20 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
   const mes = Number(sp.mes) || agora.getMonth() + 1;
   const view = sp.view === "grafico" ? "grafico" : "lista";
 
-  const [lancamentos, resumo, serie, empresa] = await Promise.all([
+  const [lancamentos, resumo, serie, empresa, categorias, centrosCusto] = await Promise.all([
     listarLancamentosMes(ano, mes),
     resumoDoMes(ano, mes),
     serieUltimosMeses(ano, mes, 6),
     getEmpresa(),
+    podeEditar
+      ? db.categoria.findMany({ orderBy: { nome: "asc" }, select: { id: true, nome: true } })
+      : Promise.resolve([]),
+    podeEditar
+      ? db.centroCusto.findMany({ where: { ativo: true }, orderBy: { nome: "asc" }, select: { id: true, nome: true } })
+      : Promise.resolve([]),
   ]);
   const urlEmissaoNfse = empresa.urlEmissaoNfse;
+  const idsDoMes = lancamentos.map((l) => l.id);
 
   const novoHref = (tipo: string) => `/financeiro/novo?tipo=${tipo}`;
   const toggleViewHref = `/financeiro?ano=${ano}&mes=${mes}&view=${view === "grafico" ? "lista" : "grafico"}`;
@@ -159,12 +172,17 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
           descricao={podeEditar ? "Use os botões acima para registrar uma receita ou despesa." : undefined}
         />
       ) : (
-        <>
+        <SelecaoLancamentos podeExcluir={podeExcluir} categorias={categorias} centrosCusto={centrosCusto}>
           {/* Desktop: tabela (rola na horizontal se faltar espaço) */}
           <div className="hidden overflow-x-auto rounded-lg border border-border sm:block">
             <Table>
               <TableHeader>
                 <TableRow>
+                  {podeEditar && (
+                    <TableHead className="w-px">
+                      <CaixaTodosLancamentos ids={idsDoMes} />
+                    </TableHead>
+                  )}
                   <TableHead>Venc.</TableHead>
                   <TableHead>Comp.</TableHead>
                   <TableHead>Pag.</TableHead>
@@ -184,6 +202,11 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                   const quitado = l.status === "QUITADO";
                   return (
                     <TableRow key={l.id}>
+                      {podeEditar && (
+                        <TableCell className="w-px">
+                          <CaixaLancamento id={l.id} titulo={l.titulo} />
+                        </TableCell>
+                      )}
                       <TableCell className="text-sm">{formatDate(l.dataVencimento)}</TableCell>
                       <TableCell className="text-sm">{formatDate(l.dataCompetencia)}</TableCell>
                       <TableCell className="text-sm">{formatDate(l.dataPagamento)}</TableCell>
@@ -218,10 +241,17 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
               return (
                 <div key={l.id} className="space-y-2 rounded-lg border border-border bg-card p-3">
                   <div className="flex items-start justify-between gap-2">
-                    <Link href={`/financeiro/${l.id}`} className="min-w-0 hover:underline">
-                      <span className="text-xs text-muted-foreground tabular-nums">#{l.numero}</span>
-                      <span className="block font-medium leading-tight">{l.titulo}</span>
-                    </Link>
+                    <div className="flex min-w-0 items-start gap-2">
+                      {podeEditar && (
+                        <span className="pt-0.5">
+                          <CaixaLancamento id={l.id} titulo={l.titulo} />
+                        </span>
+                      )}
+                      <Link href={`/financeiro/${l.id}`} className="min-w-0 hover:underline">
+                        <span className="text-xs text-muted-foreground tabular-nums">#{l.numero}</span>
+                        <span className="block font-medium leading-tight">{l.titulo}</span>
+                      </Link>
+                    </div>
                     <span className={cn("shrink-0 font-bold tabular-nums", l.tipo === "RECEITA" && "text-success", l.tipo === "DESPESA" && "text-destructive")}>
                       {l.tipo === "RECEITA" ? "+" : l.tipo === "DESPESA" ? "−" : ""}{formatBRL(v)}
                     </span>
@@ -237,7 +267,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
               );
             })}
           </div>
-        </>
+        </SelecaoLancamentos>
       )}
     </div>
   );

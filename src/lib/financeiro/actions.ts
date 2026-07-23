@@ -193,3 +193,97 @@ export async function excluirLancamento(id: string) {
   const d = l?.dataCompetencia ?? new Date();
   redirect(`/financeiro?ano=${d.getFullYear()}&mes=${d.getMonth() + 1}`);
 }
+
+// ── Ações em lote ─────────────────────────────────────────────────────
+
+export type ResultadoLoteFin = { ok: number; ignorados: number; falhas: number };
+
+const LIMITE_LOTE = 300;
+
+/**
+ * Quita vários lançamentos com a data de hoje.
+ *
+ * Transferência não tem estado de quitação, e o que já está quitado não muda:
+ * ambos entram em "ignorados", não em "falhas". Assim o aviso final distingue
+ * "não fazia sentido" de "deu erro".
+ */
+export async function quitarLancamentosEmLote(ids: string[]): Promise<ResultadoLoteFin> {
+  const user = await assertPapel(EDITAR);
+  const alvos = ids.slice(0, LIMITE_LOTE);
+
+  const elegiveis = await db.lancamento.findMany({
+    where: { id: { in: alvos }, status: "EM_ABERTO", tipo: { not: "TRANSFERENCIA" } },
+    select: { id: true },
+  });
+  const idsQuitar = elegiveis.map((l) => l.id);
+
+  if (idsQuitar.length > 0) {
+    await db.lancamento.updateMany({
+      where: { id: { in: idsQuitar } },
+      data: { status: "QUITADO", dataPagamento: new Date() },
+    });
+    for (const id of idsQuitar) {
+      await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "quitou o lançamento (em lote)" });
+    }
+  }
+
+  revalidatePath("/financeiro");
+  return { ok: idsQuitar.length, ignorados: alvos.length - idsQuitar.length, falhas: 0 };
+}
+
+/**
+ * Aplica a mesma categoria OU o mesmo centro de custo a vários lançamentos.
+ * `campo` diz qual dos dois; `valorId` vazio limpa o campo.
+ */
+export async function reclassificarLancamentosEmLote(
+  ids: string[],
+  campo: "categoriaId" | "centroCustoId",
+  valorId: string | null,
+): Promise<ResultadoLoteFin> {
+  const user = await assertPapel(EDITAR);
+  const alvos = ids.slice(0, LIMITE_LOTE);
+
+  // Confere que o destino existe (e não foi arquivado), para não gravar um id órfão.
+  if (valorId) {
+    const existe =
+      campo === "categoriaId"
+        ? await db.categoria.count({ where: { id: valorId } })
+        : await db.centroCusto.count({ where: { id: valorId, ativo: true } });
+    if (!existe) throw new Error("Categoria ou centro de custo inválido.");
+  }
+
+  await db.lancamento.updateMany({
+    where: { id: { in: alvos } },
+    data: { [campo]: valorId },
+  });
+  const rotulo = campo === "categoriaId" ? "categoria" : "centro de custo";
+  for (const id of alvos) {
+    await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: `alterou ${rotulo} (em lote)` });
+  }
+
+  revalidatePath("/financeiro");
+  return { ok: alvos.length, ignorados: 0, falhas: 0 };
+}
+
+/** Exclui vários lançamentos. Só Sócio-diretor. */
+export async function excluirLancamentosEmLote(ids: string[]): Promise<ResultadoLoteFin> {
+  const user = await assertPapel("SOCIO_DIRETOR");
+  const alvos = ids.slice(0, LIMITE_LOTE);
+  let ok = 0;
+  let falhas = 0;
+
+  // Um a um: lançamento pode ter vínculo (proposta de origem) e falhar sozinho,
+  // sem derrubar o lote.
+  for (const id of alvos) {
+    try {
+      await db.lancamento.delete({ where: { id } });
+      await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "excluiu o lançamento (em lote)" });
+      ok++;
+    } catch {
+      falhas++;
+    }
+  }
+
+  revalidatePath("/financeiro");
+  return { ok, ignorados: 0, falhas };
+}
