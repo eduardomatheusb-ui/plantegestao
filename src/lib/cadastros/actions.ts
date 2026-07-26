@@ -4,14 +4,41 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getEntidade, moduloDaEntidade, type EntityConfig } from "./registry";
 import * as repo from "./repo";
+import { db } from "@/lib/db";
 import {
   assertPapel,
   CADASTRO_EDITAR_MINIMO,
   CADASTRO_EXCLUIR_MINIMO,
 } from "@/lib/rbac";
-import { acessoAtual, assertModulo } from "@/lib/permissoes.server";
+import { acessoAtual, assertModulo, verTudoNoModulo, type AcessoUsuario } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { registrarLog } from "@/lib/log";
+
+/**
+ * Recorte por dono, igual ao da listagem de clientes: quem não tem ADMIN em
+ * cadastros só age sobre os clientes que criou, atende ou é estrategista.
+ *
+ * Existe porque a ação de servidor é chamável direto, sem passar pela tela: sem
+ * este filtro, um atendimento arquivaria ou excluiria o cliente de outro só
+ * passando o id. Devolve, entre os ids pedidos, os que o usuário pode tocar.
+ */
+async function idsPermitidos(
+  config: EntityConfig,
+  acesso: AcessoUsuario & { id: string },
+  ids: string[],
+): Promise<Set<string>> {
+  if (config.slug !== "clientes" || verTudoNoModulo(acesso, "cadastros")) {
+    return new Set(ids);
+  }
+  const meus = await db.cliente.findMany({
+    where: {
+      id: { in: ids },
+      OR: [{ criadoPorId: acesso.id }, { atendimentoId: acesso.id }, { estrategiaId: acesso.id }],
+    },
+    select: { id: true },
+  });
+  return new Set(meus.map((c) => c.id));
+}
 
 export type FormState = {
   ok?: boolean;
@@ -118,7 +145,11 @@ export async function arquivarCadastro(slug: string, id: string, arquivar: boole
   const user = await assertPapel(CADASTRO_EDITAR_MINIMO);
   // O módulo também é checado aqui, não só na tela: contas bancárias e centros
   // de custo respondem ao financeiro, e ação de servidor é chamável direto.
-  await assertModulo(moduloDaEntidade(config), "EDITAR");
+  const acesso = await assertModulo(moduloDaEntidade(config), "EDITAR");
+
+  if (!(await idsPermitidos(config, acesso, [id])).has(id)) {
+    throw new Error("Você não tem acesso a este registro.");
+  }
 
   await repo.definirArquivado(config, id, arquivar);
   await registrarLog({
@@ -134,7 +165,11 @@ export async function excluirCadastro(slug: string, id: string) {
   const config = getEntidade(slug);
   if (!config) throw new Error("Cadastro inválido.");
   const user = await assertPapel(CADASTRO_EXCLUIR_MINIMO);
-  await assertModulo(moduloDaEntidade(config), "EDITAR");
+  const acesso = await assertModulo(moduloDaEntidade(config), "EDITAR");
+
+  if (!(await idsPermitidos(config, acesso, [id])).has(id)) {
+    throw new Error("Você não tem acesso a este registro.");
+  }
 
   await repo.excluir(config, id);
   await registrarLog({
@@ -176,10 +211,17 @@ export async function arquivarCadastrosEmLote(
   if (!config) throw new Error("Cadastro inválido.");
   if (!config.softDelete) throw new Error("Este cadastro não permite arquivar.");
   const user = await assertPapel(CADASTRO_EDITAR_MINIMO);
-  await assertModulo(moduloDaEntidade(config), "EDITAR");
+  const acesso = await assertModulo(moduloDaEntidade(config), "EDITAR");
 
-  const alvos = ids.slice(0, LIMITE_LOTE);
+  const pedidos = ids.slice(0, LIMITE_LOTE);
+  const permitidos = await idsPermitidos(config, acesso, pedidos);
+  const alvos = pedidos.filter((id) => permitidos.has(id));
   const falhas: ResultadoLote["falhas"] = [];
+  // Não busca o nome do registro sem acesso: revelá-lo já seria vazar o dado.
+  const semAcesso = pedidos.length - alvos.length;
+  if (semAcesso > 0) {
+    falhas.push({ nome: `${semAcesso} registro(s)`, motivo: "sem acesso" });
+  }
   let ok = 0;
 
   for (const id of alvos) {
@@ -213,10 +255,16 @@ export async function excluirCadastrosEmLote(slug: string, ids: string[]): Promi
   const config = getEntidade(slug);
   if (!config) throw new Error("Cadastro inválido.");
   const user = await assertPapel(CADASTRO_EXCLUIR_MINIMO);
-  await assertModulo(moduloDaEntidade(config), "EDITAR");
+  const acesso = await assertModulo(moduloDaEntidade(config), "EDITAR");
 
-  const alvos = ids.slice(0, LIMITE_LOTE);
+  const pedidos = ids.slice(0, LIMITE_LOTE);
+  const permitidos = await idsPermitidos(config, acesso, pedidos);
+  const alvos = pedidos.filter((id) => permitidos.has(id));
   const falhas: ResultadoLote["falhas"] = [];
+  const semAcesso = pedidos.length - alvos.length;
+  if (semAcesso > 0) {
+    falhas.push({ nome: `${semAcesso} registro(s)`, motivo: "sem acesso" });
+  }
   let ok = 0;
 
   for (const id of alvos) {

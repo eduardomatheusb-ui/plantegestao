@@ -7,9 +7,21 @@ import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
 import { assertPapel } from "@/lib/rbac";
+import { assertModulo } from "@/lib/permissoes.server";
 import type { LancamentoTipo } from "@prisma/client";
 
 const EDITAR: "GESTOR" = "GESTOR";
+
+/**
+ * Toda ação financeira exige DUAS checagens: o papel legado (GESTOR/SÓCIO) e o
+ * módulo `financeiro`. Elas são eixos diferentes: o perfil "Atendimento" deriva
+ * papel GESTOR (por ter EDITAR em projetos/jobs) mas tem financeiro=NENHUM.
+ * Sem a checagem de módulo, uma ação de servidor (chamável direto, sem passar
+ * pela tela) deixaria esse usuário mexer no financeiro da agência.
+ */
+async function assertFinanceiro(minimo: "EDITAR" | "ADMIN" = "EDITAR") {
+  await assertModulo("financeiro", minimo);
+}
 
 export type LancamentoFormState = { error?: string; fieldErrors?: Record<string, string> };
 
@@ -47,6 +59,7 @@ export async function salvarLancamento(
   let destino = "";
   try {
     const user = await assertPapel(EDITAR);
+    await assertFinanceiro();
 
     const titulo = formData.get("titulo")?.toString().trim();
     const dataVencimento = data(formData.get("dataVencimento"));
@@ -172,6 +185,7 @@ export async function salvarLancamento(
 
 export async function quitarLancamento(id: string) {
   const user = await assertPapel(EDITAR);
+  await assertFinanceiro();
   await db.lancamento.update({ where: { id }, data: { status: "QUITADO", dataPagamento: new Date() } });
   await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "quitou o lançamento" });
   revalidatePath("/financeiro");
@@ -179,6 +193,7 @@ export async function quitarLancamento(id: string) {
 
 export async function estornarLancamento(id: string) {
   const user = await assertPapel(EDITAR);
+  await assertFinanceiro();
   await db.lancamento.update({ where: { id }, data: { status: "EM_ABERTO", dataPagamento: null } });
   await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "estornou a quitação" });
   revalidatePath("/financeiro");
@@ -186,6 +201,7 @@ export async function estornarLancamento(id: string) {
 
 export async function excluirLancamento(id: string) {
   const user = await assertPapel("SOCIO_DIRETOR");
+  await assertFinanceiro();
   const l = await db.lancamento.findUnique({ where: { id }, select: { dataCompetencia: true } });
   await db.lancamento.delete({ where: { id } });
   await registrarLog({ entidadeTipo: "lancamento", entidadeId: id, usuarioId: user.id, acao: "excluiu o lançamento" });
@@ -209,6 +225,7 @@ const LIMITE_LOTE = 300;
  */
 export async function quitarLancamentosEmLote(ids: string[]): Promise<ResultadoLoteFin> {
   const user = await assertPapel(EDITAR);
+  await assertFinanceiro();
   const alvos = ids.slice(0, LIMITE_LOTE);
 
   const elegiveis = await db.lancamento.findMany({
@@ -241,6 +258,14 @@ export async function reclassificarLancamentosEmLote(
   valorId: string | null,
 ): Promise<ResultadoLoteFin> {
   const user = await assertPapel(EDITAR);
+  await assertFinanceiro();
+
+  // `campo` é só um tipo em tempo de compilação; o valor que CHEGA do cliente
+  // não é. Sem esta guarda, `data: { [campo]: valorId }` viraria escrita em
+  // coluna arbitrária (status, contaId, criadoPorId…). Só os dois campos valem.
+  if (campo !== "categoriaId" && campo !== "centroCustoId") {
+    throw new Error("Campo inválido para reclassificação.");
+  }
   const alvos = ids.slice(0, LIMITE_LOTE);
 
   // Confere que o destino existe (e não foi arquivado), para não gravar um id órfão.
@@ -268,6 +293,7 @@ export async function reclassificarLancamentosEmLote(
 /** Exclui vários lançamentos. Só Sócio-diretor. */
 export async function excluirLancamentosEmLote(ids: string[]): Promise<ResultadoLoteFin> {
   const user = await assertPapel("SOCIO_DIRETOR");
+  await assertFinanceiro();
   const alvos = ids.slice(0, LIMITE_LOTE);
   let ok = 0;
   let falhas = 0;
