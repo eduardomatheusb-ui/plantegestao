@@ -100,6 +100,7 @@ model Usuario {
   jobsCriados           Job[]                     @relation("JobCriadoPor")
   jobsEnvolvido         JobEnvolvido[]
   tarefasResponsavel    JobTarefa[]
+  pautaOrdens           PautaOrdem[]
   propostasResponsavel  Proposta[]                @relation("PropostaResponsavel")
   propostasCriadas      Proposta[]                @relation("PropostaCriadoPor")
   lancamentosCriados    Lancamento[]              @relation("LancamentoCriadoPor")
@@ -951,6 +952,7 @@ model Job {
   aprovacaoEventos   AprovacaoEvento[]
   aprovacaoLoteItens AprovacaoLoteItem[]
   reembolsoDespesas  ReembolsoDespesa[]
+  pautaOrdens        PautaOrdem[]
 
   @@index([clienteId])
   @@index([projetoId])
@@ -1019,6 +1021,20 @@ model JobEnvolvido {
   usuario     Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@id([jobId, usuarioId])
+}
+
+/// Ordem manual da "Minha Pauta", por pessoa. Cada usuário arruma a própria
+/// pauta; sem linha aqui, o job cai na ordem por prazo. Ver lib/jobs/queries.
+model PautaOrdem {
+  usuarioId String
+  jobId     String
+  ordem     Int
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  job     Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, jobId])
+  @@index([usuarioId])
 }
 
 model JobTarefa {

@@ -559,6 +559,29 @@ async function definirMinhaParte(jobId: string, concluir: boolean) {
   revalidatePath(`/jobs/${jobId}`);
 }
 
+/**
+ * Salva a ordem manual da Minha Pauta da pessoa logada.
+ *
+ * O cliente manda a ordem completa que está vendo (todos os ids, já na nova
+ * sequência). Regravamos as linhas dessa pessoa com ordem = posição. Só mexe na
+ * pauta de quem está logado; um id que não seja do usuário simplesmente não tem
+ * efeito na pauta de ninguém, porque a chave é (usuarioId, jobId).
+ */
+export async function reordenarMinhaPauta(jobIdsNaOrdem: string[]) {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Sessão expirada.");
+
+  const ids = jobIdsNaOrdem.slice(0, 500);
+  await db.$transaction([
+    db.pautaOrdem.deleteMany({ where: { usuarioId: user.id } }),
+    ...(ids.length
+      ? [db.pautaOrdem.createMany({ data: ids.map((jobId, i) => ({ usuarioId: user.id, jobId, ordem: i })) })]
+      : []),
+  ]);
+
+  revalidatePath("/jobs");
+}
+
 export async function concluirMinhaParte(jobId: string) {
   await definirMinhaParte(jobId, true);
 }

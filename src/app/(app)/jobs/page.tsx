@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus, Settings2, Layers } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { requireModulo } from "@/lib/permissoes.server";
+import { db } from "@/lib/db";
 import { listarStatus, listarJobs } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos, listarClientesAtivos } from "@/lib/projetos/queries";
 import { PageHeader } from "@/components/shared/page-header";
@@ -48,6 +49,24 @@ export default async function JobsPage({ searchParams }: PageProps) {
   ]);
 
   const statusOpts = statuses.map((s) => ({ id: s.id, nome: s.nome }));
+
+  // Minha Pauta: aplica a ordem manual da pessoa. O que ela arrumou vem primeiro,
+  // na ordem dela; o resto segue por prazo (a ordem que o listarJobs já devolveu).
+  if (view === "minha-pauta") {
+    const ordens = await db.pautaOrdem.findMany({
+      where: { usuarioId: user.id },
+      select: { jobId: true, ordem: true },
+    });
+    if (ordens.length) {
+      const pos = new Map(ordens.map((o) => [o.jobId, o.ordem]));
+      const INFexterno = Number.MAX_SAFE_INTEGER;
+      jobs.sort((a, b) => {
+        const pa = pos.has(a.id) ? pos.get(a.id)! : INFexterno;
+        const pb = pos.has(b.id) ? pos.get(b.id)! : INFexterno;
+        return pa - pb; // sort estável: empate (ambos sem ordem) mantém a ordem por prazo
+      });
+    }
+  }
 
   // Colunas para os kanbans
   let colunas: KanbanColuna[] = [];
@@ -126,7 +145,12 @@ export default async function JobsPage({ searchParams }: PageProps) {
       ) : view === "timeline" ? (
         <Timeline jobs={jobs} statuses={statusOpts} />
       ) : (
-        <JobsTable jobs={jobs} statuses={statusOpts} minhaParteDe={view === "minha-pauta" ? user.id : undefined} />
+        <JobsTable
+          jobs={jobs}
+          statuses={statusOpts}
+          minhaParteDe={view === "minha-pauta" ? user.id : undefined}
+          reordenavel={view === "minha-pauta"}
+        />
       )}
     </div>
   );

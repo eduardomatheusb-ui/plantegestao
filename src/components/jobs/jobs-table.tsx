@@ -1,8 +1,12 @@
+"use client";
+
+import * as React from "react";
 import Link from "next/link";
-import { AlarmClock, Send } from "lucide-react";
+import { AlarmClock, Send, GripVertical } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoverStatus } from "./mover-status";
 import { MinhaParte } from "./minha-parte";
+import { reordenarMinhaPauta } from "@/lib/jobs/actions";
 import { iniciais } from "@/lib/format";
 import { rotuloTipoJob, corTipoJob } from "@/lib/jobs/tipos";
 import { formatDate, cn } from "@/lib/utils";
@@ -12,24 +16,56 @@ export function JobsTable({
   jobs,
   statuses,
   minhaParteDe,
+  reordenavel = false,
 }: {
   jobs: JobListItem[];
   statuses: { id: string; nome: string }[];
   /** id do usuário: na pauta, mostra "Concluí minha parte" nos jobs que são dele. */
   minhaParteDe?: string;
+  /** Minha Pauta: permite arrastar as linhas para ordenar à mão (por pessoa). */
+  reordenavel?: boolean;
 }) {
-  // Só oferece o atalho onde ele de fato limpa o job da pauta: sem tarefa de
-  // fluxo (essas se concluem no checklist) e a pessoa é responsável ou
-  // corresponsável do job.
+  // Ordem local (otimista); ressincroniza quando o servidor manda a lista nova.
+  const [ordem, setOrdem] = React.useState(jobs);
+  React.useEffect(() => setOrdem(jobs), [jobs]);
+  const [arrastando, setArrastando] = React.useState<string | null>(null);
+  const [sobre, setSobre] = React.useState<string | null>(null);
+  const [, iniciar] = React.useTransition();
+
   const podeConcluirParte = (job: JobListItem) =>
     !!minhaParteDe &&
     job._count.tarefas === 0 &&
     (job.responsavelId === minhaParteDe || job.envolvidos.some((e) => e.usuarioId === minhaParteDe));
+
+  function soltarEm(alvoId: string) {
+    const arrastadoId = arrastando;
+    setArrastando(null);
+    setSobre(null);
+    if (!arrastadoId || arrastadoId === alvoId) return;
+
+    const atual = [...ordem];
+    const de = atual.findIndex((j) => j.id === arrastadoId);
+    const para = atual.findIndex((j) => j.id === alvoId);
+    if (de < 0 || para < 0) return;
+    const [movido] = atual.splice(de, 1);
+    // Insere ANTES do alvo (posição do alvo depois da remoção).
+    const insercao = atual.findIndex((j) => j.id === alvoId);
+    atual.splice(insercao, 0, movido);
+
+    setOrdem(atual);
+    iniciar(() => {
+      void reordenarMinhaPauta(atual.map((j) => j.id));
+    });
+  }
+
+  const lista = reordenavel ? ordem : jobs;
+
   return (
     <div className="rounded-lg border border-border">
       <Table>
         <TableHeader>
           <TableRow>
+            {reordenavel && <TableHead className="w-8" />}
             <TableHead className="w-14">#</TableHead>
             <TableHead>Título</TableHead>
             <TableHead>Cliente / Projeto</TableHead>
@@ -39,11 +75,29 @@ export function JobsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {jobs.map((job) => {
+          {lista.map((job) => {
             const atrasado =
               !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
             return (
-              <TableRow key={job.id}>
+              <TableRow
+                key={job.id}
+                draggable={reordenavel}
+                onDragStart={reordenavel ? (e) => { e.dataTransfer.effectAllowed = "move"; setArrastando(job.id); } : undefined}
+                onDragOver={reordenavel ? (e) => { e.preventDefault(); setSobre(job.id); } : undefined}
+                onDragLeave={reordenavel ? () => setSobre((s) => (s === job.id ? null : s)) : undefined}
+                onDrop={reordenavel ? () => soltarEm(job.id) : undefined}
+                onDragEnd={reordenavel ? () => { setArrastando(null); setSobre(null); } : undefined}
+                className={cn(
+                  reordenavel && "cursor-grab active:cursor-grabbing",
+                  arrastando === job.id && "opacity-40",
+                  reordenavel && sobre === job.id && arrastando && arrastando !== job.id && "border-t-2 border-t-brand-yellow",
+                )}
+              >
+                {reordenavel && (
+                  <TableCell className="text-muted-foreground/40">
+                    <GripVertical className="size-4" aria-hidden="true" />
+                  </TableCell>
+                )}
                 <TableCell className="text-muted-foreground tabular-nums">#{job.numero}</TableCell>
                 <TableCell className="font-medium">
                   <Link href={`/jobs/${job.id}`} className="hover:underline">{job.titulo}</Link>

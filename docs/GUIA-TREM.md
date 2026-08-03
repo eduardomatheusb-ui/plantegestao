@@ -276,6 +276,11 @@ auditar as entregas.
 > Essas pautas listam **pendências**: quando um job é **concluído, ele sai da pauta**
 > automaticamente (mas continua na **Pauta por status**, na coluna Concluído, na **Lista** e no
 > histórico do cliente/projeto). Para rever um concluído, use a Lista ou filtre pelo status.
+>
+> **Ordenar do seu jeito:** na **Minha Pauta** você pode **arrastar as linhas** (pela alça à
+> esquerda) e deixar na ordem que preferir. Essa ordem é **só sua**, não muda a pauta de
+> ninguém. O que você arruma fica no topo, na sua ordem; o que você não tocou continua por
+> **prazo** (mais próximo primeiro). Um job novo entra pela régua do prazo até você arrastá-lo.
 
 **No card você vê:** o **tipo** (cada tipo tem uma **cor própria** na borda esquerda e na
 etiqueta — reels, carrossel, post estático e afins), prioridade, prazo, "parado Xd" (sem

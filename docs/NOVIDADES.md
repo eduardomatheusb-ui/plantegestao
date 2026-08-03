@@ -7,6 +7,12 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-08-03 - Arrastar para ordenar a Minha Pauta
+
+- Na **Minha Pauta** dá para **arrastar as linhas** e deixar os jobs na ordem que você
+  quiser. A ordem é **só sua**, não muda a pauta dos outros.
+- O que você arruma fica no topo; o que não tocou continua por **prazo**.
+
 ## 2026-08-03 - "Concluí minha parte" mais fácil na pauta
 
 - O botão **"Concluí minha parte"** agora vale também para quem é **responsável** do
