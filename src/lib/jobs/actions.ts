@@ -571,7 +571,14 @@ export async function reordenarMinhaPauta(jobIdsNaOrdem: string[]) {
   const user = await getSessionUser();
   if (!user) throw new Error("Sessão expirada.");
 
-  const ids = jobIdsNaOrdem.slice(0, 500);
+  const pedidos = jobIdsNaOrdem.slice(0, 500);
+  // Filtra para jobs que ainda existem: se um sumiu (concluído/excluído noutra
+  // aba), a gravação inteira falharia por violação de chave estrangeira. Mantém
+  // a ordem pedida entre os que restam.
+  const existentes = new Set(
+    (await db.job.findMany({ where: { id: { in: pedidos } }, select: { id: true } })).map((j) => j.id),
+  );
+  const ids = pedidos.filter((id) => existentes.has(id));
   await db.$transaction([
     db.pautaOrdem.deleteMany({ where: { usuarioId: user.id } }),
     ...(ids.length
