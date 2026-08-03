@@ -267,7 +267,8 @@ auditar as entregas.
 > enquanto você for **responsável ou corresponsável**. Terminou e virou função de outro?
 > Clique em **"Concluí minha parte"** — ele sai da sua pauta (sem concluir o job), e dá
 > pra **Reabrir** se voltar pra você. Vale para os dois papéis: se você é o responsável e
-> também se é corresponsável.
+> também se é corresponsável. Se você tiver uma **subtarefa** sua no job (fora do workflow
+> em sequência), ela também é dada por concluída junto, para o job realmente sair da pauta.
 >
 > Dá pra clicar **direto na Minha Pauta**, no botão **"Concluí"** ao lado do status, sem
 > precisar abrir o job um por um. Ele aparece só nos jobs em que a etapa é sua e que não

@@ -513,18 +513,24 @@ export async function excluirJobStatus(id: string) {
 /**
  * "Concluí minha parte": tira o job da pauta da pessoa sem encerrar o job.
  *
- * Funciona para os dois papéis, porque a mesma pessoa pode ter os dois:
+ * A "parte" de alguém num job pode estar em TRÊS lugares, e concluir precisa
+ * fechar todos, senão o job não sai da pauta:
  * - responsável do job  → marca `responsavelConcluidoEm`;
- * - corresponsável      → marca o `concluidoEm` do vínculo dela.
- * Quem é os dois (ex.: atendimento que também produz) fecha as duas de uma vez.
- * Sem isto, o responsável não tinha como sinalizar que terminou, e o job ficava
- * grudado na pauta dele até o job inteiro concluir.
+ * - corresponsável      → marca o `concluidoEm` do vínculo dela;
+ * - subtarefas dela      → conclui as etapas atribuídas a ela.
+ * Sem o terceiro, quem concluía a parte (vínculo) mas tinha uma tarefa
+ * "Criação" atribuída via checklist via o job continuar na pauta, porque o
+ * filtro da pauta olha as tarefas pendentes da pessoa. Em job com workflow em
+ * sequência as tarefas seguem o checklist (ordem importa), então ali não mexemos.
  */
 async function definirMinhaParte(jobId: string, concluir: boolean) {
   const user = await getSessionUser();
   if (!user) throw new Error("Sessão expirada.");
 
-  const job = await db.job.findUnique({ where: { id: jobId }, select: { responsavelId: true } });
+  const job = await db.job.findUnique({
+    where: { id: jobId },
+    select: { responsavelId: true, workflowAtivo: true },
+  });
   if (!job) throw new Error("Job não encontrado.");
 
   const souResponsavel = job.responsavelId === user.id;
@@ -532,8 +538,11 @@ async function definirMinhaParte(jobId: string, concluir: boolean) {
     where: { jobId_usuarioId: { jobId, usuarioId: user.id } },
     select: { jobId: true },
   });
+  const minhasTarefas = await db.jobTarefa.count({
+    where: { jobId, responsavelId: user.id },
+  });
 
-  if (!souResponsavel && !vinculo) {
+  if (!souResponsavel && !vinculo && minhasTarefas === 0) {
     throw new Error("Você não tem uma parte neste job.");
   }
 
@@ -545,6 +554,14 @@ async function definirMinhaParte(jobId: string, concluir: boolean) {
     await db.jobEnvolvido.update({
       where: { jobId_usuarioId: { jobId, usuarioId: user.id } },
       data: { concluidoEm: quando },
+    });
+  }
+  // Fora do workflow em sequência, "minha parte" também fecha (ou reabre) as
+  // subtarefas atribuídas à pessoa — é o que faltava para o job sair da pauta.
+  if (!job.workflowAtivo && minhasTarefas > 0) {
+    await db.jobTarefa.updateMany({
+      where: { jobId, responsavelId: user.id },
+      data: { concluida: concluir, concluidaEm: quando },
     });
   }
 

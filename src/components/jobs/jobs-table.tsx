@@ -32,9 +32,12 @@ export function JobsTable({
   const [sobre, setSobre] = React.useState<string | null>(null);
   const [, iniciar] = React.useTransition();
 
+  // Mostra "Concluí" onde ele de fato limpa o job: a pessoa tem parte (responsável
+  // ou corresponsável) e o job não é workflow em sequência (nesses, a etapa se
+  // conclui no checklist). Fora do workflow, "minha parte" fecha as tarefas dela.
   const podeConcluirParte = (job: JobListItem) =>
     !!minhaParteDe &&
-    job._count.tarefas === 0 &&
+    !job.workflowAtivo &&
     (job.responsavelId === minhaParteDe || job.envolvidos.some((e) => e.usuarioId === minhaParteDe));
 
   function soltarEm(alvoId: string) {
