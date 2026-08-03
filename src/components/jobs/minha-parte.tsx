@@ -7,10 +7,20 @@ import { recarregarSeStale } from "@/lib/stale-action";
 import { Button } from "@/components/ui/button";
 
 /**
- * Corresponsável marca que a parte dele acabou → o job sai da pauta dele
- * (mas continua vivo com os outros).
+ * Responsável ou corresponsável marca que a parte dele acabou → o job sai da
+ * pauta dele (mas continua vivo com os outros).
+ *
+ * `compacta` é a versão da lista/pauta: um botão pequeno em vez do bloco.
  */
-export function MinhaParte({ jobId, concluida }: { jobId: string; concluida: boolean }) {
+export function MinhaParte({
+  jobId,
+  concluida,
+  compacta = false,
+}: {
+  jobId: string;
+  concluida: boolean;
+  compacta?: boolean;
+}) {
   const [pendente, iniciar] = useTransition();
 
   const acionar = (fn: (id: string) => Promise<void>) =>
@@ -21,6 +31,22 @@ export function MinhaParte({ jobId, concluida }: { jobId: string; concluida: boo
         recarregarSeStale(e);
       }
     });
+
+  if (compacta && !concluida) {
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-8 gap-1 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"
+        disabled={pendente}
+        onClick={() => acionar(concluirMinhaParte)}
+        title="Concluir minha parte (sai da sua pauta)"
+      >
+        <CheckCircle2 className="size-4" /> {pendente ? "…" : "Concluí"}
+      </Button>
+    );
+  }
 
   if (concluida) {
     return (

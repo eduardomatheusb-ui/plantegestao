@@ -126,7 +126,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
       ) : view === "timeline" ? (
         <Timeline jobs={jobs} statuses={statusOpts} />
       ) : (
-        <JobsTable jobs={jobs} statuses={statusOpts} />
+        <JobsTable jobs={jobs} statuses={statusOpts} minhaParteDe={view === "minha-pauta" ? user.id : undefined} />
       )}
     </div>
   );

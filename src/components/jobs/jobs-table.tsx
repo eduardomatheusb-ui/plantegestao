@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AlarmClock, Send } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoverStatus } from "./mover-status";
+import { MinhaParte } from "./minha-parte";
 import { iniciais } from "@/lib/format";
 import { rotuloTipoJob, corTipoJob } from "@/lib/jobs/tipos";
 import { formatDate, cn } from "@/lib/utils";
@@ -10,10 +11,20 @@ import type { JobListItem } from "@/lib/jobs/queries";
 export function JobsTable({
   jobs,
   statuses,
+  minhaParteDe,
 }: {
   jobs: JobListItem[];
   statuses: { id: string; nome: string }[];
+  /** id do usuário: na pauta, mostra "Concluí minha parte" nos jobs que são dele. */
+  minhaParteDe?: string;
 }) {
+  // Só oferece o atalho onde ele de fato limpa o job da pauta: sem tarefa de
+  // fluxo (essas se concluem no checklist) e a pessoa é responsável ou
+  // corresponsável do job.
+  const podeConcluirParte = (job: JobListItem) =>
+    !!minhaParteDe &&
+    job._count.tarefas === 0 &&
+    (job.responsavelId === minhaParteDe || job.envolvidos.some((e) => e.usuarioId === minhaParteDe));
   return (
     <div className="rounded-lg border border-border">
       <Table>
@@ -76,7 +87,10 @@ export function JobsTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <MoverStatus jobId={job.id} statusId={job.statusId} statuses={statuses} />
+                  <div className="flex items-center gap-1">
+                    <MoverStatus jobId={job.id} statusId={job.statusId} statuses={statuses} />
+                    {podeConcluirParte(job) && <MinhaParte jobId={job.id} concluida={false} compacta />}
+                  </div>
                 </TableCell>
               </TableRow>
             );

@@ -510,29 +510,60 @@ export async function excluirJobStatus(id: string) {
  * outros), mas sai da pauta dessa pessoa. Pedido da equipe — evita acumular na
  * pauta o que já virou função de outro.
  */
-export async function concluirMinhaParte(jobId: string) {
+/**
+ * "Concluí minha parte": tira o job da pauta da pessoa sem encerrar o job.
+ *
+ * Funciona para os dois papéis, porque a mesma pessoa pode ter os dois:
+ * - responsável do job  → marca `responsavelConcluidoEm`;
+ * - corresponsável      → marca o `concluidoEm` do vínculo dela.
+ * Quem é os dois (ex.: atendimento que também produz) fecha as duas de uma vez.
+ * Sem isto, o responsável não tinha como sinalizar que terminou, e o job ficava
+ * grudado na pauta dele até o job inteiro concluir.
+ */
+async function definirMinhaParte(jobId: string, concluir: boolean) {
   const user = await getSessionUser();
   if (!user) throw new Error("Sessão expirada.");
-  await db.jobEnvolvido.update({
+
+  const job = await db.job.findUnique({ where: { id: jobId }, select: { responsavelId: true } });
+  if (!job) throw new Error("Job não encontrado.");
+
+  const souResponsavel = job.responsavelId === user.id;
+  const vinculo = await db.jobEnvolvido.findUnique({
     where: { jobId_usuarioId: { jobId, usuarioId: user.id } },
-    data: { concluidoEm: new Date() },
+    select: { jobId: true },
   });
-  await registrarLog({ entidadeTipo: "job", entidadeId: jobId, usuarioId: user.id, acao: "concluiu a própria parte" });
+
+  if (!souResponsavel && !vinculo) {
+    throw new Error("Você não tem uma parte neste job.");
+  }
+
+  const quando = concluir ? new Date() : null;
+  if (souResponsavel) {
+    await db.job.update({ where: { id: jobId }, data: { responsavelConcluidoEm: quando } });
+  }
+  if (vinculo) {
+    await db.jobEnvolvido.update({
+      where: { jobId_usuarioId: { jobId, usuarioId: user.id } },
+      data: { concluidoEm: quando },
+    });
+  }
+
+  await registrarLog({
+    entidadeTipo: "job",
+    entidadeId: jobId,
+    usuarioId: user.id,
+    acao: concluir ? "concluiu a própria parte" : "reabriu a própria parte",
+  });
   revalidatePath("/dashboard");
   revalidatePath("/jobs");
   revalidatePath(`/jobs/${jobId}`);
 }
 
+export async function concluirMinhaParte(jobId: string) {
+  await definirMinhaParte(jobId, true);
+}
+
 /** Desfaz o "concluí minha parte": o job volta para a pauta da pessoa. */
 export async function reabrirMinhaParte(jobId: string) {
-  const user = await getSessionUser();
-  if (!user) throw new Error("Sessão expirada.");
-  await db.jobEnvolvido.update({
-    where: { jobId_usuarioId: { jobId, usuarioId: user.id } },
-    data: { concluidoEm: null },
-  });
-  await registrarLog({ entidadeTipo: "job", entidadeId: jobId, usuarioId: user.id, acao: "reabriu a própria parte" });
-  revalidatePath("/dashboard");
-  revalidatePath("/jobs");
-  revalidatePath(`/jobs/${jobId}`);
+  await definirMinhaParte(jobId, false);
 }

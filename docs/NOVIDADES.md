@@ -7,6 +7,14 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-08-03 - "Concluí minha parte" mais fácil na pauta
+
+- O botão **"Concluí minha parte"** agora vale também para quem é **responsável** do
+  job, não só para corresponsável. Quem cuida da conta consegue tirar o job da pauta
+  quando termina a parte dele.
+- Dá para clicar direto na **Minha Pauta**, ao lado do status, sem abrir cada job. Ele
+  aparece só nos jobs em que a etapa é sua.
+
 ## 2026-07-23 - Ações em lote nos cadastros e no financeiro
 
 - Nas listas de cadastro dá para marcar vários registros e **arquivar, reativar ou

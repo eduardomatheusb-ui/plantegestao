@@ -49,8 +49,13 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
   const primeiroAberto = statuses.find((s) => !s.isConcluido);
   const hoje = new Date().toISOString().slice(0, 10);
   const atrasado = !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
-  // Sou corresponsável deste job? (habilita o "Concluí minha parte")
+  // Tenho uma parte neste job? Como responsável, como corresponsável, ou os dois.
   const meuEnvolvimento = job.envolvidos.find((e) => e.usuarioId === user.id);
+  const souResponsavel = job.responsavelId === user.id;
+  const temMinhaParte = souResponsavel || !!meuEnvolvimento;
+  const minhaParteConcluida =
+    (!souResponsavel || !!job.responsavelConcluidoEm) &&
+    (!meuEnvolvimento || !!meuEnvolvimento.concluidoEm);
   const ehSocial = tipoJobSocial(job.tipo);
   const formatos = ehSocial ? rotulosFormatos(job.formatos) : [];
 
@@ -174,9 +179,9 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tempo apontado</p>
             <p className="font-display text-sm font-semibold tabular-nums">{formatHoras(job.apontadoMin)}</p>
           </div>
-          {meuEnvolvimento && (
+          {temMinhaParte && (
             <div className="col-span-2 sm:col-span-4">
-              <MinhaParte jobId={job.id} concluida={!!meuEnvolvimento.concluidoEm} />
+              <MinhaParte jobId={job.id} concluida={minhaParteConcluida} />
             </div>
           )}
           <div className="col-span-2 sm:col-span-4">

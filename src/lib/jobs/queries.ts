@@ -14,7 +14,13 @@ export function filtroPauta(userId: string) {
       {
         AND: [
           { tarefas: { none: { responsavelId: userId } } },
-          { OR: [{ responsavelId: userId }, { envolvidos: { some: { usuarioId: userId, concluidoEm: null } } }] },
+          {
+            OR: [
+              // Responsável cujo "concluí minha parte" ainda não foi dado.
+              { responsavelId: userId, responsavelConcluidoEm: null },
+              { envolvidos: { some: { usuarioId: userId, concluidoEm: null } } },
+            ],
+          },
         ],
       },
     ],

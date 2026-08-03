@@ -911,6 +911,7 @@ model Job {
   clienteId             String
   projetoId             String?
   responsavelId         String?
+  responsavelConcluidoEm DateTime? // responsável marcou "concluí minha parte" (sai da pauta dele, o job segue vivo)
   statusId              String
   prazo                 DateTime? // p/ postagem = prazo de CRIAÇÃO da arte
   prazoPostagem         DateTime? // só postagem: quando vai ao ar
