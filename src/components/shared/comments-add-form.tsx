@@ -29,6 +29,16 @@ export function CommentsAddForm({
   const [inicio, setInicio] = React.useState(0);
   const [mencionados, setMencionados] = React.useState<Usuario[]>([]);
 
+  // O campo é controlado, então o reset nativo do form não o limpa. Depois que a
+  // ação envia com sucesso, zeramos o texto e as menções à mão. Se a ação falhar
+  // (ex.: validação), ela lança e o texto é preservado.
+  async function enviar(formData: FormData) {
+    await action(formData);
+    setTexto("");
+    setMencionados([]);
+    setQuery(null);
+  }
+
   function aoDigitar(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const valor = e.target.value;
     setTexto(valor);
@@ -58,7 +68,7 @@ export function CommentsAddForm({
       : usuarios.filter((u) => u.nome.toLowerCase().includes(query)).slice(0, 6);
 
   return (
-    <form action={action} className="space-y-2">
+    <form action={enviar} className="space-y-2">
       <label htmlFor="texto" className="sr-only">Novo comentário</label>
       <div className="relative">
         <Textarea

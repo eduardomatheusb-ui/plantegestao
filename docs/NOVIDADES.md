@@ -7,6 +7,11 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-08-04 - Caixa de comentário limpa depois de enviar
+
+- Depois de enviar um comentário, a caixa **volta a ficar vazia** (antes o texto
+  continuava escrito lá, dando a impressão de que não tinha enviado).
+
 ## 2026-08-04 - Vermelho de atraso no post olha a data certa
 
 - Num post, o alerta **vermelho** de atrasado agora segue o **prazo de postagem**, não o de
