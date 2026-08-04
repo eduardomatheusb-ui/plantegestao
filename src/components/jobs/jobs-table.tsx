@@ -8,7 +8,8 @@ import { MoverStatus } from "./mover-status";
 import { MinhaParte } from "./minha-parte";
 import { reordenarMinhaPauta } from "@/lib/jobs/actions";
 import { iniciais } from "@/lib/format";
-import { rotuloTipoJob, corTipoJob } from "@/lib/jobs/tipos";
+import { rotuloTipoJob, corTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
+import { atrasoDoJob } from "@/lib/jobs/atraso";
 import { formatDate, cn } from "@/lib/utils";
 import type { JobListItem } from "@/lib/jobs/queries";
 
@@ -79,8 +80,16 @@ export function JobsTable({
         </TableHeader>
         <TableBody>
           {lista.map((job) => {
-            const atrasado =
-              !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
+            const social = tipoJobSocial(job.tipo);
+            const atraso = atrasoDoJob({
+              tipo: job.tipo,
+              prazo: job.prazo,
+              prazoPostagem: job.prazoPostagem,
+              publicadoEm: job.publicadoEm,
+              isConcluido: job.status.isConcluido,
+            });
+            const criacaoAtrasada = !social && atraso.atrasado;
+            const postagemAtrasada = social && atraso.atrasado;
             return (
               <TableRow
                 key={job.id}
@@ -133,12 +142,15 @@ export function JobsTable({
                   )}
                 </TableCell>
                 <TableCell className="text-sm">
-                  <span className={cn(atrasado && "font-medium text-destructive")}>
+                  <span className={cn(criacaoAtrasada && "font-medium text-destructive")}>
                     {job.prazoPostagem && <span className="mr-1 text-[10px] uppercase tracking-wide text-muted-foreground">criação</span>}
                     {formatDate(job.prazo)}
                   </span>
                   {job.prazoPostagem && (
-                    <span className="mt-0.5 flex items-center gap-1 text-xs text-fuchsia-600 dark:text-fuchsia-400">
+                    <span className={cn(
+                      "mt-0.5 flex items-center gap-1 text-xs",
+                      postagemAtrasada ? "font-medium text-destructive" : "text-fuchsia-600 dark:text-fuchsia-400",
+                    )}>
                       <Send className="size-3" /> <span className="text-[10px] uppercase tracking-wide opacity-80">no ar</span> {formatDate(job.prazoPostagem)}
                     </span>
                   )}

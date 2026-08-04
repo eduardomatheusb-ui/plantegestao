@@ -8,6 +8,7 @@ import { arquivarJob, excluirJob, duplicarJob, moverJobStatus } from "@/lib/jobs
 import { criarTemplateDeJob } from "@/lib/templates/actions";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
+import { atrasoDoJob } from "@/lib/jobs/atraso";
 import { formatDate, cn } from "@/lib/utils";
 import { formatHoras } from "@/lib/projetos/situacao";
 import { BrandHero } from "@/components/shared/brand-hero";
@@ -48,7 +49,16 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
   const statusConcluido = statuses.find((s) => s.isConcluido);
   const primeiroAberto = statuses.find((s) => !s.isConcluido);
   const hoje = new Date().toISOString().slice(0, 10);
-  const atrasado = !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
+  // Post: o vermelho de atraso vale para a POSTAGEM, não para a criação.
+  const atraso = atrasoDoJob({
+    tipo: job.tipo,
+    prazo: job.prazo,
+    prazoPostagem: job.prazoPostagem,
+    publicadoEm: job.publicadoEm,
+    isConcluido: job.status.isConcluido,
+  });
+  const criacaoAtrasada = !tipoJobSocial(job.tipo) && atraso.atrasado;
+  const postagemAtrasada = tipoJobSocial(job.tipo) && atraso.atrasado;
   // Tenho uma parte neste job? Como responsável, como corresponsável, ou os dois.
   const meuEnvolvimento = job.envolvidos.find((e) => e.usuarioId === user.id);
   const souResponsavel = job.responsavelId === user.id;
@@ -170,7 +180,7 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
           </div>
           <div className="space-y-1">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{ehSocial ? "Prazo de criação" : "Prazo"}</p>
-            <p className={cn("inline-flex items-center gap-1 text-sm font-medium", atrasado && "text-destructive")}>
+            <p className={cn("inline-flex items-center gap-1 text-sm font-medium", criacaoAtrasada && "text-destructive")}>
               <CalendarClock className="size-4" />
               {formatDate(job.prazo)}
             </p>
@@ -201,8 +211,12 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
               <div className="space-y-1">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Vai ao ar</p>
-                <p className="inline-flex items-center gap-1 text-sm font-medium text-fuchsia-600 dark:text-fuchsia-400">
+                <p className={cn(
+                  "inline-flex items-center gap-1 text-sm font-medium",
+                  postagemAtrasada ? "text-destructive" : "text-fuchsia-600 dark:text-fuchsia-400",
+                )}>
                   <Send className="size-4" />{formatDate(job.prazoPostagem)}
+                  {postagemAtrasada && <span className="text-xs font-normal">(atrasada)</span>}
                 </p>
               </div>
               <div className="space-y-1 sm:col-span-3">

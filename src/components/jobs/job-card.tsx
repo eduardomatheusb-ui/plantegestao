@@ -5,6 +5,7 @@ import { iniciais } from "@/lib/format";
 import { rotulosFormatos } from "@/lib/jobs/formatos";
 import { rotuloTipoJob, tipoJobSocial, corTipoJob } from "@/lib/jobs/tipos";
 import { prioridadeDestaque, diasParado } from "@/lib/jobs/prioridade";
+import { atrasoDoJob } from "@/lib/jobs/atraso";
 import { formatDate, cn } from "@/lib/utils";
 import type { JobListItem } from "@/lib/jobs/queries";
 
@@ -17,9 +18,17 @@ export function JobCard({
   statuses: { id: string; nome: string }[];
   mostrarMover?: boolean;
 }) {
-  const atrasado =
-    !!job.prazo && !job.status.isConcluido && new Date(job.prazo).getTime() < Date.now();
   const social = tipoJobSocial(job.tipo);
+  const atraso = atrasoDoJob({
+    tipo: job.tipo,
+    prazo: job.prazo,
+    prazoPostagem: job.prazoPostagem,
+    publicadoEm: job.publicadoEm,
+    isConcluido: job.status.isConcluido,
+  });
+  // Em post, o vermelho vai para a data de postagem; a criação fica neutra.
+  const criacaoAtrasada = !social && atraso.atrasado;
+  const postagemAtrasada = social && atraso.atrasado;
   const formatos = social ? rotulosFormatos(job.formatos) : [];
   const destaque = prioridadeDestaque(job.prioridade);
   const parado = diasParado(job.atualizadoEm, job.status.isConcluido);
@@ -90,14 +99,17 @@ export function JobCard({
 
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         {job.prazo && (
-          <span className={cn("inline-flex items-center gap-1", atrasado && "font-medium text-destructive")}>
+          <span className={cn("inline-flex items-center gap-1", criacaoAtrasada && "font-medium text-destructive")}>
             <CalendarClock className="size-3.5" />
             <span className="text-[10px] uppercase tracking-wide opacity-70">{social ? "criação" : "prazo"}</span>
             {formatDate(job.prazo)}
           </span>
         )}
         {social && job.prazoPostagem && (
-          <span className="inline-flex items-center gap-1 text-fuchsia-600 dark:text-fuchsia-400">
+          <span className={cn(
+            "inline-flex items-center gap-1",
+            postagemAtrasada ? "font-medium text-destructive" : "text-fuchsia-600 dark:text-fuchsia-400",
+          )}>
             <Send className="size-3.5" />
             <span className="text-[10px] uppercase tracking-wide opacity-70">no ar</span>
             {formatDate(job.prazoPostagem)}

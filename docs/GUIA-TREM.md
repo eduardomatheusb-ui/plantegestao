@@ -201,6 +201,13 @@ um job hoje é o que aparece nos painéis depois.
     entrar outro editor, ele passa a entrar sozinho; se ela mudar de função, sai. Vale na
     criação e ao editar, sem marcar na mão. A pessoa some da própria pauta ao concluir a
     etapa dela ou clicar em **"Concluí minha parte"**, como em qualquer job.
+- **Duas datas no post, e qual fica vermelha:** um post tem **prazo de criação** (quando a
+  arte fica pronta) e **prazo de postagem** ("vai ao ar"). O alerta **vermelho de atrasado**
+  segue a data que importa naquele momento: em post, é a **postagem**. Ou seja, uma peça já
+  criada mas ainda não publicada **não fica vermelha na criação** só porque a data de criação
+  passou; ela fica vermelha na **data de postagem**, e só quando essa data chega sem a peça ter
+  ido ao ar. Se a postagem foi remarcada para frente, o vermelho espera a nova data. Assim quem
+  cuida da postagem ajusta o **prazo de postagem**, sem precisar mexer no de criação.
 - **Recorrência:** semanal, quinzenal ou mensal. O sistema **gera cópias** do job sozinho.
 - **Depende de outro job:** o job fica "bloqueado" até o outro concluir (aparece 🔒 no card).
 - **Publicação (só postagens):** quando a peça for ao ar, marque **"Publicada"** no job (se

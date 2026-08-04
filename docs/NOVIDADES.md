@@ -7,6 +7,13 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-08-04 - Vermelho de atraso no post olha a data certa
+
+- Num post, o alerta **vermelho** de atrasado agora segue o **prazo de postagem**, não o de
+  criação. Peça já criada e ainda não publicada para de aparecer vermelha na criação.
+- Se a data de postagem foi remarcada para frente, o vermelho espera a nova data. Quem cuida
+  da postagem ajusta o prazo de postagem, sem mexer no de criação.
+
 ## 2026-08-03 - Arrastar para ordenar a Minha Pauta
 
 - Na **Minha Pauta** dá para **arrastar as linhas** e deixar os jobs na ordem que você

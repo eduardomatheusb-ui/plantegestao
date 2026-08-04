@@ -34,16 +34,20 @@ export async function minhaPauta(userId: string) {
     where: { arquivado: false, status: { isConcluido: false }, ...filtroPauta(userId) },
     orderBy: [{ prazo: { sort: "asc", nulls: "last" } }],
     take: 6,
-    include: { cliente: { select: { nome: true } }, status: { select: { nome: true, cor: true } } },
+    include: { cliente: { select: { nome: true } }, status: { select: { nome: true, cor: true, isConcluido: true } } },
   });
   return jobs.map((j) => ({
     id: j.id,
     numero: j.numero,
     titulo: j.titulo,
+    tipo: j.tipo,
     clienteNome: j.cliente.nome,
     statusNome: j.status.nome,
     statusCor: j.status.cor,
+    isConcluido: j.status.isConcluido,
     prazo: j.prazo,
+    prazoPostagem: j.prazoPostagem,
+    publicadoEm: j.publicadoEm,
   }));
 }
 

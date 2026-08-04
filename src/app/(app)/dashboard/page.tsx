@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { requireUser, PAPEL_LABEL } from "@/lib/rbac";
 import { metricaJobsNoPrazo } from "@/lib/jobs/queries";
+import { atrasoDoJob } from "@/lib/jobs/atraso";
 import {
   minhaPauta, meusProjetos, timesheetHoje, ultimosDocumentos, comentariosRecentes, contadores, aniversariantesDoMes,
 } from "@/lib/dashboard/queries";
@@ -153,7 +154,8 @@ export default async function DashboardPage() {
             ) : (
               <ul className="divide-y divide-border">
                 {pauta.map((j) => {
-                  const atrasado = j.prazo && j.prazo < agora;
+                  // Em post, a data que vale é a de postagem, não a de criação.
+                  const atraso = atrasoDoJob({ tipo: j.tipo, prazo: j.prazo, prazoPostagem: j.prazoPostagem, publicadoEm: j.publicadoEm, isConcluido: j.isConcluido }, agora);
                   return (
                     <li key={j.id}>
                       <Link href={`/jobs/${j.id}`} className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-muted">
@@ -162,9 +164,10 @@ export default async function DashboardPage() {
                           <p className="truncate text-xs text-muted-foreground">{j.clienteNome}</p>
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
-                          {j.prazo && (
-                            <span className={cn("text-xs tabular-nums", atrasado ? "font-medium text-destructive" : "text-muted-foreground")}>
-                              {formatDate(j.prazo)}
+                          {atraso.dataAlvo && (
+                            <span className={cn("inline-flex items-center gap-1 text-xs tabular-nums", atraso.atrasado ? "font-medium text-destructive" : "text-muted-foreground")}>
+                              {atraso.ehPostagem && <span className="text-[9px] uppercase tracking-wide opacity-70">no ar</span>}
+                              {formatDate(atraso.dataAlvo)}
                             </span>
                           )}
                           <span className="inline-block size-2.5 rounded-full" style={{ background: j.statusCor ?? "var(--border)" }} title={j.statusNome} />
