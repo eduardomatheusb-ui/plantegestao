@@ -3,13 +3,13 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { marcarLida, marcarTodasLidas } from "@/app/(app)/notificacoes/actions";
+import { marcarLida, marcarTodasLidas, limparLidas } from "@/app/(app)/notificacoes/actions";
 import { cn } from "@/lib/utils";
 
 export type NotificacaoItem = {
@@ -100,8 +100,19 @@ export function NotificacoesBell({ naoLidas, recentes }: { naoLidas: number; rec
           )}
         </div>
 
-        <div className="border-t border-border">
-          <Link href="/notificacoes" className="block px-3 py-2 text-center text-sm font-medium text-foreground hover:bg-muted">
+        <div className="flex items-center justify-between border-t border-border">
+          {recentes.some((n) => n.lida) ? (
+            <button
+              type="button"
+              onClick={() => iniciar(async () => { await limparLidas(); router.refresh(); })}
+              className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Trash2 className="size-3.5" aria-hidden="true" /> Limpar lidas
+            </button>
+          ) : (
+            <span />
+          )}
+          <Link href="/notificacoes" className="px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
             Ver todas
           </Link>
         </div>
