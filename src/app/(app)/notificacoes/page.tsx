@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { CheckCheck } from "lucide-react";
+import { CheckCheck, Trash2 } from "lucide-react";
 import { requireUser } from "@/lib/rbac";
 import { listarNotificacoes } from "@/lib/notificacoes";
-import { marcarTodasLidas } from "./actions";
+import { marcarTodasLidas, limparLidas } from "./actions";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ export default async function NotificacoesPage() {
   const user = await requireUser();
   const itens = await listarNotificacoes(user.id, 100);
   const temNaoLida = itens.some((n) => !n.lida);
+  const temLida = itens.some((n) => n.lida);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -21,13 +22,25 @@ export default async function NotificacoesPage() {
         titulo="Notificações"
         descricao="Tudo que envolve você no sistema: atribuições, comentários e mudanças de status."
         acao={
-          temNaoLida ? (
-            <form action={marcarTodasLidas}>
-              <Button type="submit" variant="outline" size="sm">
-                <CheckCheck className="size-4" />
-                Marcar todas como lidas
-              </Button>
-            </form>
+          temNaoLida || temLida ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {temNaoLida && (
+                <form action={marcarTodasLidas}>
+                  <Button type="submit" variant="outline" size="sm">
+                    <CheckCheck className="size-4" />
+                    Marcar todas como lidas
+                  </Button>
+                </form>
+              )}
+              {temLida && (
+                <form action={limparLidas}>
+                  <Button type="submit" variant="outline" size="sm">
+                    <Trash2 className="size-4" />
+                    Limpar lidas
+                  </Button>
+                </form>
+              )}
+            </div>
           ) : undefined
         }
       />

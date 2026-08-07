@@ -110,6 +110,9 @@ em qualquer tela, e também em **Chat** no menu.
 - **Direta:** conversa 1 a 1 com um colega.
 - A bolinha vermelha mostra **mensagens não lidas**. Mensagens no chat também aparecem no
   **sino de notificações**. As diretas mandam e-mail; o Geral só notifica no sino.
+- **Sino de notificações:** ao abrir ou clicar, a notificação vira **lida** (o ponto some).
+  Em **Ver todas**, há **"Marcar todas como lidas"** e **"Limpar lidas"** — este apaga as já
+  lidas para a lista não acumular. As não lidas continuam. É só sua: não mexe na de ninguém.
 - **Editar / excluir:** passe o mouse (ou toque) sobre **a sua própria** mensagem para
   **editar** ou **excluir**. Mensagem alterada aparece com "· editado".
 

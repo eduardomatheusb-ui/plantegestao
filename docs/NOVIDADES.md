@@ -7,6 +7,11 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-08-04 - Limpar notificações lidas
+
+- Em **Notificações → Ver todas**, agora tem **"Limpar lidas"**: apaga as que você já leu,
+  para a lista parar de acumular. As não lidas continuam.
+
 ## 2026-08-04 - Caixa de comentário limpa depois de enviar
 
 - Depois de enviar um comentário, a caixa **volta a ficar vazia** (antes o texto
