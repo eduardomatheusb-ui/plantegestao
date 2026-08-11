@@ -110,9 +110,10 @@ em qualquer tela, e também em **Chat** no menu.
 - **Direta:** conversa 1 a 1 com um colega.
 - A bolinha vermelha mostra **mensagens não lidas**. Mensagens no chat também aparecem no
   **sino de notificações**. As diretas mandam e-mail; o Geral só notifica no sino.
-- **Sino de notificações:** ao abrir ou clicar, a notificação vira **lida** (o ponto some).
-  Em **Ver todas**, há **"Marcar todas como lidas"** e **"Limpar lidas"** — este apaga as já
-  lidas para a lista não acumular. As não lidas continuam. É só sua: não mexe na de ninguém.
+- **Sino de notificações:** a notificação **some ao ler**. Clicar numa notificação a
+  remove da lista e leva você ao destino, então nada fica acumulado. Para zerar o resto de
+  uma vez, use **"Limpar todas"** (no sino ou em **Ver todas**). É só sua: não mexe na de
+  ninguém, e o histórico de verdade continua no job, no comentário ou no log.
 - **Editar / excluir:** passe o mouse (ou toque) sobre **a sua própria** mensagem para
   **editar** ou **excluir**. Mensagem alterada aparece com "· editado".
 

@@ -7,10 +7,13 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
-## 2026-08-04 - Limpar notificações lidas
+## 2026-08-11 - Notificação some ao ler, e o gráfico de prazo corrigido
 
-- Em **Notificações → Ver todas**, agora tem **"Limpar lidas"**: apaga as que você já leu,
-  para a lista parar de acumular. As não lidas continuam.
+- **Notificações somem ao ler:** clicar numa notificação a remove da lista e leva você ao
+  destino. Nada fica acumulado. Para zerar o resto, use **"Limpar todas"**.
+- **Jobs concluídos no prazo:** o gráfico do dashboard estava contando como atrasado o job
+  concluído no **próprio dia** do prazo. Corrigido: concluir no dia do prazo conta como no
+  prazo, igual à regra que já valia no restante do sistema.
 
 ## 2026-08-04 - Caixa de comentário limpa depois de enviar
 

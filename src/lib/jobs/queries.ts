@@ -1,4 +1,17 @@
 import { db } from "@/lib/db";
+import { foraDoPrazo } from "@/lib/conclusao";
+
+/**
+ * Concluído no prazo? Usa o carimbo imutável `concluidoForaPrazo` (feito na
+ * conclusão, comparando por DIA, e que ninguém burla mudando o prazo depois).
+ * Em jobs antigos sem carimbo, cai na mesma regra por dia. Nunca compara o
+ * timestamp de conclusão com a meia-noite do prazo, senão concluir no próprio
+ * dia contaria como atrasado.
+ */
+function jobNoPrazo(j: { concluidoForaPrazo: boolean | null; concluidoEm: Date | null; prazo: Date | null }): boolean {
+  if (j.concluidoForaPrazo != null) return !j.concluidoForaPrazo;
+  return !foraDoPrazo(j.concluidoEm ?? new Date(0), j.prazo);
+}
 
 /**
  * Regra da "minha pauta" de um usuário. A pauta é guiada por ETAPAS (tarefas):
@@ -100,8 +113,8 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   });
 
   // Refino em memória de no-prazo/fora-prazo (mesma regra do donut do dashboard).
-  if (opts.conclusao === "no-prazo") return rows.filter((j) => j.concluidoEm && j.prazo && j.concluidoEm <= j.prazo);
-  if (opts.conclusao === "fora-prazo") return rows.filter((j) => j.concluidoEm && j.prazo && j.concluidoEm > j.prazo);
+  if (opts.conclusao === "no-prazo") return rows.filter((j) => jobNoPrazo(j));
+  if (opts.conclusao === "fora-prazo") return rows.filter((j) => !jobNoPrazo(j));
   return rows;
 }
 
@@ -160,10 +173,10 @@ export async function metricaJobsNoPrazo(userId?: string) {
       // Dashboard pessoal: só os jobs onde a pessoa é responsável ou envolvida.
       ...(userId ? { OR: [{ responsavelId: userId }, { envolvidos: { some: { usuarioId: userId } } }] } : {}),
     },
-    select: { concluidoEm: true, prazo: true },
+    select: { concluidoEm: true, prazo: true, concluidoForaPrazo: true },
   });
   if (concluidos.length === 0) return null;
-  const noPrazo = concluidos.filter((j) => j.concluidoEm! <= j.prazo!).length;
+  const noPrazo = concluidos.filter((j) => jobNoPrazo(j)).length;
   return {
     total: concluidos.length,
     noPrazo,

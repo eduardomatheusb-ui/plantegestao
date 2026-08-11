@@ -4,29 +4,22 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/rbac";
 
-export async function marcarLida(id: string): Promise<void> {
-  const user = await getSessionUser();
-  if (!user) return;
-  await db.notificacao.updateMany({ where: { id, usuarioId: user.id }, data: { lida: true } });
-  revalidatePath("/notificacoes");
-}
-
-export async function marcarTodasLidas(): Promise<void> {
-  const user = await getSessionUser();
-  if (!user) return;
-  await db.notificacao.updateMany({ where: { usuarioId: user.id, lida: false }, data: { lida: true } });
-  revalidatePath("/notificacoes");
-}
-
 /**
- * Remove as notificações já lidas da pessoa, para a lista não acumular.
- * Só apaga as lidas (as não lidas ficam); e só as do próprio usuário.
- * A notificação é um aviso, não um registro: o histórico de verdade vive nas
- * próprias entidades (jobs, comentários, log).
+ * Notificação "some ao ler": abrir uma notificação a REMOVE (a pessoa já viu,
+ * não precisa mais). O histórico de verdade vive nas próprias entidades (jobs,
+ * comentários, log), então descartar o aviso não perde nada.
  */
-export async function limparLidas(): Promise<void> {
+export async function descartarNotificacao(id: string): Promise<void> {
   const user = await getSessionUser();
   if (!user) return;
-  await db.notificacao.deleteMany({ where: { usuarioId: user.id, lida: true } });
+  await db.notificacao.deleteMany({ where: { id, usuarioId: user.id } });
+  revalidatePath("/notificacoes");
+}
+
+/** Limpa TODAS as notificações da pessoa de uma vez. Só as do próprio usuário. */
+export async function limparTodas(): Promise<void> {
+  const user = await getSessionUser();
+  if (!user) return;
+  await db.notificacao.deleteMany({ where: { usuarioId: user.id } });
   revalidatePath("/notificacoes");
 }

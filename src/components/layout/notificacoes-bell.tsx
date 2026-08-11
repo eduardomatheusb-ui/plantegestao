@@ -3,13 +3,13 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, CheckCheck, Trash2 } from "lucide-react";
+import { Bell, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { marcarLida, marcarTodasLidas, limparLidas } from "@/app/(app)/notificacoes/actions";
+import { descartarNotificacao, limparTodas } from "@/app/(app)/notificacoes/actions";
 import { cn } from "@/lib/utils";
 
 export type NotificacaoItem = {
@@ -35,10 +35,12 @@ export function NotificacoesBell({ naoLidas, recentes }: { naoLidas: number; rec
   const router = useRouter();
   const [, iniciar] = useTransition();
 
+  // Some ao ler: abrir a notificação a remove; depois navega para o destino.
   function abrir(n: NotificacaoItem) {
     iniciar(async () => {
-      if (!n.lida) await marcarLida(n.id);
+      await descartarNotificacao(n.id);
       if (n.url) router.push(n.url);
+      else router.refresh();
     });
   }
 
@@ -58,14 +60,14 @@ export function NotificacoesBell({ naoLidas, recentes }: { naoLidas: number; rec
       <DropdownMenuContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b border-border px-3 py-2">
           <span className="text-sm font-semibold">Notificações</span>
-          {naoLidas > 0 && (
+          {recentes.length > 0 && (
             <button
               type="button"
-              onClick={() => iniciar(async () => { await marcarTodasLidas(); router.refresh(); })}
+              onClick={() => iniciar(async () => { await limparTodas(); router.refresh(); })}
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
-              <CheckCheck className="size-3.5" aria-hidden="true" />
-              Marcar todas
+              <Trash2 className="size-3.5" aria-hidden="true" />
+              Limpar todas
             </button>
           )}
         </div>
@@ -80,12 +82,9 @@ export function NotificacoesBell({ naoLidas, recentes }: { naoLidas: number; rec
                   <button
                     type="button"
                     onClick={() => abrir(n)}
-                    className={cn(
-                      "flex w-full gap-2 px-3 py-2.5 text-left transition-colors hover:bg-muted",
-                      !n.lida && "bg-brand-yellow/10",
-                    )}
+                    className="flex w-full gap-2 px-3 py-2.5 text-left transition-colors hover:bg-muted"
                   >
-                    <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", n.lida ? "bg-transparent" : "bg-brand-yellow")} aria-hidden="true" />
+                    <span className="mt-1.5 size-2 shrink-0 rounded-full bg-brand-yellow" aria-hidden="true" />
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium leading-snug">{n.titulo}</span>
                       {n.descricao && <span className="block truncate text-xs text-muted-foreground">{n.descricao}</span>}
@@ -100,19 +99,8 @@ export function NotificacoesBell({ naoLidas, recentes }: { naoLidas: number; rec
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border">
-          {recentes.some((n) => n.lida) ? (
-            <button
-              type="button"
-              onClick={() => iniciar(async () => { await limparLidas(); router.refresh(); })}
-              className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <Trash2 className="size-3.5" aria-hidden="true" /> Limpar lidas
-            </button>
-          ) : (
-            <span />
-          )}
-          <Link href="/notificacoes" className="px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
+        <div className="border-t border-border">
+          <Link href="/notificacoes" className="block px-3 py-2 text-center text-sm font-medium text-foreground hover:bg-muted">
             Ver todas
           </Link>
         </div>

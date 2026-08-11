@@ -1,46 +1,30 @@
-import Link from "next/link";
-import { CheckCheck, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { requireUser } from "@/lib/rbac";
 import { listarNotificacoes } from "@/lib/notificacoes";
-import { marcarTodasLidas, limparLidas } from "./actions";
+import { limparTodas } from "./actions";
+import { NotificacaoLinha } from "@/components/layout/notificacao-linha";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
-import { formatDate } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 
 export default async function NotificacoesPage() {
   const user = await requireUser();
   const itens = await listarNotificacoes(user.id, 100);
-  const temNaoLida = itens.some((n) => !n.lida);
-  const temLida = itens.some((n) => n.lida);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader
         titulo="Notificações"
-        descricao="Tudo que envolve você no sistema: atribuições, comentários e mudanças de status."
+        descricao="Tudo que envolve você no sistema. Ao abrir uma, ela sai da lista."
         acao={
-          temNaoLida || temLida ? (
-            <div className="flex flex-wrap items-center gap-2">
-              {temNaoLida && (
-                <form action={marcarTodasLidas}>
-                  <Button type="submit" variant="outline" size="sm">
-                    <CheckCheck className="size-4" />
-                    Marcar todas como lidas
-                  </Button>
-                </form>
-              )}
-              {temLida && (
-                <form action={limparLidas}>
-                  <Button type="submit" variant="outline" size="sm">
-                    <Trash2 className="size-4" />
-                    Limpar lidas
-                  </Button>
-                </form>
-              )}
-            </div>
+          itens.length > 0 ? (
+            <form action={limparTodas}>
+              <Button type="submit" variant="outline" size="sm">
+                <Trash2 className="size-4" />
+                Limpar todas
+              </Button>
+            </form>
           ) : undefined
         }
       />
@@ -51,29 +35,17 @@ export default async function NotificacoesPage() {
         <Card>
           <CardContent className="p-0">
             <ul className="divide-y divide-border">
-              {itens.map((n) => {
-                const conteudo = (
-                  <span className="flex gap-3">
-                    <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", n.lida ? "bg-transparent" : "bg-brand-yellow")} aria-hidden="true" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-medium">{n.titulo}</span>
-                      {n.descricao && <span className="block text-sm text-muted-foreground">{n.descricao}</span>}
-                      <span className="mt-0.5 block text-xs text-muted-foreground">
-                        {n.ator ? `${n.ator.nome} · ` : ""}{formatDate(n.criadoEm)}
-                      </span>
-                    </span>
-                  </span>
-                );
-                return (
-                  <li key={n.id} className={cn(!n.lida && "bg-brand-yellow/5")}>
-                    {n.url ? (
-                      <Link href={n.url} className="block px-4 py-3 transition-colors hover:bg-muted">{conteudo}</Link>
-                    ) : (
-                      <div className="px-4 py-3">{conteudo}</div>
-                    )}
-                  </li>
-                );
-              })}
+              {itens.map((n) => (
+                <NotificacaoLinha
+                  key={n.id}
+                  id={n.id}
+                  titulo={n.titulo}
+                  descricao={n.descricao}
+                  url={n.url}
+                  atorNome={n.ator?.nome ?? null}
+                  criadoEm={n.criadoEm}
+                />
+              ))}
             </ul>
           </CardContent>
         </Card>
