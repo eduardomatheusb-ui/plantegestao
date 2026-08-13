@@ -48,7 +48,7 @@ export default async function ReembolsoDetalhePage({ params }: { params: Promise
   const opcoes = await opcoesDespesa();
   const anoAtual = new Date().getFullYear();
   const temRecibo = ["APROVADO", "PROGRAMADO", "PAGO"].includes(r.status);
-  const podeExcluir = acesso.papel === "SOCIO_DIRETOR" || (ehDono && r.status === "RASCUNHO");
+  const podeExcluir = podeModulo(acesso.caps, "financeiro", "ADMIN") || (ehDono && r.status === "RASCUNHO");
 
   const despesasView: DespesaView[] = r.despesas.map((d) => {
     const iso = new Date(d.data).toISOString().slice(0, 10);

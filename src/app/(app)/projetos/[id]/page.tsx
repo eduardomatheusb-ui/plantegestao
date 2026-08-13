@@ -42,7 +42,6 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
   const { id } = await params;
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, "GESTOR");
-  const podeExcluir = podePapel(user.papel, "SOCIO_DIRETOR");
 
   const projeto = await obterProjeto(id);
   if (!projeto) notFound();
@@ -51,6 +50,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Promise<{
   const hoje = new Date().toISOString().slice(0, 10);
 
   const acesso = await acessoAtual();
+  const podeExcluir = podeModulo(acesso.caps, "projetos", "ADMIN");
   const podeVerJobs = podeModulo(acesso.caps, "jobs", "VER");
   const jobs = podeVerJobs ? await listarJobsDoProjeto(id) : [];
 

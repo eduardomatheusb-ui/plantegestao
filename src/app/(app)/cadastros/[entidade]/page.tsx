@@ -8,9 +8,9 @@ import {
   requireUser,
   podePapel,
   CADASTRO_EDITAR_MINIMO,
-  CADASTRO_EXCLUIR_MINIMO,
 } from "@/lib/rbac";
 import { requireModulo, verTudoNoModulo } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { PageHeader } from "@/components/shared/page-header";
 import { SearchInput } from "@/components/shared/search-input";
 import { DataTable, type Column } from "@/components/shared/data-table";
@@ -33,7 +33,7 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   const acesso = await requireModulo(moduloDaEntidade(config), "VER");
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, CADASTRO_EDITAR_MINIMO);
-  const podeExcluir = podePapel(user.papel, CADASTRO_EXCLUIR_MINIMO);
+  const podeExcluir = podeModulo(acesso.caps, moduloDaEntidade(config), "ADMIN");
 
   const q = typeof sp.q === "string" ? sp.q : undefined;
   const incluirArquivados = sp.arquivados === "1";

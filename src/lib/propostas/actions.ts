@@ -178,7 +178,7 @@ export async function atualizarConsideracoes(id: string, formData: FormData) {
 }
 
 export async function excluirProposta(id: string) {
-  const user = await assertPapel("SOCIO_DIRETOR");
+  const user = await assertModulo("propostas", "ADMIN");
   await db.proposta.delete({ where: { id } });
   await registrarLog({ entidadeTipo: "proposta", entidadeId: id, usuarioId: user.id, acao: "excluiu a proposta" });
   revalidatePath("/propostas");

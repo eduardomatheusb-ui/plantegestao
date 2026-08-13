@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil, Archive, ArchiveRestore, Trash2, CalendarClock, Copy, Instagram, Send, Lock, LockOpen, CheckCircle2, RotateCcw, LayoutTemplate, AlarmClock } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
+import { acessoAtual } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { obterJob, listarStatus } from "@/lib/jobs/queries";
 import { listarUsuariosAtivos } from "@/lib/projetos/queries";
 import { arquivarJob, excluirJob, duplicarJob, moverJobStatus } from "@/lib/jobs/actions";
@@ -36,13 +38,14 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const user = await requireUser();
   const podeGerir = podePapel(user.papel, "GESTOR");
-  const podeExcluir = podePapel(user.papel, "SOCIO_DIRETOR");
 
-  const [job, statuses, usuarios] = await Promise.all([
+  const [job, statuses, usuarios, acesso] = await Promise.all([
     obterJob(id),
     listarStatus(),
     listarUsuariosAtivos(),
+    acessoAtual(),
   ]);
+  const podeExcluir = podeModulo(acesso.caps, "jobs", "ADMIN");
   if (!job) notFound();
 
   const statusOpts = statuses.map((s) => ({ id: s.id, nome: s.nome }));

@@ -399,8 +399,8 @@ export async function excluirReembolso(id: string): Promise<void> {
   if (!r) return;
   const a = await acessoAtual();
   const ehDono = r.solicitanteId === user.id;
-  const ehSocio = a.papel === "SOCIO_DIRETOR";
-  // Dono só exclui rascunho; sócio pode excluir qualquer um (limpeza).
+  const ehSocio = podeModulo(a.caps, "financeiro", "ADMIN");
+  // Dono só exclui rascunho; quem administra o financeiro exclui qualquer um (limpeza).
   if (!ehSocio && !(ehDono && r.status === "RASCUNHO")) {
     throw new Error("Só é possível excluir rascunhos que você criou.");
   }

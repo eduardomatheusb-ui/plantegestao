@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
 import { assertPapel } from "@/lib/rbac";
+import { assertModulo } from "@/lib/permissoes.server";
 import { round2 } from "@/lib/financeiro/calculo";
 import { STATUS_LABEL } from "./constants";
 import type { ProducaoStatus } from "@prisma/client";
@@ -111,7 +112,7 @@ export async function concluirProducao(id: string) {
 }
 
 export async function excluirProducao(id: string) {
-  const user = await assertPapel("SOCIO_DIRETOR");
+  const user = await assertModulo("producao", "ADMIN");
   await db.producaoOrdem.delete({ where: { id } });
   await registrarLog({ entidadeTipo: "producao", entidadeId: id, usuarioId: user.id, acao: "excluiu a ordem de produção" });
   revalidatePath("/producao");

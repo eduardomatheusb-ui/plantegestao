@@ -7,6 +7,7 @@ import { proximoNumero } from "@/lib/sequence";
 import { registrarLog } from "@/lib/log";
 import { notificar } from "@/lib/notificacoes";
 import { assertPapel } from "@/lib/rbac";
+import { assertModulo } from "@/lib/permissoes.server";
 import { calcularTotaisMidia } from "./calculo";
 import { STATUS_LABEL } from "./constants";
 import type { MidiaStatus, VeiculoTipo } from "@prisma/client";
@@ -144,7 +145,7 @@ export async function concluirMidia(id: string) {
 }
 
 export async function excluirMidia(id: string) {
-  const user = await assertPapel("SOCIO_DIRETOR");
+  const user = await assertModulo("midia", "ADMIN");
   await db.midiaPlano.delete({ where: { id } });
   await registrarLog({ entidadeTipo: "midia", entidadeId: id, usuarioId: user.id, acao: "excluiu o plano de mídia" });
   revalidatePath("/midia");

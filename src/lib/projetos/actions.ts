@@ -10,6 +10,7 @@ import { notificar, notificarMuitos, destinatariosDaEntidade } from "@/lib/notif
 import { baseUrl } from "@/lib/email";
 import { canalDM } from "@/lib/chat/queries";
 import { assertPapel, getSessionUser, podePapel } from "@/lib/rbac";
+import { assertModulo } from "@/lib/permissoes.server";
 import { STATUS_LABEL } from "./situacao";
 import { camposConclusao } from "@/lib/conclusao";
 import type { ProjetoStatus } from "@prisma/client";
@@ -221,7 +222,7 @@ export async function arquivarProjeto(id: string, arquivar: boolean) {
 }
 
 export async function excluirProjeto(id: string) {
-  const user = await assertPapel("SOCIO_DIRETOR");
+  const user = await assertModulo("projetos", "ADMIN");
   await db.projeto.delete({ where: { id } });
   await registrarLog({ entidadeTipo: "projeto", entidadeId: id, usuarioId: user.id, acao: "excluiu o projeto" });
   revalidatePath("/projetos");

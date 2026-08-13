@@ -4,6 +4,7 @@ import { Pencil, Trash2, CheckCircle2, FileDown } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { db } from "@/lib/db";
 import { acessoAtual, verTudoNoModulo } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { obterProducao } from "@/lib/producao/queries";
 import { concluirProducao, excluirProducao } from "@/lib/producao/actions";
 import { STATUS_LABEL, STATUS_BADGE } from "@/lib/producao/constants";
@@ -30,7 +31,6 @@ export default async function ProducaoDetalhePage({ params }: { params: Promise<
   const { id } = await params;
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, "GESTOR");
-  const podeExcluir = podePapel(user.papel, "SOCIO_DIRETOR");
 
   const ordem = await obterProducao(id);
   if (!ordem) notFound();
@@ -39,6 +39,7 @@ export default async function ProducaoDetalhePage({ params }: { params: Promise<
     const meu = await db.producaoOrdem.findFirst({ where: { id, OR: [{ criadoPorId: user.id }, { responsavelId: user.id }] }, select: { id: true } });
     if (!meu) notFound();
   }
+  const podeExcluir = podeModulo(acesso.caps, "producao", "ADMIN");
 
   const comissao = (Number(ordem.valorTotal) * Number(ordem.comissaoPct)) / 100;
   const liquido = Number(ordem.valorTotal) - comissao;

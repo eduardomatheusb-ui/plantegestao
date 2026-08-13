@@ -5,11 +5,7 @@ import { redirect } from "next/navigation";
 import { getEntidade, moduloDaEntidade, type EntityConfig } from "./registry";
 import * as repo from "./repo";
 import { db } from "@/lib/db";
-import {
-  assertPapel,
-  CADASTRO_EDITAR_MINIMO,
-  CADASTRO_EXCLUIR_MINIMO,
-} from "@/lib/rbac";
+import { assertPapel, CADASTRO_EDITAR_MINIMO } from "@/lib/rbac";
 import { acessoAtual, assertModulo, verTudoNoModulo, type AcessoUsuario } from "@/lib/permissoes.server";
 import { podeModulo } from "@/lib/permissoes";
 import { registrarLog } from "@/lib/log";
@@ -164,8 +160,7 @@ export async function arquivarCadastro(slug: string, id: string, arquivar: boole
 export async function excluirCadastro(slug: string, id: string) {
   const config = getEntidade(slug);
   if (!config) throw new Error("Cadastro inválido.");
-  const user = await assertPapel(CADASTRO_EXCLUIR_MINIMO);
-  const acesso = await assertModulo(moduloDaEntidade(config), "EDITAR");
+  const acesso = await assertModulo(moduloDaEntidade(config), "ADMIN");
 
   if (!(await idsPermitidos(config, acesso, [id])).has(id)) {
     throw new Error("Você não tem acesso a este registro.");
@@ -175,7 +170,7 @@ export async function excluirCadastro(slug: string, id: string) {
   await registrarLog({
     entidadeTipo: config.model,
     entidadeId: id,
-    usuarioId: user.id,
+    usuarioId: acesso.id,
     acao: `excluiu ${config.rotulo.toLowerCase()}`,
   });
   revalidatePath(`/cadastros/${slug}`);
@@ -254,8 +249,7 @@ export async function arquivarCadastrosEmLote(
 export async function excluirCadastrosEmLote(slug: string, ids: string[]): Promise<ResultadoLote> {
   const config = getEntidade(slug);
   if (!config) throw new Error("Cadastro inválido.");
-  const user = await assertPapel(CADASTRO_EXCLUIR_MINIMO);
-  const acesso = await assertModulo(moduloDaEntidade(config), "EDITAR");
+  const acesso = await assertModulo(moduloDaEntidade(config), "ADMIN");
 
   const pedidos = ids.slice(0, LIMITE_LOTE);
   const permitidos = await idsPermitidos(config, acesso, pedidos);
@@ -275,7 +269,7 @@ export async function excluirCadastrosEmLote(slug: string, ids: string[]): Promi
       await registrarLog({
         entidadeTipo: config.model,
         entidadeId: id,
-        usuarioId: user.id,
+        usuarioId: acesso.id,
         acao: `excluiu ${config.rotulo.toLowerCase()} (em lote)`,
       });
       ok++;

@@ -4,6 +4,7 @@ import { Pencil, Trash2, CheckCircle2, X, FileDown } from "lucide-react";
 import { requireUser, podePapel } from "@/lib/rbac";
 import { db } from "@/lib/db";
 import { acessoAtual, verTudoNoModulo } from "@/lib/permissoes.server";
+import { podeModulo } from "@/lib/permissoes";
 import { obterMidiaPlano } from "@/lib/midia/queries";
 import { concluirMidia, excluirMidia, removerPeca } from "@/lib/midia/actions";
 import { calcularTotaisMidia } from "@/lib/midia/calculo";
@@ -32,7 +33,6 @@ export default async function MidiaDetalhePage({ params }: { params: Promise<{ i
   const { id } = await params;
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, "GESTOR");
-  const podeExcluir = podePapel(user.papel, "SOCIO_DIRETOR");
 
   const plano = await obterMidiaPlano(id);
   if (!plano) notFound();
@@ -42,6 +42,7 @@ export default async function MidiaDetalhePage({ params }: { params: Promise<{ i
     const meu = await db.midiaPlano.findFirst({ where: { id, OR: [{ criadoPorId: user.id }, { responsavelId: user.id }] }, select: { id: true } });
     if (!meu) notFound();
   }
+  const podeExcluir = podeModulo(acesso.caps, "midia", "ADMIN");
 
   const diario = plano.tipo === "RADIO" || plano.tipo === "TV";
   const linhasCalc = plano.grades.flatMap((g) =>

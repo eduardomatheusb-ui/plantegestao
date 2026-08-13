@@ -66,10 +66,11 @@ export async function assertPapel(minimo: Papel): Promise<SessionUser> {
 }
 
 /**
- * Capacidades por área. Política dos Cadastros (Fase 2):
+ * Capacidades por área. Política dos Cadastros:
  * - OPERADOR: somente leitura.
  * - GESTOR+: criar, editar e arquivar.
- * - SOCIO_DIRETOR: também excluir definitivamente.
+ * - Excluir definitivamente NÃO usa mais o papel: exige ADMIN no módulo do
+ *   cadastro (`assertModulo`), para que o poder de apagar seja delimitado pelo
+ *   perfil e não valha para o sistema inteiro.
  */
 export const CADASTRO_EDITAR_MINIMO: Papel = "GESTOR";
-export const CADASTRO_EXCLUIR_MINIMO: Papel = "SOCIO_DIRETOR";

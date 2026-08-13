@@ -12,6 +12,7 @@ import { etapasDoTipo, corresponsaveisDaArea } from "./config";
 import { adiar, chaveDia, type UnidadeAdiar } from "@/lib/datas-uteis";
 import { camposConclusao } from "@/lib/conclusao";
 import { assertPapel, getSessionUser } from "@/lib/rbac";
+import { assertModulo } from "@/lib/permissoes.server";
 
 // Qualquer usuário autenticado trabalha em jobs (rotina diária da equipe).
 const TRABALHAR: "OPERADOR" = "OPERADOR";
@@ -243,7 +244,7 @@ export async function arquivarJob(id: string, arquivar: boolean) {
 }
 
 export async function excluirJob(id: string) {
-  const user = await assertPapel("SOCIO_DIRETOR");
+  const user = await assertModulo("jobs", "ADMIN");
   await db.job.delete({ where: { id } });
   await registrarLog({ entidadeTipo: "job", entidadeId: id, usuarioId: user.id, acao: "excluiu o job" });
   revalidatePath("/jobs");

@@ -36,7 +36,6 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
   const { id } = await params;
   const user = await requireUser();
   const podeEditar = podePapel(user.papel, "GESTOR");
-  const podeExcluir = podePapel(user.papel, "SOCIO_DIRETOR");
 
   const [proposta, produtos, lancamentos, contratoVinc, acesso] = await Promise.all([
     obterProposta(id),
@@ -48,6 +47,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
   if (!proposta) notFound();
   // Recorte por registro: sem ADMIN em propostas, só quem criou pode abrir.
   if (!verTudoNoModulo(acesso, "propostas") && proposta.criadoPor?.id !== user.id) notFound();
+  const podeExcluir = podeModulo(acesso.caps, "propostas", "ADMIN");
   const podeFin = podeModulo(acesso.caps, "financeiro", "EDITAR");
   const totalLancado = lancamentos.reduce((s, l) => s + Number(l.valor), 0);
 
