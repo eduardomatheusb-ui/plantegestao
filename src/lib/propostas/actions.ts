@@ -302,14 +302,22 @@ const itemSchema = z.object({
   visivel: z.boolean().default(true),
 });
 
+/** Aceita número no jeito brasileiro: "9,50" → 9.5, "1.234,56" → 1234.56. */
+function numeroBR(v: string | undefined, padrao: string): string {
+  const s = (v ?? "").trim();
+  if (!s) return padrao;
+  if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
+  return s;
+}
+
 function lerItem(formData: FormData) {
   return itemSchema.safeParse({
     produtoId: formData.get("produtoId")?.toString(),
     nome: formData.get("nome")?.toString(),
     descricao: formData.get("descricao")?.toString(),
-    valorUnit: formData.get("valorUnit")?.toString() || "0",
-    quantidade: formData.get("quantidade")?.toString() || "1",
-    desconto: formData.get("desconto")?.toString() || "0",
+    valorUnit: numeroBR(formData.get("valorUnit")?.toString(), "0"),
+    quantidade: numeroBR(formData.get("quantidade")?.toString(), "1"),
+    desconto: numeroBR(formData.get("desconto")?.toString(), "0"),
     visivel: formData.get("visivel") === "on", // checkbox: "on" quando marcado
   });
 }

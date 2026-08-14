@@ -7,6 +7,13 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-08-13 - Item de proposta: subtotal ao vivo e vírgula
+
+- Ao montar itens de uma proposta, o **subtotal aparece na hora** enquanto você digita valor
+  e quantidade, sem esperar salvar. Ele entra no total ao clicar em **Adicionar item**.
+- Agora aceita **vírgula** no valor (9,50). Antes, dependendo do jeito de digitar, o total
+  podia ficar em R$ 0,00.
+
 ## 2026-08-11 - Notificação some ao ler, e o gráfico de prazo corrigido
 
 - **Notificações somem ao ler:** clicar numa notificação a remove da lista e leva você ao

@@ -419,6 +419,12 @@ Depois, na tela da proposta, você refina cada item usando o **catálogo de prod
 é calculado sozinho. **Exportar PDF** gera o documento timbrado (empresa, número e versão,
 assinaturas).
 
+> **Como o item entra no total:** ao **adicionar** um item na tela da proposta, preencha o
+> **nome** (obrigatório), o valor e a quantidade, e clique em **Adicionar item**. O subtotal
+> aparece **ao vivo** enquanto você digita, mas ele só entra no **total** depois de clicar em
+> Adicionar. Se você **editar** um item existente, o subtotal também mostra a prévia, e o
+> valor grava quando você clica em **Salvar**. Pode digitar com **vírgula** (ex.: 9,50).
+
 **Fechar negócio (proposta aprovada):** no topo da proposta há o card **"Fechar negócio"** com
 três ações que amarram tudo:
 - **Projeto** — gera (ou abre) o projeto ligado à proposta.

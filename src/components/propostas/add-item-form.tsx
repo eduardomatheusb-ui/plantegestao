@@ -8,8 +8,17 @@ import { adicionarItem, type ItemState } from "@/lib/propostas/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { formatBRL } from "@/lib/utils";
 
 type Produto = { id: string; nome: string; descricao: string | null; valorUnit: number };
+
+/** Lê número no jeito brasileiro para a prévia (o servidor faz o mesmo ao salvar). */
+function numBR(v: string): number {
+  const s = (v || "").trim();
+  if (!s) return 0;
+  const n = Number(s.includes(",") ? s.replace(/\./g, "").replace(",", ".") : s);
+  return Number.isFinite(n) ? n : 0;
+}
 
 function Add() {
   const { pending } = useFormStatus();
@@ -28,14 +37,19 @@ export function AddItemForm({ propostaId, produtos }: { propostaId: string; prod
 
   const nomeRef = React.useRef<HTMLInputElement>(null);
   const descRef = React.useRef<HTMLInputElement>(null);
-  const valorRef = React.useRef<HTMLInputElement>(null);
+  const [valor, setValor] = React.useState("0");
+  const [qtd, setQtd] = React.useState("1");
+  const [desc, setDesc] = React.useState("0");
+
+  // Prévia ao vivo: o subtotal aparece enquanto digita, sem esperar salvar.
+  const subtotal = Math.max(0, numBR(valor) * numBR(qtd) - numBR(desc));
 
   function prefill(produtoId: string) {
     const p = produtos.find((x) => x.id === produtoId);
     if (!p) return;
     if (nomeRef.current) nomeRef.current.value = p.nome;
     if (descRef.current) descRef.current.value = p.descricao ?? "";
-    if (valorRef.current) valorRef.current.value = String(Number(p.valorUnit));
+    setValor(String(Number(p.valorUnit)));
   }
 
   return (
@@ -70,15 +84,15 @@ export function AddItemForm({ propostaId, produtos }: { propostaId: string; prod
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="add-valor">Valor unit. (R$)</Label>
-          <Input id="add-valor" name="valorUnit" ref={valorRef} type="number" step="0.01" min="0" defaultValue="0" />
+          <Input id="add-valor" name="valorUnit" type="number" step="0.01" min="0" value={valor} onChange={(e) => setValor(e.target.value)} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="add-qtd">Qtd.</Label>
-          <Input id="add-qtd" name="quantidade" type="number" step="0.01" min="0" defaultValue="1" />
+          <Input id="add-qtd" name="quantidade" type="number" step="0.01" min="0" value={qtd} onChange={(e) => setQtd(e.target.value)} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="add-desc-v">Desconto (R$)</Label>
-          <Input id="add-desc-v" name="desconto" type="number" step="0.01" min="0" defaultValue="0" />
+          <Input id="add-desc-v" name="desconto" type="number" step="0.01" min="0" value={desc} onChange={(e) => setDesc(e.target.value)} />
         </div>
         <label className="flex items-end gap-2 pb-2.5 text-sm">
           <input type="checkbox" name="visivel" defaultChecked className="size-4 rounded border-input" />
@@ -87,7 +101,11 @@ export function AddItemForm({ propostaId, produtos }: { propostaId: string; prod
       </div>
 
       {state.error && <p role="alert" className="text-xs text-destructive">{state.error}</p>}
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-sm text-muted-foreground">
+          Subtotal deste item: <strong className="tabular-nums text-foreground">{formatBRL(subtotal)}</strong>
+          <span className="ml-2 text-xs">Preencha o nome e clique em Adicionar para somar ao total.</span>
+        </span>
         <Add />
       </div>
     </form>
