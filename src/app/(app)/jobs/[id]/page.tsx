@@ -23,6 +23,7 @@ import { ConfirmButton } from "@/components/shared/confirm-button";
 import { MoverStatus } from "@/components/jobs/mover-status";
 import { TarefasPanel } from "@/components/jobs/tarefas-panel";
 import { AdiarPrazo } from "@/components/jobs/adiar-prazo";
+import { MoverPostagem } from "@/components/jobs/mover-postagem";
 import { MinhaParte } from "@/components/jobs/minha-parte";
 import { CommentsPanel } from "@/components/shared/comments-panel";
 import { AttachmentsPanel } from "@/components/shared/attachments-panel";
@@ -229,6 +230,8 @@ export default async function JobDetalhePage({ params }: { params: Promise<{ id:
                 </p>
               </div>
             </div>
+
+            <MoverPostagem jobId={job.id} />
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3">
               <div className="space-y-0.5">

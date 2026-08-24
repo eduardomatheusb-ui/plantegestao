@@ -7,6 +7,13 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-08-13 - Mover a postagem de mês, sem recriar o job
+
+- Na tela do post, o bloco **"Mover postagem de mês"** empurra a peça para outro mês do
+  calendário editorial (Próximo mês, +2 meses ou uma data escolhida), sem precisar criar
+  um job novo. O prazo de criação vai junto por padrão.
+- Antes, a única saída era recriar o job no quadro do mês desejado, o que dava retrabalho.
+
 ## 2026-08-13 - Item de proposta: subtotal ao vivo e vírgula
 
 - Ao montar itens de uma proposta, o **subtotal aparece na hora** enquanto você digita valor

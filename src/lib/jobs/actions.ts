@@ -442,6 +442,86 @@ export async function adiarPrazoJob(jobId: string, opts: AdiarOpts) {
   revalidatePath(`/jobs/${jobId}`);
 }
 
+/**
+ * Soma `n` meses a uma data mantendo o dia (clampando quando o mês é mais
+ * curto). Opera em UTC de propósito: as datas são guardadas em meia-noite UTC,
+ * então usar UTC evita escorregar um dia conforme o fuso do processo.
+ */
+function somarMeses(d: Date, n: number): Date {
+  const x = new Date(d);
+  const dia = x.getUTCDate();
+  x.setUTCDate(1); // evita "estouro" (ex.: 31/08 + 1 mês virar 01/10)
+  x.setUTCMonth(x.getUTCMonth() + n);
+  const ultimo = new Date(Date.UTC(x.getUTCFullYear(), x.getUTCMonth() + 1, 0)).getUTCDate();
+  x.setUTCDate(Math.min(dia, ultimo));
+  return x;
+}
+
+export type MoverPostagemOpts = {
+  novaData?: string; // "YYYY-MM-DD" (tem precedência)
+  mesesAdiante?: number; // atalho: empurra a postagem N meses, mantendo o dia
+  moverCriacao?: boolean; // desloca também o prazo de criação (padrão: sim)
+};
+
+/**
+ * Move a data de POSTAGEM do job para outro mês/quadro, sem recriar o job.
+ *
+ * O calendário editorial agrupa por `prazoPostagem`, então mudar essa data é o
+ * que "passa o post pra setembro". Conta como remarcação (mantém o
+ * prazoPostagemOriginal e soma remarcacoesPostagem), igual ao salvarJob, para a
+ * aderência ao calendário continuar honesta. Leva o prazo de criação junto pelo
+ * mesmo deslocamento, para o post inteiro ir para o novo mês com o mesmo intervalo.
+ */
+export async function moverPostagem(jobId: string, opts: MoverPostagemOpts) {
+  const user = await assertPapel(TRABALHAR);
+  const job = await db.job.findUnique({
+    where: { id: jobId },
+    select: { tipo: true, prazo: true, prazoPostagem: true, prazoPostagemOriginal: true, remarcacoesPostagem: true },
+  });
+  if (!job) throw new Error("Job não encontrado.");
+  if (!tipoJobSocial(job.tipo)) throw new Error("Só postagens têm data de postagem para mover.");
+
+  const base = job.prazoPostagem ?? job.prazo ?? new Date();
+  let novo: Date;
+  if (opts.novaData && /^\d{4}-\d{2}-\d{2}$/.test(opts.novaData)) {
+    novo = new Date(`${opts.novaData}T12:00:00`);
+  } else if (opts.mesesAdiante && Number.isFinite(opts.mesesAdiante)) {
+    novo = somarMeses(base, opts.mesesAdiante);
+  } else {
+    return;
+  }
+
+  const delta = novo.getTime() - base.getTime();
+  const data: {
+    prazoPostagem: Date;
+    remarcacoesPostagem?: number;
+    prazoPostagemOriginal?: Date;
+    prazo?: Date;
+  } = { prazoPostagem: novo };
+
+  if (job.prazoPostagem && !mesmoDia(novo, job.prazoPostagem)) {
+    data.remarcacoesPostagem = (job.remarcacoesPostagem ?? 0) + 1;
+    data.prazoPostagemOriginal = job.prazoPostagemOriginal ?? job.prazoPostagem;
+  } else if (!job.prazoPostagemOriginal) {
+    data.prazoPostagemOriginal = novo;
+  }
+  // Move a criação junto, preservando o intervalo até a postagem.
+  if (opts.moverCriacao !== false && job.prazo && job.prazoPostagem) {
+    data.prazo = new Date(job.prazo.getTime() + delta);
+  }
+
+  await db.job.update({ where: { id: jobId }, data });
+  await registrarLog({
+    entidadeTipo: "job",
+    entidadeId: jobId,
+    usuarioId: user.id,
+    acao: `moveu a postagem para ${novo.toLocaleDateString("pt-BR")}`,
+  });
+  revalidatePath("/jobs");
+  revalidatePath("/calendario");
+  revalidatePath(`/jobs/${jobId}`);
+}
+
 // ── Gestão de status (kanban configurável) ────────────────────────────
 
 const statusSchema = z.object({

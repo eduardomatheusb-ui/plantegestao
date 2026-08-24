@@ -214,11 +214,17 @@ um job hoje é o que aparece nos painéis depois.
   cuida da postagem ajusta o **prazo de postagem**, sem precisar mexer no de criação.
 - **Recorrência:** semanal, quinzenal ou mensal. O sistema **gera cópias** do job sozinho.
 - **Depende de outro job:** o job fica "bloqueado" até o outro concluir (aparece 🔒 no card).
+- **Mover a postagem de mês (sem recriar):** na tela do post, no bloco **"Mover postagem de
+  mês"**, use **Próximo mês** / **+2 meses** ou escolha uma **nova data**. O post inteiro muda
+  de quadro no calendário editorial, sem precisar criar outro job. Por padrão o **prazo de
+  criação vai junto** (mesmo intervalo até a postagem); desmarque se quiser mover só a
+  postagem. Serve exatamente para quando uma peça planejada para agosto precisa ir para
+  setembro sem perder o planejamento.
 - **Publicação (só postagens):** quando a peça for ao ar, marque **"Publicada"** no job (se
   não marcar, o sistema assume a publicação ao concluir) e **cole a URL do post publicado**
   no campo que aparece — vira o botão **"Ver post"** no job, no portal e no calendário. Se
-  você **mudar a data de postagem**, conta como **remarcação**. Isso alimenta a **aderência
-  ao calendário** no Painel Estratégico.
+  você **mudar a data de postagem** (inclusive pelo "Mover postagem"), conta como
+  **remarcação**. Isso alimenta a **aderência ao calendário** no Painel Estratégico.
 - **Concluir:** no cabeçalho do job, o botão **Concluir** leva a peça direto ao status
   **"Concluído"** num clique — carimba a conclusão, marca a postagem como publicada e
   **libera** os jobs que dependiam dele. Depois de concluído, o botão vira **Reabrir**. (Dá
