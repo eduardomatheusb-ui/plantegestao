@@ -7,6 +7,13 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-08-25 - Datas e horários no fuso certo
+
+- Prazos, vencimentos e datas de postagem apareciam **um dia antes** no navegador (a data caía
+  na véspera por causa do fuso). Agora o dia guardado é o dia mostrado, igual em qualquer tela.
+- Horários (comentários, histórico, aprovação, chat, agenda) passam a sair no **horário de
+  Brasília**, sem os 3 horas de diferença que apareciam em algumas telas.
+
 ## 2026-08-13 - Mover a postagem de mês, sem recriar o job
 
 - Na tela do post, o bloco **"Mover postagem de mês"** empurra a peça para outro mês do

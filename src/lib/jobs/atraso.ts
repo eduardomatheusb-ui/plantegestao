@@ -30,15 +30,40 @@ export type AtrasoInfo = {
   ehPostagem: boolean;
 };
 
+const FMT_DIA_SP = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric", month: "2-digit", day: "2-digit",
+});
+
+/** O dia de calendário de Brasília (como número comparável), para "hoje". */
+function diaBrasilia(d: Date): number {
+  const [ano, mes, dia] = FMT_DIA_SP.format(d).split("-").map(Number);
+  return Date.UTC(ano, mes - 1, dia);
+}
+
+/**
+ * O dia guardado numa data "só dia" (lido em UTC).
+ *
+ * Prazos são guardados em meia-noite UTC do dia escolhido, então o dia deles é o
+ * dia UTC. Comparamos por DIA de calendário com o dia de HOJE em Brasília, em vez
+ * de comparar instantes. Antes, como o prazo era meia-noite UTC (21h do dia
+ * anterior em Brasília), o vermelho acendia na véspera à noite. Agora o alerta
+ * acompanha o dia certo: acende a partir do próprio dia do prazo, no fuso daqui.
+ */
+function diaGuardado(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
 export function atrasoDoJob(job: AtrasoInput, agora: Date = new Date()): AtrasoInfo {
   const social = tipoJobSocial(job.tipo);
+  const hoje = diaBrasilia(agora);
 
   if (social && job.prazoPostagem) {
-    const atrasado = !job.publicadoEm && !job.isConcluido && job.prazoPostagem.getTime() < agora.getTime();
+    const atrasado = !job.publicadoEm && !job.isConcluido && diaGuardado(job.prazoPostagem) <= hoje;
     return { dataAlvo: job.prazoPostagem, atrasado, ehPostagem: true };
   }
 
   const prazo = job.prazo ?? null;
-  const atrasado = !!prazo && !job.isConcluido && prazo.getTime() < agora.getTime();
+  const atrasado = !!prazo && !job.isConcluido && diaGuardado(prazo) <= hoje;
   return { dataAlvo: prazo, atrasado, ehPostagem: false };
 }

@@ -14,7 +14,7 @@ const POLL_BADGE = 45000;
 const POLL_MSGS = 5000;
 
 function horario(d: Date) {
-  return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(d));
+  return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }).format(new Date(d));
 }
 
 export function ChatWidget({ meuId, naoLidasIniciais = 0 }: { meuId: string; naoLidasIniciais?: number }) {

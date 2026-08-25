@@ -19,8 +19,8 @@ function intp(v: string | undefined, fallback: number) {
 
 function fmtQuando(c: { inicio: Date; diaInteiro: boolean }) {
   const opts: Intl.DateTimeFormatOptions = c.diaInteiro
-    ? { day: "2-digit", month: "2-digit" }
-    : { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" };
+    ? { day: "2-digit", month: "2-digit", timeZone: "UTC" }
+    : { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" };
   return new Intl.DateTimeFormat("pt-BR", opts).format(new Date(c.inicio));
 }
 

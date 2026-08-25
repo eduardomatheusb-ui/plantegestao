@@ -1,12 +1,24 @@
 import { db } from "@/lib/db";
 import { filtroPauta } from "@/lib/jobs/queries";
 
-/** Limites do dia de hoje (servidor em horário local UTC-3). */
+const FMT_DIA_SP = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric", month: "2-digit", day: "2-digit",
+});
+
+/**
+ * Limites do dia de HOJE em Brasília, expressos em UTC.
+ *
+ * O servidor roda em UTC (Netlify), não em UTC-3. Datas "só dia" (ex.:
+ * apontamento.data) são guardadas em meia-noite UTC do dia escolhido. Então
+ * pegamos o dia de calendário de Brasília e montamos os limites em UTC-meia-noite
+ * desse dia. Sem isso, das 21h à meia-noite o servidor já estava no dia seguinte
+ * e o "hoje" errava a data.
+ */
 function hoje() {
-  const ini = new Date();
-  ini.setHours(0, 0, 0, 0);
-  const fim = new Date();
-  fim.setHours(23, 59, 59, 999);
+  const [ano, mes, dia] = FMT_DIA_SP.format(new Date()).split("-").map(Number);
+  const ini = new Date(Date.UTC(ano, mes - 1, dia, 0, 0, 0, 0));
+  const fim = new Date(Date.UTC(ano, mes - 1, dia, 23, 59, 59, 999));
   return { ini, fim };
 }
 

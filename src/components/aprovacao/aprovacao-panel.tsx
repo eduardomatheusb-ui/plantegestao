@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 type Evento = { id: string; acao: string; autor: string | null; comentario: string | null; criadoEm: Date };
 
 function dataBR(d: Date) {
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(d));
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }).format(new Date(d));
 }
 
 const rotuloAcao: Record<string, string> = {

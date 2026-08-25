@@ -3,7 +3,7 @@ import { getSessionUser, podePapel } from "@/lib/rbac";
 import { adicionarComentario } from "@/lib/projetos/actions";
 import { CommentsAddForm } from "./comments-add-form";
 import { ComentarioItem } from "./comentario-item";
-import { formatDate } from "@/lib/utils";
+import { formatDataHora } from "@/lib/utils";
 
 export async function CommentsPanel({
   entidadeTipo,
@@ -35,7 +35,7 @@ export async function CommentsPanel({
         <ul className="space-y-4">
           {comentarios.map((c) => {
             const dono = !!user && c.autorId === user.id;
-            const quando = `${formatDate(c.criadoEm)} ${new Intl.DateTimeFormat("pt-BR", { timeStyle: "short" }).format(c.criadoEm)}`;
+            const quando = formatDataHora(c.criadoEm);
             return (
               <ComentarioItem
                 key={c.id}

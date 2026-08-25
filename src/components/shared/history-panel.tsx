@@ -1,6 +1,6 @@
 import { History } from "lucide-react";
 import { db } from "@/lib/db";
-import { formatDate } from "@/lib/utils";
+import { formatDataHora } from "@/lib/utils";
 
 /**
  * Painel de histórico reutilizável — lê o modelo Log para qualquer entidade.
@@ -49,8 +49,7 @@ export async function HistoryPanel({
               )}
             </p>
             <p className="text-xs text-muted-foreground">
-              {formatDate(log.criadoEm)} ·{" "}
-              {new Intl.DateTimeFormat("pt-BR", { timeStyle: "short" }).format(log.criadoEm)}
+              {formatDataHora(log.criadoEm)}
             </p>
           </div>
         </li>

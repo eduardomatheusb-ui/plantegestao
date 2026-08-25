@@ -31,6 +31,7 @@ async function avisarPorEmail(params: {
   if (!emails.length) return;
   const quando = new Intl.DateTimeFormat("pt-BR", {
     weekday: "long", day: "2-digit", month: "long", year: "numeric",
+    timeZone: params.diaInteiro ? "UTC" : "America/Sao_Paulo",
     ...(params.diaInteiro ? {} : { hour: "2-digit", minute: "2-digit" }),
   }).format(params.inicio);
   const linhas = [
@@ -149,7 +150,11 @@ export async function salvarCompromisso(id: string | null, _prev: CompromissoFor
     if (participantes.length) {
       await db.compromissoParticipante.createMany({ data: participantes.map((usuarioId) => ({ compromissoId, usuarioId })), skipDuplicates: true });
       const novos = participantes.filter((u) => !antigos.includes(u) && u !== user.id);
-      const quando = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(dados.inicio);
+      const quando = new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit", month: "2-digit",
+        timeZone: dados.diaInteiro ? "UTC" : "America/Sao_Paulo",
+        ...(dados.diaInteiro ? {} : { hour: "2-digit", minute: "2-digit" }),
+      }).format(dados.inicio);
       await notificarMuitos(novos, {
         atorId: user.id, tipo: "agenda",
         titulo: `${rotuloTipo(dados.tipo)}: ${dados.titulo}`,
