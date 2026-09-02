@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Proposta" ADD COLUMN IF NOT EXISTS "valorMensal" DECIMAL(14,2) NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "PropostaItem" ADD COLUMN IF NOT EXISTS "recorrencia" TEXT NOT NULL DEFAULT 'UNICA';

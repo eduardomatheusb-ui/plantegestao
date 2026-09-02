@@ -431,15 +431,23 @@ assinaturas).
 > Adicionar. Se você **editar** um item existente, o subtotal também mostra a prévia, e o
 > valor grava quando você clica em **Salvar**. Pode digitar com **vírgula** (ex.: 9,50).
 
+> **Cobrança única ou mensal:** cada item tem o campo **Cobrança**, com **Única** (pagamento
+> único, tipo implantação ou setup) ou **Mensal** (recorrente, tipo gestão ou retainer). A tela
+> e o PDF mostram os **dois totais** separados: **Pagamento único** e **Recorrente por mês**. Na
+> lista de propostas, o valor mensal aparece como "+ R$ X /mês". Item mensal não vira um total
+> só com o único, para o número não enganar.
+
 **Fechar negócio (proposta aprovada):** no topo da proposta há o card **"Fechar negócio"** com
 três ações que amarram tudo:
 - **Projeto** — gera (ou abre) o projeto ligado à proposta.
 - **Contrato** — **"Registrar contrato"** abre um contrato **pontual** já pré-preenchido com o
   cliente, o serviço e o valor da proposta (ver seção 16).
-- **Financeiro** — **"Lançar no financeiro"** cria a **receita** (à vista ou **parcelada** — você
-  escolhe nº de parcelas, vencimento e competência na hora), **ligada ao cliente, ao projeto e à
-  proposta**. Depois de lançado, mostra **"✓ Lançado"** com o valor. Aparece em Financeiro e na
-  visão 360 do cliente. *(Exige acesso ao Financeiro.)*
+- **Financeiro** — **"Lançar no financeiro"** cria a **receita** ligada ao cliente, ao projeto e à
+  proposta. O **pagamento único** entra à vista ou **parcelado** (você escolhe nº de parcelas,
+  vencimento e competência). Se a proposta tiver **valor recorrente**, ele gera **uma receita por
+  mês** pela **quantidade de meses** que você informar, a partir das mesmas datas. Depois de
+  lançado, mostra **"✓ Lançado"**. Aparece em Financeiro e na visão 360 do cliente. *(Exige acesso
+  ao Financeiro.)*
 
 ---
 

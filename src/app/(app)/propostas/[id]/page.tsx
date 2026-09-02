@@ -67,6 +67,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
     desconto: Number(it.desconto),
     subtotal: Number(it.subtotal),
     visivel: it.visivel,
+    recorrencia: it.recorrencia,
   }));
 
   const validadeAte = proposta.prazo
@@ -153,7 +154,7 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
                 <Link href="/financeiro" className="ml-2 text-xs font-normal text-muted-foreground underline">ver</Link>
               </p>
             ) : podeFin ? (
-              <GerarFinanceiro propostaId={proposta.id} valorLabel={formatBRL(Number(proposta.valorTotal))} />
+              <GerarFinanceiro propostaId={proposta.id} valorLabel={formatBRL(Number(proposta.valorTotal))} mensal={Number(proposta.valorMensal)} mensalLabel={formatBRL(Number(proposta.valorMensal))} unico={Number(proposta.valorTotal)} />
             ) : <p className="text-sm text-muted-foreground">Sem acesso ao financeiro.</p>}
           </div>
         </CardContent>
@@ -211,18 +212,27 @@ export default async function PropostaDetalhePage({ params }: { params: Promise<
                         <span className="flex items-center gap-2">
                           {it.visivel ? <Eye className="size-3.5 text-muted-foreground" /> : <EyeOff className="size-3.5 text-muted-foreground" />}
                           <span className="font-medium">{it.nome}</span>
+                          {it.recorrencia === "MENSAL" && <span className="rounded bg-brand-yellow/20 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Mensal</span>}
                         </span>
-                        <span className="font-semibold tabular-nums">{formatBRL(Number(it.subtotal))}</span>
+                        <span className="font-semibold tabular-nums">{formatBRL(Number(it.subtotal))}{it.recorrencia === "MENSAL" ? " /mês" : ""}</span>
                       </div>
                     ))}
               </div>
             </>
           )}
 
-          {/* Total */}
-          <div className="flex items-center justify-between border-t border-border pt-4">
-            <span className="text-sm font-medium text-muted-foreground">Total geral (itens visíveis)</span>
-            <span className="font-display text-2xl font-bold tabular-nums">{formatBRL(Number(proposta.valorTotal))}</span>
+          {/* Totais: pagamento único e recorrente por mês */}
+          <div className="space-y-1 border-t border-border pt-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Pagamento único (itens visíveis)</span>
+              <span className="font-display text-2xl font-bold tabular-nums">{formatBRL(Number(proposta.valorTotal))}</span>
+            </div>
+            {Number(proposta.valorMensal) > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">Recorrente por mês</span>
+                <span className="font-display text-xl font-bold tabular-nums">{formatBRL(Number(proposta.valorMensal))} /mês</span>
+              </div>
+            )}
           </div>
 
           {podeEditar && <AddItemForm propostaId={proposta.id} produtos={produtosPlain} />}

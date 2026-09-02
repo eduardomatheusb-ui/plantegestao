@@ -85,7 +85,10 @@ export default async function PropostasPage({ searchParams }: PageProps) {
                   </TableCell>
                   <TableCell className="text-sm">{p.responsavel?.nome ?? "—"}</TableCell>
                   <TableCell><Badge variant={STATUS_BADGE[p.status]}>{STATUS_LABEL[p.status]}</Badge></TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">{formatBRL(Number(p.valorTotal))}</TableCell>
+                  <TableCell className="text-right font-medium tabular-nums">
+                    {formatBRL(Number(p.valorTotal))}
+                    {Number(p.valorMensal) > 0 && <span className="block text-xs font-normal text-muted-foreground">+ {formatBRL(Number(p.valorMensal))} /mês</span>}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{formatDate(p.criadoEm)}</TableCell>
                 </TableRow>
               ))}

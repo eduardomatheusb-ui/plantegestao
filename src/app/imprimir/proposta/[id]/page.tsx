@@ -96,13 +96,13 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
               <tr key={it.id} className="border-b border-neutral-200 align-top">
                 <td className="py-3 pr-2 tabular-nums">{i + 1}</td>
                 <td className="py-3 pr-2">
-                  <p className="font-medium">{it.nome}</p>
+                  <p className="font-medium">{it.nome}{it.recorrencia === "MENSAL" ? " (mensal)" : ""}</p>
                   {it.descricao && <p className="text-xs text-neutral-500">{it.descricao}</p>}
                 </td>
                 <td className="py-3 px-2 text-right tabular-nums">{formatBRL(Number(it.valorUnit))}</td>
                 <td className="py-3 px-2 text-right tabular-nums">{Number(it.quantidade)}</td>
                 <td className="py-3 px-2 text-right tabular-nums">{formatBRL(Number(it.desconto))}</td>
-                <td className="py-3 pl-2 text-right font-medium tabular-nums">{formatBRL(Number(it.subtotal))}</td>
+                <td className="py-3 pl-2 text-right font-medium tabular-nums">{formatBRL(Number(it.subtotal))}{it.recorrencia === "MENSAL" ? " /mês" : ""}</td>
               </tr>
             ))}
             {itens.length === 0 && (
@@ -111,13 +111,19 @@ export default async function ImprimirPropostaPage({ params }: { params: Promise
           </tbody>
         </table>
 
-        {/* Total */}
+        {/* Totais: pagamento único e recorrente por mês */}
         <div className="mt-4 flex justify-end">
-          <div className="w-64 border-t-2 border-[#050505] pt-3">
+          <div className="w-72 space-y-1 border-t-2 border-[#050505] pt-3">
             <div className="flex items-center justify-between">
-              <span className="font-semibold">Total</span>
+              <span className="font-semibold">{Number(proposta.valorMensal) > 0 ? "Pagamento único" : "Total"}</span>
               <span className="font-display text-xl font-bold tabular-nums">{formatBRL(Number(proposta.valorTotal))}</span>
             </div>
+            {Number(proposta.valorMensal) > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">Recorrente por mês</span>
+                <span className="font-display text-lg font-bold tabular-nums">{formatBRL(Number(proposta.valorMensal))} /mês</span>
+              </div>
+            )}
           </div>
         </div>
 

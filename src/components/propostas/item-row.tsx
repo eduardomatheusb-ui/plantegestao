@@ -27,6 +27,7 @@ type Item = {
   desconto: number;
   subtotal: number;
   visivel: boolean;
+  recorrencia: string;
 };
 
 function SalvarLinha() {
@@ -46,10 +47,12 @@ export function ItemRow({ item, isFirst, isLast }: { item: Item; isFirst: boolea
   const [valor, setValor] = React.useState(String(Number(item.valorUnit)));
   const [qtd, setQtd] = React.useState(String(Number(item.quantidade)));
   const [desc, setDesc] = React.useState(String(Number(item.desconto)));
+  const [recorrencia, setRecorrencia] = React.useState(item.recorrencia === "MENSAL" ? "MENSAL" : "UNICA");
 
   // Prévia ao vivo: o subtotal acompanha o que você digita; clicar Salvar grava.
   const subtotal = Math.max(0, numBR(valor) * numBR(qtd) - numBR(desc));
-  const mudou = subtotal !== Number(item.subtotal);
+  const mudou = subtotal !== Number(item.subtotal) || recorrencia !== (item.recorrencia === "MENSAL" ? "MENSAL" : "UNICA");
+  const sufixo = recorrencia === "MENSAL" ? " /mês" : "";
 
   return (
     <div className="space-y-2 rounded-lg border border-border p-3">
@@ -59,14 +62,23 @@ export function ItemRow({ item, isFirst, isLast }: { item: Item; isFirst: boolea
           <Input name="valorUnit" type="number" step="0.01" min="0" value={valor} onChange={(e) => setValor(e.target.value)} aria-label="Valor unitário" className={`${num} sm:col-span-2`} />
           <Input name="quantidade" type="number" step="0.01" min="0" value={qtd} onChange={(e) => setQtd(e.target.value)} aria-label="Quantidade" className={`${num} sm:col-span-2`} />
           <Input name="desconto" type="number" step="0.01" min="0" value={desc} onChange={(e) => setDesc(e.target.value)} aria-label="Desconto" className={`${num} sm:col-span-2`} />
-          <span className={`text-right text-sm font-semibold tabular-nums sm:col-span-2 ${mudou ? "text-amber-600 dark:text-amber-400" : ""}`} title={mudou ? "Prévia. Clique em Salvar para gravar." : undefined}>{formatBRL(subtotal)}</span>
+          <span className={`text-right text-sm font-semibold tabular-nums sm:col-span-2 ${mudou ? "text-amber-600 dark:text-amber-400" : ""}`} title={mudou ? "Prévia. Clique em Salvar para gravar." : undefined}>{formatBRL(subtotal)}{sufixo}</span>
         </div>
         <Input name="descricao" defaultValue={item.descricao ?? ""} placeholder="Descrição (aparece no PDF)" aria-label="Descrição" className="h-9" />
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <input type="checkbox" name="visivel" defaultChecked={item.visivel} className="size-4 rounded border-input" />
-            Visível no PDF
-          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              <input type="checkbox" name="visivel" defaultChecked={item.visivel} className="size-4 rounded border-input" />
+              Visível no PDF
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              Cobrança
+              <select name="recorrencia" value={recorrencia} onChange={(e) => setRecorrencia(e.target.value)} className="h-8 rounded-md border border-input bg-background px-1.5 text-xs">
+                <option value="UNICA">Única</option>
+                <option value="MENSAL">Mensal</option>
+              </select>
+            </label>
+          </div>
           {state.error && <span role="alert" className="text-xs text-destructive">{state.error}</span>}
           <SalvarLinha />
         </div>

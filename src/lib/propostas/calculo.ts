@@ -17,17 +17,28 @@ export function calcularSubtotal(
   return round2(Math.max(0, liquido));
 }
 
+export type Recorrencia = "UNICA" | "MENSAL";
+
 export type ItemCalculo = {
   valorUnit: number;
   quantidade: number;
   desconto: number;
   visivel: boolean;
+  recorrencia?: Recorrencia | string | null;
 };
 
-/** Total geral = soma dos subtotais apenas dos itens VISÍVEIS. */
-export function calcularTotal(itens: ItemCalculo[]): number {
-  const soma = itens
-    .filter((i) => i.visivel)
-    .reduce((acc, i) => acc + calcularSubtotal(i.valorUnit, i.quantidade, i.desconto), 0);
-  return round2(soma);
+/**
+ * Totais separados por recorrência (só itens VISÍVEIS):
+ * - unico: pagamento único (itens não recorrentes)
+ * - mensal: recorrente por mês (itens marcados como MENSAL)
+ */
+export function calcularTotais(itens: ItemCalculo[]): { unico: number; mensal: number } {
+  let unico = 0;
+  let mensal = 0;
+  for (const i of itens.filter((x) => x.visivel)) {
+    const sub = calcularSubtotal(i.valorUnit, i.quantidade, i.desconto);
+    if (i.recorrencia === "MENSAL") mensal += sub;
+    else unico += sub;
+  }
+  return { unico: round2(unico), mensal: round2(mensal) };
 }

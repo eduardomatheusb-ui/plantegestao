@@ -1115,7 +1115,8 @@ model Proposta {
   prazo               DateTime?
   introducao          String?
   consideracoesFinais String?
-  valorTotal          Decimal        @default(0) @db.Decimal(14, 2)
+  valorTotal          Decimal        @default(0) @db.Decimal(14, 2) // total do pagamento ÚNICO (itens não recorrentes)
+  valorMensal         Decimal        @default(0) @db.Decimal(14, 2) // total RECORRENTE por mês (itens mensais)
   criadoPorId         String?
   criadoEm            DateTime       @default(now())
   atualizadoEm        DateTime       @updatedAt
@@ -1139,10 +1140,11 @@ model PropostaItem {
   descricao  String?
   valorUnit  Decimal  @default(0) @db.Decimal(12, 2)
   quantidade Decimal  @default(1) @db.Decimal(12, 2)
-  desconto   Decimal  @default(0) @db.Decimal(12, 2)
-  subtotal   Decimal  @default(0) @db.Decimal(14, 2)
-  visivel    Boolean  @default(true)
-  criadoEm   DateTime @default(now())
+  desconto    Decimal  @default(0) @db.Decimal(12, 2)
+  subtotal    Decimal  @default(0) @db.Decimal(14, 2)
+  visivel     Boolean  @default(true)
+  recorrencia String   @default("UNICA") // UNICA (pagamento único) | MENSAL (recorrente por mês)
+  criadoEm    DateTime @default(now())
 
   proposta Proposta @relation(fields: [propostaId], references: [id], onDelete: Cascade)
   produto  Produto? @relation(fields: [produtoId], references: [id], onDelete: SetNull)

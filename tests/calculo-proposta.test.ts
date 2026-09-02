@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calcularSubtotal, calcularTotal, round2 } from "../src/lib/propostas/calculo";
+import { calcularSubtotal, calcularTotais, round2 } from "../src/lib/propostas/calculo";
 
 describe("calcularSubtotal", () => {
   it("multiplica valor por quantidade", () => {
@@ -19,18 +19,22 @@ describe("calcularSubtotal", () => {
   });
 });
 
-describe("calcularTotal", () => {
+describe("calcularTotais", () => {
   const itens = [
-    { valorUnit: 8500, quantidade: 1, desconto: 0, visivel: true },
-    { valorUnit: 3200, quantidade: 2, desconto: 400, visivel: true },
-    { valorUnit: 6000, quantidade: 1, desconto: 0, visivel: false }, // oculto
+    { valorUnit: 8500, quantidade: 1, desconto: 0, visivel: true, recorrencia: "UNICA" },
+    { valorUnit: 3200, quantidade: 2, desconto: 400, visivel: true, recorrencia: "UNICA" },
+    { valorUnit: 6000, quantidade: 1, desconto: 0, visivel: false, recorrencia: "UNICA" }, // oculto
+    { valorUnit: 2500, quantidade: 1, desconto: 0, visivel: true, recorrencia: "MENSAL" },
   ];
-  it("soma apenas itens visíveis", () => {
-    // 8500 + (6400-400) = 8500 + 6000 = 14500
-    expect(calcularTotal(itens)).toBe(14500);
+  it("separa único e mensal, somando só os itens visíveis", () => {
+    // único: 8500 + (6400-400) = 14500 · mensal: 2500 · o oculto não entra
+    expect(calcularTotais(itens)).toEqual({ unico: 14500, mensal: 2500 });
   });
-  it("lista vazia = 0", () => {
-    expect(calcularTotal([])).toBe(0);
+  it("sem recorrência definida, conta como único", () => {
+    expect(calcularTotais([{ valorUnit: 100, quantidade: 1, desconto: 0, visivel: true }])).toEqual({ unico: 100, mensal: 0 });
+  });
+  it("lista vazia = zero nos dois", () => {
+    expect(calcularTotais([])).toEqual({ unico: 0, mensal: 0 });
   });
 });
 

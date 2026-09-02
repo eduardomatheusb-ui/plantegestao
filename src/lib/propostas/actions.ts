@@ -10,7 +10,7 @@ import { registrarLog } from "@/lib/log";
 import { notificar } from "@/lib/notificacoes";
 import { assertPapel } from "@/lib/rbac";
 import { assertModulo } from "@/lib/permissoes.server";
-import { calcularSubtotal, calcularTotal } from "./calculo";
+import { calcularSubtotal, calcularTotais } from "./calculo";
 import { STATUS_LABEL } from "./status";
 import type { PropostaStatus } from "@prisma/client";
 
@@ -21,21 +21,25 @@ export type ItemState = { error?: string };
 
 const STATUS_VALUES = ["EM_ABERTO", "ENVIADA", "APROVADA", "REPROVADA", "EXPIRADA"] as const;
 
-/** Recalcula e persiste o total da proposta (soma dos itens visíveis). */
+/**
+ * Recalcula e persiste os totais da proposta (só itens visíveis):
+ * valorTotal = pagamento único; valorMensal = recorrente por mês.
+ */
 async function recalcularTotal(propostaId: string) {
   const itens = await db.propostaItem.findMany({
     where: { propostaId },
-    select: { valorUnit: true, quantidade: true, desconto: true, visivel: true },
+    select: { valorUnit: true, quantidade: true, desconto: true, visivel: true, recorrencia: true },
   });
-  const total = calcularTotal(
+  const { unico, mensal } = calcularTotais(
     itens.map((i) => ({
       valorUnit: Number(i.valorUnit),
       quantidade: Number(i.quantidade),
       desconto: Number(i.desconto),
       visivel: i.visivel,
+      recorrencia: i.recorrencia,
     })),
   );
-  await db.proposta.update({ where: { id: propostaId }, data: { valorTotal: total } });
+  await db.proposta.update({ where: { id: propostaId }, data: { valorTotal: unico, valorMensal: mensal } });
 }
 
 // ── Proposta ──────────────────────────────────────────────────────────
@@ -98,7 +102,7 @@ export async function salvarProposta(
       const responsavelId = d.responsavelId ?? user.id;
       const criada = await db.proposta.create({ data: { ...data, numero, responsavelId, criadoPorId: user.id } });
       // Itens montados um a um no formulário chegam como JSON.
-      let itens: { descricao?: string; quantidade?: number; valorUnit?: number; desconto?: number }[] = [];
+      let itens: { descricao?: string; quantidade?: number; valorUnit?: number; desconto?: number; recorrencia?: string }[] = [];
       try { itens = JSON.parse(formData.get("itens")?.toString() || "[]"); } catch { itens = []; }
       itens = itens.filter((i) => i && i.descricao && i.descricao.trim());
       if (itens.length) {
@@ -113,6 +117,7 @@ export async function salvarProposta(
               valorUnit, quantidade, desconto,
               subtotal: calcularSubtotal(valorUnit, quantidade, desconto),
               visivel: true,
+              recorrencia: it.recorrencia === "MENSAL" ? "MENSAL" : "UNICA",
               ordem: idx + 1,
             };
           }),
@@ -218,21 +223,24 @@ export type FinanceiroPropostaState = { error?: string };
 const addMonths = (d: Date, n: number) => { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; };
 
 /**
- * Lança a receita da proposta no financeiro (à vista ou parcelada), já ligada
- * ao cliente, ao projeto e à própria proposta. Parte do "fechar negócio".
+ * Lança a receita da proposta no financeiro, já ligada ao cliente, ao projeto e
+ * à própria proposta. Parte do "fechar negócio". Trata as duas naturezas:
+ * o pagamento ÚNICO (à vista ou parcelado) e o RECORRENTE por mês (uma receita
+ * por mês, pela quantidade de meses informada).
  */
 export async function gerarFinanceiroDaProposta(propostaId: string, _prev: FinanceiroPropostaState, formData: FormData): Promise<FinanceiroPropostaState> {
   let destino = "";
   try {
     const acesso = await assertModulo("financeiro", "EDITAR");
-    const p = await db.proposta.findUnique({ where: { id: propostaId }, select: { id: true, numero: true, titulo: true, clienteId: true, projetoId: true, valorTotal: true } });
+    const p = await db.proposta.findUnique({ where: { id: propostaId }, select: { id: true, numero: true, titulo: true, clienteId: true, projetoId: true, valorTotal: true, valorMensal: true } });
     if (!p) return { error: "Proposta não encontrada." };
 
     const jaTem = await db.lancamento.count({ where: { propostaId } });
     if (jaTem > 0) return { error: "Esta proposta já foi lançada no financeiro." };
 
-    const total = Number(p.valorTotal);
-    if (!(total > 0)) return { error: "A proposta não tem valor para lançar." };
+    const unico = Number(p.valorTotal);
+    const mensal = Number(p.valorMensal);
+    if (!(unico > 0 || mensal > 0)) return { error: "A proposta não tem valor para lançar." };
 
     const vStr = formData.get("dataVencimento")?.toString();
     const cStr = formData.get("dataCompetencia")?.toString();
@@ -243,6 +251,8 @@ export async function gerarFinanceiroDaProposta(propostaId: string, _prev: Finan
 
     const parcelado = formData.get("condicao")?.toString() === "PARCELADO";
     const nParc = Math.max(1, Math.min(36, parseInt(formData.get("numParcelas")?.toString() || "1", 10) || 1));
+    // Recorrente: quantos meses lançar (padrão 12). Só usado se houver valor mensal.
+    const nMeses = Math.max(1, Math.min(36, parseInt(formData.get("mesesRecorrencia")?.toString() || "12", 10) || 12));
 
     const base = {
       tipo: "RECEITA" as const,
@@ -251,36 +261,61 @@ export async function gerarFinanceiroDaProposta(propostaId: string, _prev: Finan
       propostaId: p.id,
       categoriaId,
       status: "EM_ABERTO" as const,
-      condicao: (parcelado && nParc >= 2 ? "PARCELADO" : "A_VISTA") as "A_VISTA" | "PARCELADO",
     };
+    const partes: string[] = [];
 
-    if (parcelado && nParc >= 2) {
+    // Pagamento único (à vista ou parcelado).
+    if (unico > 0) {
+      if (parcelado && nParc >= 2) {
+        const grupo = randomUUID();
+        const centavos = Math.round(unico * 100);
+        const cota = Math.floor(centavos / nParc);
+        for (let i = 0; i < nParc; i++) {
+          const valorCent = cota + (i === nParc - 1 ? centavos - cota * nParc : 0);
+          const numero = await proximoNumero("LANCAMENTO");
+          await db.lancamento.create({
+            data: {
+              ...base, condicao: "PARCELADO",
+              titulo: `Proposta #${p.numero} · ${p.titulo} (${i + 1}/${nParc})`,
+              valor: valorCent / 100,
+              dataVencimento: addMonths(venc, i),
+              dataCompetencia: addMonths(comp, i),
+              parcelaGrupo: grupo, parcelaNum: i + 1, parcelaTotal: nParc,
+              numero, criadoPorId: acesso.id,
+            },
+          });
+        }
+        partes.push(`único ${nParc}x`);
+      } else {
+        const numero = await proximoNumero("LANCAMENTO");
+        await db.lancamento.create({
+          data: { ...base, condicao: "A_VISTA", titulo: `Proposta #${p.numero} · ${p.titulo}`, valor: unico, dataVencimento: venc, dataCompetencia: comp, numero, criadoPorId: acesso.id },
+        });
+        partes.push("único à vista");
+      }
+    }
+
+    // Recorrente por mês: uma receita por mês, pela quantidade de meses.
+    if (mensal > 0) {
       const grupo = randomUUID();
-      const centavos = Math.round(total * 100);
-      const cota = Math.floor(centavos / nParc);
-      for (let i = 0; i < nParc; i++) {
-        const valorCent = cota + (i === nParc - 1 ? centavos - cota * nParc : 0);
+      for (let i = 0; i < nMeses; i++) {
         const numero = await proximoNumero("LANCAMENTO");
         await db.lancamento.create({
           data: {
-            ...base,
-            titulo: `Proposta #${p.numero} — ${p.titulo} (${i + 1}/${nParc})`,
-            valor: valorCent / 100,
+            ...base, condicao: "A_VISTA",
+            titulo: `Proposta #${p.numero} · ${p.titulo} (mensal ${i + 1}/${nMeses})`,
+            valor: mensal,
             dataVencimento: addMonths(venc, i),
             dataCompetencia: addMonths(comp, i),
-            parcelaGrupo: grupo, parcelaNum: i + 1, parcelaTotal: nParc,
+            parcelaGrupo: grupo, parcelaNum: i + 1, parcelaTotal: nMeses,
             numero, criadoPorId: acesso.id,
           },
         });
       }
-      await registrarLog({ entidadeTipo: "proposta", entidadeId: propostaId, usuarioId: acesso.id, acao: `lançou no financeiro (${nParc}x)` });
-    } else {
-      const numero = await proximoNumero("LANCAMENTO");
-      await db.lancamento.create({
-        data: { ...base, titulo: `Proposta #${p.numero} — ${p.titulo}`, valor: total, dataVencimento: venc, dataCompetencia: comp, numero, criadoPorId: acesso.id },
-      });
-      await registrarLog({ entidadeTipo: "proposta", entidadeId: propostaId, usuarioId: acesso.id, acao: "lançou no financeiro" });
+      partes.push(`mensal ${nMeses}x`);
     }
+
+    await registrarLog({ entidadeTipo: "proposta", entidadeId: propostaId, usuarioId: acesso.id, acao: `lançou no financeiro (${partes.join(" e ")})` });
     destino = `/financeiro?ano=${comp.getFullYear()}&mes=${comp.getMonth() + 1}`;
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Não foi possível lançar no financeiro." };
@@ -300,6 +335,7 @@ const itemSchema = z.object({
   quantidade: z.coerce.number().min(0, "Quantidade inválida.").default(1),
   desconto: z.coerce.number().min(0, "Desconto inválido.").default(0),
   visivel: z.boolean().default(true),
+  recorrencia: z.enum(["UNICA", "MENSAL"]).default("UNICA"),
 });
 
 /** Aceita número no jeito brasileiro: "9,50" → 9.5, "1.234,56" → 1234.56. */
@@ -319,6 +355,7 @@ function lerItem(formData: FormData) {
     quantidade: numeroBR(formData.get("quantidade")?.toString(), "1"),
     desconto: numeroBR(formData.get("desconto")?.toString(), "0"),
     visivel: formData.get("visivel") === "on", // checkbox: "on" quando marcado
+    recorrencia: formData.get("recorrencia")?.toString() === "MENSAL" ? "MENSAL" : "UNICA",
   });
 }
 
@@ -344,6 +381,7 @@ export async function adicionarItem(
       desconto: d.desconto,
       subtotal,
       visivel: d.visivel,
+      recorrencia: d.recorrencia,
       ordem: (ultima?.ordem ?? 0) + 1,
     },
   });
@@ -374,6 +412,7 @@ export async function atualizarItem(
       desconto: d.desconto,
       subtotal,
       visivel: d.visivel,
+      recorrencia: d.recorrencia,
     },
   });
   await recalcularTotal(item.propostaId);

@@ -7,6 +7,16 @@ lembrete diário para quem ainda não viu.
 os itens em lista. Fale do que a pessoa ganha, não do que foi programado.
 Bloco novo = aviso novo para a equipe inteira. Escreva pouco e específico.
 
+## 2026-09-02 - Proposta com valor recorrente (mensal)
+
+- Cada item da proposta agora tem **Cobrança: Única ou Mensal**. Assim uma proposta separa o
+  que é **pagamento único** (implantação, setup) do que é **recorrente por mês** (gestão,
+  retainer), sem misturar tudo num total só.
+- A tela e o PDF mostram os **dois totais**: pagamento único e recorrente por mês. Na lista de
+  propostas o valor mensal aparece como "+ R$ X /mês".
+- Ao **lançar no financeiro**, o único entra à vista ou parcelado como antes, e o recorrente
+  gera uma receita por mês pela quantidade de meses que você informar.
+
 ## 2026-08-25 - Datas e horários no fuso certo
 
 - Prazos, vencimentos e datas de postagem apareciam **um dia antes** no navegador (a data caía

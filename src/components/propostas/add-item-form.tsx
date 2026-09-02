@@ -40,9 +40,11 @@ export function AddItemForm({ propostaId, produtos }: { propostaId: string; prod
   const [valor, setValor] = React.useState("0");
   const [qtd, setQtd] = React.useState("1");
   const [desc, setDesc] = React.useState("0");
+  const [recorrencia, setRecorrencia] = React.useState("UNICA");
 
   // Prévia ao vivo: o subtotal aparece enquanto digita, sem esperar salvar.
   const subtotal = Math.max(0, numBR(valor) * numBR(qtd) - numBR(desc));
+  const sufixo = recorrencia === "MENSAL" ? " /mês" : "";
 
   function prefill(produtoId: string) {
     const p = produtos.find((x) => x.id === produtoId);
@@ -94,16 +96,24 @@ export function AddItemForm({ propostaId, produtos }: { propostaId: string; prod
           <Label htmlFor="add-desc-v">Desconto (R$)</Label>
           <Input id="add-desc-v" name="desconto" type="number" step="0.01" min="0" value={desc} onChange={(e) => setDesc(e.target.value)} />
         </div>
-        <label className="flex items-end gap-2 pb-2.5 text-sm">
-          <input type="checkbox" name="visivel" defaultChecked className="size-4 rounded border-input" />
-          Visível no PDF
-        </label>
+        <div className="space-y-1.5">
+          <Label htmlFor="add-recorrencia">Cobrança</Label>
+          <select id="add-recorrencia" name="recorrencia" className={inputCls} value={recorrencia} onChange={(e) => setRecorrencia(e.target.value)}>
+            <option value="UNICA">Única</option>
+            <option value="MENSAL">Mensal</option>
+          </select>
+        </div>
       </div>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="visivel" defaultChecked className="size-4 rounded border-input" />
+        Visível no PDF
+      </label>
 
       {state.error && <p role="alert" className="text-xs text-destructive">{state.error}</p>}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm text-muted-foreground">
-          Subtotal deste item: <strong className="tabular-nums text-foreground">{formatBRL(subtotal)}</strong>
+          Subtotal deste item: <strong className="tabular-nums text-foreground">{formatBRL(subtotal)}{sufixo}</strong>
           <span className="ml-2 text-xs">Preencha o nome e clique em Adicionar para somar ao total.</span>
         </span>
         <Add />
