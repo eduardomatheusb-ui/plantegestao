@@ -4,6 +4,7 @@ import { obterParaAprovacao } from "@/lib/aprovacao/queries";
 import { rotulosFormatos, rotuloFormato } from "@/lib/jobs/formatos";
 import { rotuloAprovacao, corAprovacao } from "@/lib/aprovacao/status";
 import { RespostaForm } from "@/components/aprovacao/resposta-form";
+import { VisualizadorPecas } from "@/components/aprovacao/visualizador-pecas";
 import { PostPreview } from "@/components/postagens/post-preview/PostPreview";
 import { driveEmbedInfo, aspectoPeca } from "@/lib/anexos/embed";
 
@@ -104,6 +105,9 @@ export default async function AprovarPage({ params }: { params: Promise<{ token:
           </div>
         </section>
       )}
+
+      {/* Arquivos em tamanho real: ampliar com zoom e baixar */}
+      <VisualizadorPecas imagens={imagensAtuais.map((i) => ({ id: i.id, src: i.src, alt: i.alt }))} />
 
       {/* Vídeo (Google Drive) e outros arquivos/links */}
       {anexosNaoImagem.length > 0 && (

@@ -6,6 +6,7 @@ import { CheckCircle2, AlertCircle, ThumbsUp, PenLine } from "lucide-react";
 import { responderLoteAprovacao, type RespostaLoteState } from "@/lib/aprovacao/lote.actions";
 import { PostPreview, type PostPreviewImagem } from "@/components/postagens/post-preview/PostPreview";
 import { rotuloFormato } from "@/lib/jobs/formatos";
+import { VisualizadorPecas } from "@/components/aprovacao/visualizador-pecas";
 import { aspectoPeca, type DriveEmbed } from "@/lib/anexos/embed";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -116,6 +117,8 @@ export function RespostaLoteForm({
                   ))}
                 </div>
               )}
+
+              <VisualizadorPecas imagens={item.imagens} titulo="Arquivos" />
 
               {item.drive && (
                 <div className={`mx-auto w-full ${item.drive.tipo === "pasta" ? "max-w-[520px]" : "max-w-[340px]"}`}>
