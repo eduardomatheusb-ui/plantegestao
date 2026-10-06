@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { contentDisposition } from "@/lib/anexos/disposicao";
 
 export const dynamic = "force-dynamic";
 
@@ -6,8 +7,9 @@ export const dynamic = "force-dynamic";
  * Serve um anexo de uma peça que pertence a uma RODADA de aprovação pública, sem login.
  * Só libera se o anexo pertence a um job que está entre os itens do lote cujo token bate.
  */
-export async function GET(_req: Request, { params }: { params: Promise<{ token: string; id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ token: string; id: string }> }) {
   const { token, id } = await params;
+  const baixar = new URL(req.url).searchParams.get("download") === "1";
 
   const lote = await db.aprovacaoLote.findUnique({
     where: { token },
@@ -30,7 +32,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
     return new Response(data, {
       headers: {
         "Content-Type": a.contentType ?? "application/octet-stream",
-        "Content-Disposition": `inline; filename="${(a.nome ?? "arquivo").replace(/"/g, "")}"`,
+        "Content-Disposition": contentDisposition(a.nome, baixar ? "attachment" : "inline"),
         "Cache-Control": "private, max-age=60",
       },
     });

@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { contentDisposition } from "@/lib/anexos/disposicao";
 
 export const dynamic = "force-dynamic";
 
@@ -6,8 +7,9 @@ export const dynamic = "force-dynamic";
  * Serve um anexo (arquivo) de uma peça PÚBLICA de aprovação, sem login.
  * Só libera se o anexo pertence ao job cujo aprovacaoToken bate com o da URL.
  */
-export async function GET(_req: Request, { params }: { params: Promise<{ token: string; id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ token: string; id: string }> }) {
   const { token, id } = await params;
+  const baixar = new URL(req.url).searchParams.get("download") === "1";
 
   const job = await db.job.findUnique({ where: { aprovacaoToken: token }, select: { id: true } });
   if (!job) return new Response("Não encontrado", { status: 404 });
@@ -25,7 +27,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
     return new Response(data, {
       headers: {
         "Content-Type": a.contentType ?? "application/octet-stream",
-        "Content-Disposition": `inline; filename="${(a.nome ?? "arquivo").replace(/"/g, "")}"`,
+        "Content-Disposition": contentDisposition(a.nome, baixar ? "attachment" : "inline"),
         "Cache-Control": "private, max-age=60",
       },
     });
