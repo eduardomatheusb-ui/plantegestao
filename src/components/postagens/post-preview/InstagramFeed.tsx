@@ -16,8 +16,8 @@ export function InstagramFeed({ cliente, imagens, legenda }: PostPreviewProps) {
         </button>
       </div>
 
-      {/* Mídia */}
-      <div className="relative aspect-square w-full bg-neutral-100">
+      {/* Mídia: retrato 4:5 (1080 x 1350), o formato padrão do feed */}
+      <div className="relative aspect-[4/5] w-full bg-neutral-100">
         {capa ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={capa.src} alt={capa.alt ?? "Post"} className="h-full w-full object-cover" />
