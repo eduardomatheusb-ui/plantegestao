@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { SelecaoLote, CaixaLinha, CaixaTodos } from "@/components/cadastros/selecao-lote";
 import { AtivoCliente } from "@/components/cadastros/ativo-cliente";
+import { AtivoCadastro } from "@/components/cadastros/ativo-cadastro";
 
 type PageProps = {
   params: Promise<{ entidade: string }>;
@@ -99,7 +100,11 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
               </Link>
             </Button>
 
-            {config.softDelete && (
+            {config.softDelete && entidade !== "clientes" && (
+              <AtivoCadastro slug={entidade} id={row.id} ativo={!arquivado} nome={String(row.nome ?? config.rotulo.toLowerCase())} />
+            )}
+
+            {config.softDelete && entidade === "clientes" && (
               <ConfirmButton
                 action={arquivarCadastro.bind(null, entidade, row.id, !arquivado)}
                 variant="ghost"
@@ -188,7 +193,9 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
           {config.softDelete && (
             <Button asChild variant="outline" size="sm">
               <Link href={toggleHref}>
-                {incluirArquivados ? "Ocultar arquivados" : "Mostrar arquivados"}
+                {entidade === "clientes"
+                  ? incluirArquivados ? "Ocultar arquivados" : "Mostrar arquivados"
+                  : incluirArquivados ? "Ocultar inativos" : "Mostrar inativos"}
               </Link>
             </Button>
           )}
@@ -202,6 +209,7 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
         temSoftDelete={!!config.softDelete}
         podeExcluir={podeExcluir}
         ativarDesativar={entidade === "clientes"}
+        arquivarComoDesativar={entidade !== "clientes"}
       >
         <DataTable
           columns={columns}

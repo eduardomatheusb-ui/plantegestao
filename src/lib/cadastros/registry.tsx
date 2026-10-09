@@ -145,9 +145,10 @@ function fmtDia(v: unknown): string {
   return Number.isNaN(d.getTime()) ? "—" : new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" }).format(d);
 }
 
+// Fora de clientes, arquivar = desativar: o selo fala a mesma língua do botão.
 function statusBadge(arquivado: boolean) {
   return arquivado ? (
-    <Badge variant="muted">Arquivado</Badge>
+    <Badge variant="muted">Inativo</Badge>
   ) : (
     <Badge variant="success">Ativo</Badge>
   );

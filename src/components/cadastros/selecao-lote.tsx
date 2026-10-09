@@ -82,6 +82,7 @@ export function SelecaoLote({
   temSoftDelete,
   podeExcluir,
   ativarDesativar = false,
+  arquivarComoDesativar = false,
   children,
 }: {
   slug: string;
@@ -91,6 +92,8 @@ export function SelecaoLote({
   podeExcluir: boolean;
   /** Clientes: botões Ativar / Desativar (situação), além de arquivar. */
   ativarDesativar?: boolean;
+  /** Cadastros em que arquivar = desativar: mostra "Desativar/Ativar" no lugar de "Arquivar/Reativar". */
+  arquivarComoDesativar?: boolean;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -143,15 +146,21 @@ export function SelecaoLote({
   }
 
   const textos: Record<Exclude<Confirmacao, null>, { titulo: string; descricao: string; botao: string }> = {
-    arquivar: {
-      titulo: `Arquivar ${nomeQtd}?`,
-      descricao: "Os registros saem das listas e dos seletores, mas o histórico é preservado. Dá para reativar depois.",
-      botao: "Arquivar",
-    },
+    arquivar: arquivarComoDesativar
+      ? {
+          titulo: `Desativar ${nomeQtd}?`,
+          descricao: "Saem das listas e dos seletores, mas o histórico é preservado. Dá para ativar de novo depois.",
+          botao: "Desativar",
+        }
+      : {
+          titulo: `Arquivar ${nomeQtd}?`,
+          descricao: "Os registros saem das listas e dos seletores, mas o histórico é preservado. Dá para reativar depois.",
+          botao: "Arquivar",
+        },
     reativar: {
-      titulo: `Reativar ${nomeQtd}?`,
+      titulo: `${arquivarComoDesativar ? "Ativar" : "Reativar"} ${nomeQtd}?`,
       descricao: "Os registros voltam a aparecer nas listas e nos seletores.",
-      botao: "Reativar",
+      botao: arquivarComoDesativar ? "Ativar" : "Reativar",
     },
     ativar: {
       titulo: `Ativar ${nomeQtd}?`,
@@ -194,10 +203,10 @@ export function SelecaoLote({
             {temSoftDelete && (
               <>
                 <Button variant="outline" size="sm" onClick={() => setConfirmar("arquivar")} disabled={rodando}>
-                  <Archive /> Arquivar
+                  {arquivarComoDesativar ? <><PowerOff /> Desativar</> : <><Archive /> Arquivar</>}
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setConfirmar("reativar")} disabled={rodando}>
-                  <ArchiveRestore /> Reativar
+                  {arquivarComoDesativar ? <><Power /> Ativar</> : <><ArchiveRestore /> Reativar</>}
                 </Button>
               </>
             )}
