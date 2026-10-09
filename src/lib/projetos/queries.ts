@@ -104,6 +104,7 @@ export async function listarClientesAtivos() {
   return db.cliente.findMany({
     where: { arquivado: false },
     orderBy: { nome: "asc" },
-    select: { id: true, nome: true },
+    // status: o filtro de jobs separa os ativos dos inativos (encerrados, pausados…).
+    select: { id: true, nome: true, status: true },
   });
 }

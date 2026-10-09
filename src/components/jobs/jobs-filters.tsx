@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
 type Opt = { id: string; nome: string };
+type ClienteOpt = Opt & { status?: string | null };
 
 export function JobsFilters({
   statuses,
@@ -13,7 +14,7 @@ export function JobsFilters({
 }: {
   statuses: Opt[];
   responsaveis: Opt[];
-  clientes: Opt[];
+  clientes: ClienteOpt[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -47,6 +48,10 @@ export function JobsFilters({
     return lista;
   }, []);
 
+  // Ativos em cima; quem saiu (encerrado, pausado…) fica num grupo à parte, para achar jobs antigos.
+  const clientesAtivos = clientes.filter((c) => (c.status ?? "ativo") === "ativo");
+  const clientesInativos = clientes.filter((c) => (c.status ?? "ativo") !== "ativo");
+
   const sel = "h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
@@ -79,7 +84,12 @@ export function JobsFilters({
       <label htmlFor="f-cli" className="sr-only">Cliente</label>
       <select id="f-cli" className={sel} defaultValue={searchParams.get("clienteId") ?? ""} onChange={(e) => setParam("clienteId", e.target.value)}>
         <option value="">Todos os clientes</option>
-        {clientes.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+        {clientesAtivos.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+        {clientesInativos.length > 0 && (
+          <optgroup label="Inativos">
+            {clientesInativos.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+          </optgroup>
+        )}
       </select>
 
       <label htmlFor="f-mes" className="sr-only">Mês</label>
