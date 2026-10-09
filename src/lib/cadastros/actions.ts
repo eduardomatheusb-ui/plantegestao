@@ -240,6 +240,47 @@ export async function arquivarCadastrosEmLote(
 }
 
 /**
+ * Ativa ou desativa clientes (situação "Ativo" ou "Encerrado"), um ou vários.
+ *
+ * Atalho para os clientes que vêm e vão, sem abrir o cadastro. As outras
+ * situações (implantação, pausado, inadimplente) continuam no cadastro.
+ * Situação "ativo" é o que alimenta alertas, lembretes e o agente de operações.
+ */
+export async function definirClientesAtivos(ids: string[], ativo: boolean): Promise<ResultadoLote> {
+  const config = getEntidade("clientes");
+  if (!config) throw new Error("Cadastro inválido.");
+  const user = await assertPapel(CADASTRO_EDITAR_MINIMO);
+  const acesso = await assertModulo("cadastros", "EDITAR");
+
+  const pedidos = ids.slice(0, LIMITE_LOTE);
+  const permitidos = await idsPermitidos(config, acesso, pedidos);
+  const alvos = pedidos.filter((id) => permitidos.has(id));
+  const falhas: ResultadoLote["falhas"] = [];
+  const semAcesso = pedidos.length - alvos.length;
+  if (semAcesso > 0) falhas.push({ nome: `${semAcesso} registro(s)`, motivo: "sem acesso" });
+
+  const novo = ativo ? "ativo" : "encerrado";
+  const atuais = await db.cliente.findMany({ where: { id: { in: alvos } }, select: { id: true, status: true } });
+  let ok = 0;
+  for (const c of atuais) {
+    if (c.status === novo) continue;
+    await db.cliente.update({ where: { id: c.id }, data: { status: novo } });
+    await registrarLog({
+      entidadeTipo: "cliente",
+      entidadeId: c.id,
+      usuarioId: user.id,
+      acao: ativo ? "ativou o cliente" : "desativou o cliente",
+      de: c.status,
+      para: novo,
+    });
+    ok++;
+  }
+
+  revalidatePath("/cadastros/clientes");
+  return { ok, falhas };
+}
+
+/**
  * Exclui vários registros de uma vez.
  *
  * Um a um de propósito: registro com vínculo (cliente com job, categoria em uso)

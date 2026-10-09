@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, ArchiveRestore, Trash2, X, Loader2 } from "lucide-react";
+import { Archive, ArchiveRestore, Trash2, X, Loader2, Power, PowerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   arquivarCadastrosEmLote,
+  definirClientesAtivos,
   excluirCadastrosEmLote,
   type ResultadoLote,
 } from "@/lib/cadastros/actions";
@@ -72,7 +73,7 @@ export function CaixaTodos({ ids }: { ids: string[] }) {
   );
 }
 
-type Confirmacao = "arquivar" | "reativar" | "excluir" | null;
+type Confirmacao = "arquivar" | "reativar" | "excluir" | "ativar" | "desativar" | null;
 
 export function SelecaoLote({
   slug,
@@ -80,6 +81,7 @@ export function SelecaoLote({
   rotuloPlural,
   temSoftDelete,
   podeExcluir,
+  ativarDesativar = false,
   children,
 }: {
   slug: string;
@@ -87,6 +89,8 @@ export function SelecaoLote({
   rotuloPlural: string;
   temSoftDelete: boolean;
   podeExcluir: boolean;
+  /** Clientes: botões Ativar / Desativar (situação), além de arquivar. */
+  ativarDesativar?: boolean;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -128,7 +132,9 @@ export function SelecaoLote({
       const r =
         acao === "excluir"
           ? await excluirCadastrosEmLote(slug, ids)
-          : await arquivarCadastrosEmLote(slug, ids, acao === "arquivar");
+          : acao === "ativar" || acao === "desativar"
+            ? await definirClientesAtivos(ids, acao === "ativar")
+            : await arquivarCadastrosEmLote(slug, ids, acao === "arquivar");
       setResultado(r);
       setConfirmar(null);
       setSelecionados(new Set());
@@ -146,6 +152,16 @@ export function SelecaoLote({
       titulo: `Reativar ${nomeQtd}?`,
       descricao: "Os registros voltam a aparecer nas listas e nos seletores.",
       botao: "Reativar",
+    },
+    ativar: {
+      titulo: `Ativar ${nomeQtd}?`,
+      descricao: "A situação passa para Ativo. Eles voltam para os alertas, lembretes e o resumo de operações.",
+      botao: "Ativar",
+    },
+    desativar: {
+      titulo: `Desativar ${nomeQtd}?`,
+      descricao: "A situação passa para Encerrado. Continuam na lista e com o histórico, mas saem dos alertas e lembretes.",
+      botao: "Desativar",
     },
     excluir: {
       titulo: `Excluir ${nomeQtd} definitivamente?`,
@@ -165,6 +181,16 @@ export function SelecaoLote({
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-2 pl-4 shadow-lg">
             <span className="text-sm font-medium">{nomeQtd} selecionado{qtd === 1 ? "" : "s"}</span>
             <div className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
+            {ativarDesativar && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => setConfirmar("ativar")} disabled={rodando}>
+                  <Power /> Ativar
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setConfirmar("desativar")} disabled={rodando}>
+                  <PowerOff /> Desativar
+                </Button>
+              </>
+            )}
             {temSoftDelete && (
               <>
                 <Button variant="outline" size="sm" onClick={() => setConfirmar("arquivar")} disabled={rodando}>

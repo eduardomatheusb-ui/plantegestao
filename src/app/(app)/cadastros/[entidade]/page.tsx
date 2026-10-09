@@ -18,6 +18,7 @@ import { ConfirmButton } from "@/components/shared/confirm-button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { SelecaoLote, CaixaLinha, CaixaTodos } from "@/components/cadastros/selecao-lote";
+import { AtivoCliente } from "@/components/cadastros/ativo-cliente";
 
 type PageProps = {
   params: Promise<{ entidade: string }>;
@@ -83,6 +84,9 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
           : false;
         return (
           <div className="flex items-center justify-end gap-1">
+            {entidade === "clientes" && !arquivado && (
+              <AtivoCliente id={row.id} ativo={(row.status ?? "ativo") === "ativo"} nome={String(row.nome ?? "cliente")} />
+            )}
             <Button asChild variant="ghost" size="sm">
               <Link href={entidade === "clientes" ? `/clientes/${row.id}` : `/cadastros/${entidade}/${row.id}`}>
                 <Pencil className="size-4" />
@@ -175,6 +179,7 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
         rotuloPlural={config.rotuloPlural}
         temSoftDelete={!!config.softDelete}
         podeExcluir={podeExcluir}
+        ativarDesativar={entidade === "clientes"}
       >
         <DataTable
           columns={columns}
