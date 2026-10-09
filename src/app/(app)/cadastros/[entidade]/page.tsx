@@ -40,11 +40,16 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   const incluirArquivados = sp.arquivados === "1";
   const pageNum = typeof sp.page === "string" ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
 
+  // Clientes: filtro "Só ativos" (situação Ativo), para os encerrados não poluírem a lista.
+  const soAtivos = entidade === "clientes" && sp.situacao === "ativos";
+
   // Clientes: sem ADMIN em cadastros, o atendimento só vê os que cadastrou ou é atendimento/estrategista.
-  const extraWhere =
-    entidade === "clientes" && !verTudoNoModulo(acesso, "cadastros")
-      ? { OR: [{ criadoPorId: acesso.id }, { atendimentoId: acesso.id }, { estrategiaId: acesso.id }] }
-      : undefined;
+  const filtrosExtras: Record<string, unknown>[] = [];
+  if (entidade === "clientes" && !verTudoNoModulo(acesso, "cadastros")) {
+    filtrosExtras.push({ OR: [{ criadoPorId: acesso.id }, { atendimentoId: acesso.id }, { estrategiaId: acesso.id }] });
+  }
+  if (soAtivos) filtrosExtras.push({ status: "ativo" });
+  const extraWhere = filtrosExtras.length ? { AND: filtrosExtras } : undefined;
 
   const { rows: rowsRaw, total, page, totalPages } = await repo.listar(config, { q, incluirArquivados, page: pageNum, extraWhere });
   const rows = rowsRaw as Registro[];
@@ -133,13 +138,21 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
   const outroFiltro = new URLSearchParams();
   if (q) outroFiltro.set("q", q);
   if (!incluirArquivados) outroFiltro.set("arquivados", "1");
+  if (soAtivos) outroFiltro.set("situacao", "ativos");
   const toggleHref = `/cadastros/${entidade}?${outroFiltro.toString()}`;
+
+  const filtroAtivos = new URLSearchParams();
+  if (q) filtroAtivos.set("q", q);
+  if (incluirArquivados) filtroAtivos.set("arquivados", "1");
+  if (!soAtivos) filtroAtivos.set("situacao", "ativos");
+  const ativosHref = `/cadastros/${entidade}${filtroAtivos.toString() ? `?${filtroAtivos.toString()}` : ""}`;
 
   // Href de uma página mantendo busca/arquivados.
   const pageHref = (p: number) => {
     const sp2 = new URLSearchParams();
     if (q) sp2.set("q", q);
     if (incluirArquivados) sp2.set("arquivados", "1");
+    if (soAtivos) sp2.set("situacao", "ativos");
     if (p > 1) sp2.set("page", String(p));
     const qs = sp2.toString();
     return `/cadastros/${entidade}${qs ? `?${qs}` : ""}`;
@@ -164,13 +177,22 @@ export default async function CadastroListaPage({ params, searchParams }: PagePr
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SearchInput placeholder={`Buscar ${config.rotuloPlural.toLowerCase()}…`} />
-        {config.softDelete && (
-          <Button asChild variant="outline" size="sm">
-            <Link href={toggleHref}>
-              {incluirArquivados ? "Ocultar arquivados" : "Mostrar arquivados"}
-            </Link>
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {entidade === "clientes" && (
+            <Button asChild variant={soAtivos ? "default" : "outline"} size="sm">
+              <Link href={ativosHref} aria-pressed={soAtivos}>
+                {soAtivos ? "Mostrar todas as situações" : "Só ativos"}
+              </Link>
+            </Button>
+          )}
+          {config.softDelete && (
+            <Button asChild variant="outline" size="sm">
+              <Link href={toggleHref}>
+                {incluirArquivados ? "Ocultar arquivados" : "Mostrar arquivados"}
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <SelecaoLote
