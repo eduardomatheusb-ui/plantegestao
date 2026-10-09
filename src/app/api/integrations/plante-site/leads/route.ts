@@ -23,7 +23,8 @@ function json(body: unknown, status = 200) {
 
 const schema = z.object({
   name: z.string().trim().min(1, "name é obrigatório"),
-  email: z.string().trim().email("email inválido"),
+  // E-mail ou WhatsApp: pelo menos um dos dois (a ação Boa Jogada não pede e-mail).
+  email: z.union([z.string().trim().email("email inválido"), z.literal("")]).optional().nullable(),
   // Opcional só no formulário de contato (telefone não obrigatório lá).
   whatsapp: z.string().trim().optional().nullable(),
   consent: z.unknown(),
@@ -75,7 +76,11 @@ export async function POST(req: Request) {
   const cfg = configLanding(d.landing_page);
   const exigeConsentimento = cfg.exigeConsentimento !== false;
 
-  if (exigeConsentimento && (d.whatsapp ?? "").replace(/\D/g, "").length < 8) {
+  const temFone = (d.whatsapp ?? "").replace(/\D/g, "").length >= 8;
+  if (!d.email && !temFone) {
+    return json({ ok: false, error: "Informe e-mail ou WhatsApp." }, 422);
+  }
+  if (exigeConsentimento && !temFone) {
     return json({ ok: false, error: "whatsapp inválido" }, 422);
   }
 
@@ -89,7 +94,7 @@ export async function POST(req: Request) {
     const recebidoEm = new Date();
     const dataEnvio = d.created_at ? new Date(d.created_at) : recebidoEm;
     const consentEm = consentiu ? (isNaN(dataEnvio.getTime()) ? recebidoEm : dataEnvio) : null;
-    const emailNorm = normalizarEmail(d.email);
+    const emailNorm = d.email ? normalizarEmail(d.email) : "";
     const foneNorm = normalizarFone(d.whatsapp ?? "");
 
     const observacao = montarObservacao({
@@ -115,7 +120,9 @@ export async function POST(req: Request) {
     // 6) Deduplicação por e-mail OU WhatsApp normalizado.
     const existente = await db.lead.findFirst({
       // Telefone vazio não entra na busca, senão casaria com qualquer lead sem telefone.
-      where: { OR: [{ email: emailNorm }, ...(foneNorm ? [{ telefone: foneNorm }] : [])] },
+      where: {
+        OR: [...(emailNorm ? [{ email: emailNorm }] : []), ...(foneNorm ? [{ telefone: foneNorm }] : [])],
+      },
       orderBy: { criadoEm: "asc" },
     });
 
@@ -132,6 +139,7 @@ export async function POST(req: Request) {
           interesse: existente.interesse ?? cfg.interesse,
           tags: tagsUnificadas,
           observacao: obsAcumulada,
+          email: existente.email || emailNorm || null,
           telefone: existente.telefone || foneNorm || null,
           consentLgpd: existente.consentLgpd || consentiu,
           consentTexto: existente.consentTexto ?? (consentiu ? d.consent_text?.trim() || null : null),
@@ -151,7 +159,7 @@ export async function POST(req: Request) {
       data: {
         nome: d.name.trim(),
         empresa: d.organization?.trim() || null,
-        email: emailNorm,
+        email: emailNorm || null,
         telefone: foneNorm || null,
         origem: cfg.origem,
         interesse: cfg.interesse,
