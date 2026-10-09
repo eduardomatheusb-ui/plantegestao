@@ -53,6 +53,11 @@ export default async function JobsPage({ searchParams }: PageProps) {
   ]);
 
   const statusOpts = statuses.map((s) => ({ id: s.id, nome: s.nome }));
+  // Ações em lote (concluir / mudar status) na lista, na pauta e nos kanbans.
+  const lote = {
+    statuses: statuses.map((s) => ({ id: s.id, nome: s.nome, isConcluido: s.isConcluido })),
+    podeRegularizar: podeGerir,
+  };
 
   // Minha Pauta: aplica a ordem manual da pessoa. O que ela arrumou vem primeiro,
   // na ordem dela; o resto segue por prazo (a ordem que o listarJobs já devolveu).
@@ -145,7 +150,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
           }
         />
       ) : view === "kanban-status" || view === "kanban-resp" ? (
-        <KanbanColumns colunas={colunas} statuses={statusOpts} arrastavel={view === "kanban-status"} />
+        <KanbanColumns colunas={colunas} statuses={statusOpts} arrastavel={view === "kanban-status"} lote={lote} />
       ) : view === "timeline" ? (
         <Timeline jobs={jobs} statuses={statusOpts} />
       ) : (
@@ -154,11 +159,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
           statuses={statusOpts}
           minhaParteDe={view === "minha-pauta" ? user.id : undefined}
           reordenavel={view === "minha-pauta"}
-          lote={
-            view === "lista"
-              ? { statuses: statuses.map((s) => ({ id: s.id, nome: s.nome, isConcluido: s.isConcluido })), podeRegularizar: podeGerir }
-              : undefined
-          }
+          lote={lote}
         />
       )}
     </div>

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { GripVertical } from "lucide-react";
 import { JobCard } from "./job-card";
+import { BarraLoteJobs } from "./selecao-jobs";
 import { moverJobStatus } from "@/lib/jobs/actions";
 import { cn } from "@/lib/utils";
 import type { JobListItem } from "@/lib/jobs/queries";
@@ -24,10 +25,13 @@ export function KanbanColumns({
   colunas,
   statuses,
   arrastavel = false,
+  lote,
 }: {
   colunas: KanbanColuna[];
   statuses: { id: string; nome: string }[];
   arrastavel?: boolean;
+  /** Caixas de seleção nos cards e ações em lote (concluir / mudar status). */
+  lote?: { statuses: { id: string; nome: string; isConcluido: boolean }[]; podeRegularizar: boolean };
 }) {
   // Estado local para mover o card na hora (otimista); ressincroniza quando o
   // servidor revalida e manda novas colunas.
@@ -37,6 +41,47 @@ export function KanbanColumns({
   const [arrastando, setArrastando] = React.useState<string | null>(null);
   const [sobre, setSobre] = React.useState<string | null>(null);
   const [, startTransition] = React.useTransition();
+
+  const [selecionados, setSelecionados] = React.useState<Set<string>>(new Set());
+  // Some da seleção o que saiu do quadro depois do refresh.
+  React.useEffect(() => {
+    const visiveis = new Set(colunas.flatMap((c) => c.jobs.map((j) => j.id)));
+    setSelecionados((s) => new Set([...s].filter((id) => visiveis.has(id))));
+  }, [colunas]);
+  const alternar = (id: string) =>
+    setSelecionados((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  const marcarVarios = (ids: string[], marcar: boolean) =>
+    setSelecionados((s) => {
+      const n = new Set(s);
+      for (const id of ids) {
+        if (marcar) n.add(id);
+        else n.delete(id);
+      }
+      return n;
+    });
+
+  const caixa = "size-4 shrink-0 cursor-pointer accent-[color:var(--brand-yellow)]";
+  // Com lote, cada card ganha uma caixa à esquerda.
+  const comCaixa = (job: JobListItem, card: React.ReactNode) =>
+    lote ? (
+      <div className="flex items-start gap-1.5">
+        <input
+          type="checkbox"
+          className={cn(caixa, "mt-3")}
+          checked={selecionados.has(job.id)}
+          onChange={() => alternar(job.id)}
+          aria-label={`Selecionar job #${job.numero}`}
+        />
+        <div className="min-w-0 flex-1">{card}</div>
+      </div>
+    ) : (
+      card
+    );
 
   function soltarNaColuna(destinoId: string) {
     const jobId = arrastando;
@@ -65,6 +110,8 @@ export function KanbanColumns({
     <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 sm:snap-none">
       {cols.map((col) => {
         const alvo = arrastavel && sobre === col.id && arrastando;
+        const idsColuna = col.jobs.map((j) => j.id);
+        const colunaMarcada = idsColuna.length > 0 && idsColuna.every((id) => selecionados.has(id));
         return (
           <section
             key={col.id}
@@ -78,6 +125,15 @@ export function KanbanColumns({
           >
             <header className="flex items-center justify-between px-1 py-2">
               <span className="flex items-center gap-2 text-sm font-semibold">
+                {lote && idsColuna.length > 0 && (
+                  <input
+                    type="checkbox"
+                    className={caixa}
+                    checked={colunaMarcada}
+                    onChange={() => marcarVarios(idsColuna, !colunaMarcada)}
+                    aria-label={colunaMarcada ? `Desmarcar ${col.titulo}` : `Selecionar todos de ${col.titulo}`}
+                  />
+                )}
                 <span
                   className="size-2.5 rounded-full"
                   style={{ backgroundColor: col.cor ?? "var(--muted-foreground)" }}
@@ -114,10 +170,10 @@ export function KanbanColumns({
                         className="absolute right-1.5 top-1.5 size-4 text-muted-foreground/40 opacity-0 transition-opacity group-hover:opacity-100"
                         aria-hidden="true"
                       />
-                      <JobCard job={job} statuses={statuses} />
+                      {comCaixa(job, <JobCard job={job} statuses={statuses} />)}
                     </div>
                   ) : (
-                    <JobCard key={job.id} job={job} statuses={statuses} />
+                    <React.Fragment key={job.id}>{comCaixa(job, <JobCard job={job} statuses={statuses} />)}</React.Fragment>
                   ),
                 )
               )}
@@ -125,6 +181,14 @@ export function KanbanColumns({
           </section>
         );
       })}
+      {lote && (
+        <BarraLoteJobs
+          selecionados={[...selecionados]}
+          limpar={() => setSelecionados(new Set())}
+          statuses={lote.statuses}
+          podeRegularizar={lote.podeRegularizar}
+        />
+      )}
     </div>
   );
 }
