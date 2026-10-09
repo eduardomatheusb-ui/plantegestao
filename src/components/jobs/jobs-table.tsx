@@ -6,6 +6,7 @@ import { AlarmClock, Send, GripVertical } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoverStatus } from "./mover-status";
 import { MinhaParte } from "./minha-parte";
+import { BarraLoteJobs } from "./selecao-jobs";
 import { reordenarMinhaPauta } from "@/lib/jobs/actions";
 import { iniciais } from "@/lib/format";
 import { rotuloTipoJob, corTipoJob, tipoJobSocial } from "@/lib/jobs/tipos";
@@ -18,6 +19,7 @@ export function JobsTable({
   statuses,
   minhaParteDe,
   reordenavel = false,
+  lote,
 }: {
   jobs: JobListItem[];
   statuses: { id: string; nome: string }[];
@@ -25,6 +27,8 @@ export function JobsTable({
   minhaParteDe?: string;
   /** Minha Pauta: permite arrastar as linhas para ordenar à mão (por pessoa). */
   reordenavel?: boolean;
+  /** Lista: caixas de seleção e ações em lote (concluir / mudar status). */
+  lote?: { statuses: { id: string; nome: string; isConcluido: boolean }[]; podeRegularizar: boolean };
 }) {
   // Ordem local (otimista); ressincroniza quando o servidor manda a lista nova.
   const [ordem, setOrdem] = React.useState(jobs);
@@ -32,6 +36,18 @@ export function JobsTable({
   const [arrastando, setArrastando] = React.useState<string | null>(null);
   const [sobre, setSobre] = React.useState<string | null>(null);
   const [, iniciar] = React.useTransition();
+  const [selecionados, setSelecionados] = React.useState<Set<string>>(new Set());
+  // Some da seleção o que saiu da lista (ex.: concluído e escondido depois do refresh).
+  React.useEffect(() => {
+    setSelecionados((s) => new Set([...s].filter((id) => jobs.some((j) => j.id === id))));
+  }, [jobs]);
+  const alternar = (id: string) =>
+    setSelecionados((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
 
   // Mostra "Concluí" onde ele de fato limpa o job: a pessoa tem parte (responsável
   // ou corresponsável) e o job não é workflow em sequência (nesses, a etapa se
@@ -63,6 +79,7 @@ export function JobsTable({
   }
 
   const lista = reordenavel ? ordem : jobs;
+  const todosMarcados = lista.length > 0 && lista.every((j) => selecionados.has(j.id));
 
   return (
     <div className="rounded-lg border border-border">
@@ -70,6 +87,17 @@ export function JobsTable({
         <TableHeader>
           <TableRow>
             {reordenavel && <TableHead className="w-8" />}
+            {lote && (
+              <TableHead className="w-8">
+                <input
+                  type="checkbox"
+                  className="size-4 cursor-pointer accent-[color:var(--brand-yellow)]"
+                  checked={todosMarcados}
+                  onChange={() => setSelecionados(todosMarcados ? new Set() : new Set(lista.map((j) => j.id)))}
+                  aria-label={todosMarcados ? "Desmarcar todos" : "Selecionar todos os jobs da lista"}
+                />
+              </TableHead>
+            )}
             <TableHead className="w-14">#</TableHead>
             <TableHead>Título</TableHead>
             <TableHead>Cliente / Projeto</TableHead>
@@ -108,6 +136,17 @@ export function JobsTable({
                 {reordenavel && (
                   <TableCell className="text-muted-foreground/40">
                     <GripVertical className="size-4" aria-hidden="true" />
+                  </TableCell>
+                )}
+                {lote && (
+                  <TableCell>
+                    <input
+                      type="checkbox"
+                      className="size-4 cursor-pointer accent-[color:var(--brand-yellow)]"
+                      checked={selecionados.has(job.id)}
+                      onChange={() => alternar(job.id)}
+                      aria-label={`Selecionar job #${job.numero}`}
+                    />
                   </TableCell>
                 )}
                 <TableCell className="text-muted-foreground tabular-nums">#{job.numero}</TableCell>
@@ -166,6 +205,14 @@ export function JobsTable({
           })}
         </TableBody>
       </Table>
+      {lote && (
+        <BarraLoteJobs
+          selecionados={[...selecionados]}
+          limpar={() => setSelecionados(new Set())}
+          statuses={lote.statuses}
+          podeRegularizar={lote.podeRegularizar}
+        />
+      )}
     </div>
   );
 }

@@ -235,6 +235,68 @@ export async function moverJobStatus(id: string, statusId: string) {
   revalidatePath(`/jobs/${id}`);
 }
 
+export type ResultadoLoteJobs = { ok: number; ignorados: number };
+
+/**
+ * Move vários jobs para um status de uma vez (lista de jobs).
+ *
+ * Segue a mesma regra do moverJobStatus (conclusão carimbada uma vez, postagem
+ * concluída sem data vira publicada), mas sem notificar cada responsável, para
+ * não gerar uma avalanche de avisos.
+ *
+ * `regularizar` (só gestor): para jobs já entregues que ninguém marcou. A
+ * conclusão fica na data do prazo (postagem, se houver) e não conta como atraso.
+ * Fica registrado no histórico de cada job como regularização.
+ */
+export async function moverJobsStatusEmLote(
+  ids: string[],
+  statusId: string,
+  opts: { regularizar?: boolean } = {},
+): Promise<ResultadoLoteJobs> {
+  const user = await assertPapel(opts.regularizar ? GERIR : TRABALHAR);
+  const status = await db.jobStatus.findUnique({ where: { id: statusId } });
+  if (!status) throw new Error("Status inválido.");
+  const regularizar = !!opts.regularizar && status.isConcluido;
+
+  const jobs = await db.job.findMany({
+    where: { id: { in: ids.slice(0, 500) } },
+    select: {
+      id: true, statusId: true, concluidoEm: true, concluidoForaPrazo: true, prazo: true,
+      prazoPostagem: true, publicadoEm: true, status: { select: { nome: true } },
+    },
+  });
+
+  let ok = 0;
+  for (const job of jobs) {
+    if (job.statusId === statusId) continue;
+    let conc = camposConclusao(status.isConcluido, job.concluidoEm, job.concluidoForaPrazo, job.prazo ?? job.prazoPostagem ?? null);
+    if (regularizar && !job.concluidoEm) {
+      const dataEntrega = job.prazoPostagem ?? job.prazo ?? new Date();
+      conc = { concluidoEm: dataEntrega, concluidoForaPrazo: false };
+    }
+    const publicadoEm = status.isConcluido && job.prazoPostagem && !job.publicadoEm
+      ? (regularizar ? job.prazoPostagem : conc.concluidoEm)
+      : undefined;
+
+    await db.job.update({
+      where: { id: job.id },
+      data: { statusId, ...conc, ...(publicadoEm !== undefined ? { publicadoEm } : {}) },
+    });
+    await registrarLog({
+      entidadeTipo: "job",
+      entidadeId: job.id,
+      usuarioId: user.id,
+      acao: regularizar ? "concluiu em lote (regularização de job já entregue)" : "moveu o status (em lote)",
+      de: job.status?.nome ?? null,
+      para: status.nome,
+    });
+    ok++;
+  }
+
+  revalidatePath("/jobs");
+  return { ok, ignorados: ids.length - ok };
+}
+
 export async function arquivarJob(id: string, arquivar: boolean) {
   const user = await assertPapel(GERIR);
   await db.job.update({ where: { id }, data: { arquivado: arquivar } });

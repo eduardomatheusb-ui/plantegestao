@@ -154,6 +154,11 @@ export default async function JobsPage({ searchParams }: PageProps) {
           statuses={statusOpts}
           minhaParteDe={view === "minha-pauta" ? user.id : undefined}
           reordenavel={view === "minha-pauta"}
+          lote={
+            view === "lista"
+              ? { statuses: statuses.map((s) => ({ id: s.id, nome: s.nome, isConcluido: s.isConcluido })), podeRegularizar: podeGerir }
+              : undefined
+          }
         />
       )}
     </div>
