@@ -7,19 +7,23 @@
 
 const STORE = "anexos";
 
+// trim: espaço ou quebra de linha colados junto com a chave invalidam a assinatura.
+const env = (k: string) => process.env[k]?.trim() || undefined;
+const bucket = () => env("S3_BUCKET");
+
 function usaS3() {
-  return !!(process.env.S3_BUCKET && process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY);
+  return !!(env("S3_BUCKET") && env("S3_ENDPOINT") && env("S3_ACCESS_KEY_ID") && env("S3_SECRET_ACCESS_KEY"));
 }
 
 let clienteS3: import("@aws-sdk/client-s3").S3Client | null = null;
 async function s3() {
   const { S3Client } = await import("@aws-sdk/client-s3");
   clienteS3 ??= new S3Client({
-    region: process.env.S3_REGION || "auto",
-    endpoint: process.env.S3_ENDPOINT,
+    region: env("S3_REGION") || "auto",
+    endpoint: env("S3_ENDPOINT"),
     credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+      accessKeyId: env("S3_ACCESS_KEY_ID")!,
+      secretAccessKey: env("S3_SECRET_ACCESS_KEY")!,
     },
   });
   return clienteS3;
@@ -29,7 +33,7 @@ export async function salvarArquivo(key: string, dados: ArrayBuffer, contentType
   if (usaS3()) {
     const { PutObjectCommand } = await import("@aws-sdk/client-s3");
     await (await s3()).send(
-      new PutObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key, Body: new Uint8Array(dados), ContentType: contentType }),
+      new PutObjectCommand({ Bucket: bucket(), Key: key, Body: new Uint8Array(dados), ContentType: contentType }),
     );
     return;
   }
@@ -42,7 +46,7 @@ export async function lerArquivo(key: string): Promise<ArrayBuffer | null> {
   if (usaS3()) {
     const { GetObjectCommand, NoSuchKey } = await import("@aws-sdk/client-s3");
     try {
-      const r = await (await s3()).send(new GetObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key }));
+      const r = await (await s3()).send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
       if (!r.Body) return null;
       const bytes = await r.Body.transformToByteArray();
       return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
@@ -58,7 +62,7 @@ export async function lerArquivo(key: string): Promise<ArrayBuffer | null> {
 export async function apagarArquivo(key: string) {
   if (usaS3()) {
     const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
-    await (await s3()).send(new DeleteObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key }));
+    await (await s3()).send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));
     return;
   }
   const { getStore } = await import("@netlify/blobs");
