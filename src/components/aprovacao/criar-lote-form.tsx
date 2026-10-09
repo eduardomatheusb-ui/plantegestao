@@ -76,7 +76,7 @@ export function CriarLoteForm({ clienteId, jobs }: { clienteId: string; jobs: Jo
             <p className="text-sm font-medium">Peças ({sel.size}/{jobs.length})</p>
             <button
               type="button"
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-xs font-medium text-link hover:underline"
               onClick={() => setSel(todosMarcados ? new Set() : new Set(todos))}
             >
               {todosMarcados ? "Desmarcar todas" : "Selecionar todas"}

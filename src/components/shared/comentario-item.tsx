@@ -29,7 +29,7 @@ function renderTexto(texto: string, usuarios: Usuario[], meuId: string | null) {
   return texto.split(re).map((p, i) => {
     if (!p) return null;
     if (/^https?:\/\//.test(p)) {
-      return <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline underline-offset-2 hover:opacity-80">{p}</a>;
+      return <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="break-all text-link underline underline-offset-2 hover:opacity-80">{p}</a>;
     }
     if (p.startsWith("@")) {
       const nome = p.slice(1);

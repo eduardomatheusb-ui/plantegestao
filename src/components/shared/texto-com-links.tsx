@@ -18,7 +18,7 @@ export function TextoComLinks({ texto, className }: { texto: string; className?:
             href={p.replace(/[.,;)]+$/, "")}
             target="_blank"
             rel="noopener noreferrer"
-            className="break-all text-primary underline underline-offset-2 hover:opacity-80"
+            className="break-all text-link underline underline-offset-2 hover:opacity-80"
           >
             {p}
           </a>

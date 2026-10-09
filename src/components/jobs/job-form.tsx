@@ -61,7 +61,7 @@ export function JobForm({
 }: {
   id: string | null;
   inicial?: JobInicial;
-  clientes: Opt[];
+  clientes: (Opt & { status?: string | null })[];
   projetos: ProjetoOpt[];
   usuarios: Opt[];
   statuses: Opt[];
@@ -116,7 +116,12 @@ export function JobForm({
           <select id="clienteId" name="clienteId" className={sel} value={clienteId}
             onChange={(e) => { setClienteId(e.target.value); setProjetoId(""); }} aria-invalid={!!err("clienteId")}>
             <option value="">Selecione…</option>
-            {clientes.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+            {clientes.filter((c) => (c.status ?? "ativo") === "ativo").map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+            {clientes.some((c) => (c.status ?? "ativo") !== "ativo") && (
+              <optgroup label="Inativos">
+                {clientes.filter((c) => (c.status ?? "ativo") !== "ativo").map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+              </optgroup>
+            )}
           </select>
           {err("clienteId") && <p className="text-xs text-destructive">{err("clienteId")}</p>}
         </div>

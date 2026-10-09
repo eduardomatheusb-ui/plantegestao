@@ -74,7 +74,7 @@ export async function AttachmentsPanel({
                 </div>
                 {emb && (
                   <details className="mt-2">
-                    <summary className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-primary hover:underline">
+                    <summary className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-link hover:underline">
                       <PlayCircle className="size-3.5" aria-hidden="true" />
                       {emb.tipo === "pasta" ? "Ver arquivos da pasta" : "Ver prévia"}
                     </summary>

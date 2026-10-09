@@ -36,6 +36,9 @@
   --accent: var(--brand-yellow);
   --accent-foreground: var(--ink-900);
 
+  /* Links em texto: o amarelo da marca some no branco; mostarda escuro mantém a cor e dá leitura */
+  --link: #8a6d00;
+
   --secondary: #f4f4f5;
   --secondary-foreground: var(--ink-700);
 
@@ -71,6 +74,8 @@
 
   --accent: var(--brand-yellow);
   --accent-foreground: var(--ink-900);
+
+  --link: var(--brand-yellow);
 
   --secondary: #262626;
   --secondary-foreground: #ededed;

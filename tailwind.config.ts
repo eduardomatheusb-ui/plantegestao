@@ -48,6 +48,7 @@ const config: Config = {
           DEFAULT: "var(--accent)",
           foreground: "var(--accent-foreground)",
         },
+        link: "var(--link)",
         secondary: {
           DEFAULT: "var(--secondary)",
           foreground: "var(--secondary-foreground)",
