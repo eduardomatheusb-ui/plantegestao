@@ -32,27 +32,12 @@ async function s3() {
   return clienteS3;
 }
 
-// Diagnóstico sem expor segredo: só tamanhos e formato das variáveis em uso.
-function diagnosticoS3() {
-  const id = process.env.S3_ACCESS_KEY_ID ?? "";
-  const sec = process.env.S3_SECRET_ACCESS_KEY ?? "";
-  const hex = (s: string) => /^[0-9a-f]+$/.test(s.trim());
-  return `[diag: id ${id.length}${hex(id) ? "" : " nao-hex"}, secret ${sec.length}${hex(sec) ? "" : " nao-hex"}${
-    sec !== sec.trim() ? " com-espaco" : ""
-  }, endpoint ${/^https:\/\/[0-9a-f]{32}\.r2\.cloudflarestorage\.com$/.test(env("S3_ENDPOINT") ?? "") ? "ok" : "invalido"}, bucket ${bucket()}]`;
-}
-
 export async function salvarArquivo(key: string, dados: ArrayBuffer, contentType?: string) {
   if (usaS3()) {
     const { PutObjectCommand } = await import("@aws-sdk/client-s3");
-    try {
-      await (await s3()).send(
-        new PutObjectCommand({ Bucket: bucket(), Key: key, Body: new Uint8Array(dados), ContentType: contentType }),
-      );
-    } catch (e) {
-      if (e instanceof Error) e.message = `${e.message} ${diagnosticoS3()}`;
-      throw e;
-    }
+    await (await s3()).send(
+      new PutObjectCommand({ Bucket: bucket(), Key: key, Body: new Uint8Array(dados), ContentType: contentType }),
+    );
     return;
   }
   const { getStore } = await import("@netlify/blobs");
