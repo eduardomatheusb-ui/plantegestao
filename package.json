@@ -21,6 +21,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1148.0",
     "@netlify/blobs": "^10.7.9",
     "@prisma/client": "^6.2.1",
     "@radix-ui/react-dialog": "^1.1.4",

@@ -14,6 +14,7 @@ import { assertModulo } from "@/lib/permissoes.server";
 import { STATUS_LABEL } from "./situacao";
 import { camposConclusao } from "@/lib/conclusao";
 import type { ProjetoStatus } from "@prisma/client";
+import { salvarArquivo, apagarArquivo } from "@/lib/armazenamento";
 
 const EDITAR: "GESTOR" = "GESTOR";
 
@@ -373,10 +374,8 @@ export async function enviarArquivoAnexo(
   if (!(file instanceof File) || file.size === 0) return { error: "Selecione um arquivo." };
   if (file.size > MAX_ARQUIVO) return { error: "Arquivo muito grande (máx. 4 MB). Para maiores, use um link do Drive." };
   try {
-    const { getStore } = await import("@netlify/blobs");
-    const store = getStore("anexos");
     const key = `${entidadeTipo}/${entidadeId}/${crypto.randomUUID()}`;
-    await store.set(key, await file.arrayBuffer());
+    await salvarArquivo(key, await file.arrayBuffer(), file.type || undefined);
     await db.anexo.create({
       data: {
         entidadeTipo, entidadeId, nome: file.name || "arquivo", tipo: "arquivo",
@@ -403,8 +402,7 @@ export async function removerAnexo(id: string) {
   }
   if (a.tipo === "arquivo" && a.blobKey) {
     try {
-      const { getStore } = await import("@netlify/blobs");
-      await getStore("anexos").delete(a.blobKey);
+      await apagarArquivo(a.blobKey);
     } catch (e) {
       console.error("[anexo] falha ao apagar blob (ignorada):", e);
     }

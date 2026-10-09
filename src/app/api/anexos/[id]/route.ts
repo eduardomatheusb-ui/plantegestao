@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { lerArquivo } from "@/lib/armazenamento";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!a || a.tipo !== "arquivo" || !a.blobKey) return new Response("Não encontrado", { status: 404 });
 
   try {
-    const { getStore } = await import("@netlify/blobs");
-    const data = await getStore("anexos").get(a.blobKey, { type: "arrayBuffer" });
+    const data = await lerArquivo(a.blobKey);
     if (!data) return new Response("Arquivo indisponível", { status: 404 });
     return new Response(data, {
       headers: {

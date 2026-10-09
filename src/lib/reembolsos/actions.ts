@@ -12,6 +12,7 @@ import { notificar, notificarMuitos } from "@/lib/notificacoes";
 import { obterReembolso, totalAprovado } from "./queries";
 import { LIMITE_AUTORIZACAO, dataPrevistaPagamento, fimDaCompetencia, rotuloCompetencia } from "./constants";
 import type { ReembolsoStatus } from "@prisma/client";
+import { apagarArquivo } from "@/lib/armazenamento";
 
 export type FormState = { error?: string; fieldErrors?: Record<string, string>; ok?: boolean };
 
@@ -60,9 +61,7 @@ async function limparAnexosDespesas(despesaIds: string[]) {
   const blobs = anexos.filter((a) => a.tipo === "arquivo" && a.blobKey).map((a) => a.blobKey!);
   if (blobs.length > 0) {
     try {
-      const { getStore } = await import("@netlify/blobs");
-      const store = getStore("anexos");
-      await Promise.all(blobs.map((k) => store.delete(k)));
+      await Promise.all(blobs.map((k) => apagarArquivo(k)));
     } catch (e) {
       console.error("[reembolso] falha ao apagar blobs (ignorada):", e);
     }

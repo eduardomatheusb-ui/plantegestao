@@ -7,6 +7,7 @@ import { assertPapel } from "@/lib/rbac";
 import { registrarLog } from "@/lib/log";
 import { notificar } from "@/lib/notificacoes";
 import { enviarEmail, layoutEmail, baseUrl } from "@/lib/email";
+import { salvarArquivo } from "@/lib/armazenamento";
 
 const TRABALHAR: "OPERADOR" = "OPERADOR";
 const MAX_ARQUIVO = 4 * 1024 * 1024; // 4 MB, mesmo limite do upload comum
@@ -108,11 +109,9 @@ export async function enviarNovaVersaoParaAprovacao(
   const novos: { nome: string; tipo: "arquivo" | "link"; blobKey?: string; url?: string; tamanho?: number; contentType?: string }[] = [];
   try {
     if (arquivos.length > 0) {
-      const { getStore } = await import("@netlify/blobs");
-      const store = getStore("anexos");
       for (const file of arquivos) {
         const key = `job/${jobId}/${crypto.randomUUID()}`;
-        await store.set(key, await file.arrayBuffer());
+        await salvarArquivo(key, await file.arrayBuffer(), file.type || undefined);
         novos.push({
           nome: file.name || "arquivo",
           tipo: "arquivo",
