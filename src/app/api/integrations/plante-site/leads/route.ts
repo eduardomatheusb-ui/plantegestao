@@ -24,7 +24,8 @@ function json(body: unknown, status = 200) {
 const schema = z.object({
   name: z.string().trim().min(1, "name é obrigatório"),
   email: z.string().trim().email("email inválido"),
-  whatsapp: z.string().trim().min(8, "whatsapp inválido"),
+  // Opcional só no formulário de contato (telefone não obrigatório lá).
+  whatsapp: z.string().trim().optional().nullable(),
   consent: z.unknown(),
   organization: z.string().optional().nullable(),
   segment: z.string().optional().nullable(),
@@ -37,6 +38,8 @@ const schema = z.object({
   utm_campaign: z.string().optional().nullable(),
   utm_content: z.string().optional().nullable(),
   utm_term: z.string().optional().nullable(),
+  message: z.string().max(5000).optional().nullable(),
+  extras: z.record(z.string(), z.string().max(2000)).optional().nullable(),
 });
 
 /**
@@ -69,18 +72,25 @@ export async function POST(req: Request) {
     return json({ ok: false, error: parsed.error.issues[0]?.message ?? "Campos inválidos." }, 422);
   }
   const d = parsed.data;
+  const cfg = configLanding(d.landing_page);
+  const exigeConsentimento = cfg.exigeConsentimento !== false;
 
-  // 5) Consentimento LGPD obrigatório.
-  if (!consentimentoAceito(d.consent)) {
+  if (exigeConsentimento && (d.whatsapp ?? "").replace(/\D/g, "").length < 8) {
+    return json({ ok: false, error: "whatsapp inválido" }, 422);
+  }
+
+  // 5) Consentimento LGPD obrigatório (menos no pedido de contato).
+  const consentiu = consentimentoAceito(d.consent);
+  if (exigeConsentimento && !consentiu) {
     return json({ ok: false, error: "consent (aceite LGPD) é obrigatório." }, 422);
   }
 
   try {
     const recebidoEm = new Date();
-    const consentEm = d.created_at ? new Date(d.created_at) : recebidoEm;
-    const cfg = configLanding(d.landing_page);
+    const dataEnvio = d.created_at ? new Date(d.created_at) : recebidoEm;
+    const consentEm = consentiu ? (isNaN(dataEnvio.getTime()) ? recebidoEm : dataEnvio) : null;
     const emailNorm = normalizarEmail(d.email);
-    const foneNorm = normalizarFone(d.whatsapp);
+    const foneNorm = normalizarFone(d.whatsapp ?? "");
 
     const observacao = montarObservacao({
       cfg,
@@ -89,7 +99,9 @@ export async function POST(req: Request) {
       landing_page: d.landing_page,
       referrer: d.referrer,
       consent_text: d.consent_text,
-      consentEm: isNaN(consentEm.getTime()) ? recebidoEm : consentEm,
+      consentEm,
+      mensagem: d.message,
+      extras: d.extras,
       utm: {
         source: d.utm_source ?? null,
         medium: d.utm_medium ?? null,
@@ -102,7 +114,8 @@ export async function POST(req: Request) {
 
     // 6) Deduplicação por e-mail OU WhatsApp normalizado.
     const existente = await db.lead.findFirst({
-      where: { OR: [{ email: emailNorm }, { telefone: foneNorm }] },
+      // Telefone vazio não entra na busca, senão casaria com qualquer lead sem telefone.
+      where: { OR: [{ email: emailNorm }, ...(foneNorm ? [{ telefone: foneNorm }] : [])] },
       orderBy: { criadoEm: "asc" },
     });
 
@@ -119,9 +132,10 @@ export async function POST(req: Request) {
           interesse: existente.interesse ?? cfg.interesse,
           tags: tagsUnificadas,
           observacao: obsAcumulada,
-          consentLgpd: true,
-          consentTexto: existente.consentTexto ?? (d.consent_text?.trim() || null),
-          consentEm: existente.consentEm ?? (isNaN(consentEm.getTime()) ? recebidoEm : consentEm),
+          telefone: existente.telefone || foneNorm || null,
+          consentLgpd: existente.consentLgpd || consentiu,
+          consentTexto: existente.consentTexto ?? (consentiu ? d.consent_text?.trim() || null : null),
+          consentEm: existente.consentEm ?? consentEm,
         },
       });
       await registrarLog({
@@ -138,15 +152,15 @@ export async function POST(req: Request) {
         nome: d.name.trim(),
         empresa: d.organization?.trim() || null,
         email: emailNorm,
-        telefone: foneNorm,
+        telefone: foneNorm || null,
         origem: cfg.origem,
         interesse: cfg.interesse,
         tags: cfg.tags,
         etapa: "novo",
         observacao,
-        consentLgpd: true,
-        consentTexto: d.consent_text?.trim() || null,
-        consentEm: isNaN(consentEm.getTime()) ? recebidoEm : consentEm,
+        consentLgpd: consentiu,
+        consentTexto: consentiu ? d.consent_text?.trim() || null : null,
+        consentEm,
       },
     });
     await registrarLog({

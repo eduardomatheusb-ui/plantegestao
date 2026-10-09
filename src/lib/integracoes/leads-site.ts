@@ -10,6 +10,8 @@ export type LandingConfig = {
   origem: string;
   interesse: string | null;
   tags: string[];
+  /** false = pedido de contato: a pessoa pediu retorno, não há caixa de aceite LGPD. */
+  exigeConsentimento?: boolean;
 };
 
 export const LANDINGS: Record<string, LandingConfig> = {
@@ -17,6 +19,17 @@ export const LANDINGS: Record<string, LandingConfig> = {
     origem: "Landing Guia ECA Digital",
     interesse: "Guia de uso responsável de imagens",
     tags: ["lead-site", "guia-eca-digital", "material-gratuito"],
+  },
+  "contato-plante": {
+    origem: "Formulário de contato do site",
+    interesse: null,
+    tags: ["lead-site", "contato-site"],
+    exigeConsentimento: false,
+  },
+  "boa-jogada-plante": {
+    origem: "Ação Boa Jogada (Geraes Open)",
+    interesse: "Ação Boa Jogada Plante",
+    tags: ["lead-site", "boa-jogada-plante"],
   },
 };
 
@@ -86,7 +99,9 @@ type DadosObservacao = {
   landing_page?: string | null;
   referrer?: string | null;
   consent_text?: string | null;
-  consentEm: Date;
+  consentEm: Date | null;
+  mensagem?: string | null;
+  extras?: Record<string, string> | null;
   utm: Record<string, string | null>;
   recebidoEm: Date;
 };
@@ -106,7 +121,13 @@ export function montarObservacao(d: DadosObservacao): string {
     `Página: ${nd(d.landing_page)}`,
     `Referrer: ${nd(d.referrer)}`,
     `UTM: ${utm}`,
-    `Consentimento LGPD: ${nd(d.consent_text)} (aceito em ${dataHoraBR(d.consentEm)})`,
+    ...Object.entries(d.extras ?? {})
+      .filter(([, v]) => v && v.trim())
+      .map(([k, v]) => `${k}: ${v.trim()}`),
+    d.mensagem?.trim() ? `Mensagem: ${d.mensagem.trim()}` : null,
+    d.consentEm
+      ? `Consentimento LGPD: ${nd(d.consent_text)} (aceito em ${dataHoraBR(d.consentEm)})`
+      : "Consentimento LGPD: não se aplica (pedido de contato)",
   ]
     .filter(Boolean)
     .join("\n");
