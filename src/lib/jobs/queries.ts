@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { foraDoPrazo } from "@/lib/conclusao";
+import { intervaloMes } from "./mes";
 
 /**
  * Concluído no prazo? Usa o carimbo imutável `concluidoForaPrazo` (feito na
@@ -53,7 +54,10 @@ export type ListarJobsOpts = {
   // com-prazo = concluídos que tinham prazo; no-prazo = dentro do prazo; fora-prazo = atrasados.
   conclusao?: "com-prazo" | "no-prazo" | "fora-prazo";
   incluirArquivados?: boolean;
+  /** "AAAA-MM": jobs cuja data de postagem (ou, sem ela, o prazo) cai nesse mês. */
+  mes?: string;
 };
+
 
 export type JobListItem = Awaited<ReturnType<typeof listarJobs>>[number];
 
@@ -89,6 +93,10 @@ export async function listarJobs(opts: ListarJobsOpts = {}) {
   if (opts.minhasDoUsuario) {
     // Pauta guiada por etapas: fica enquanto eu tiver etapa pendente (ver filtroPauta).
     and.push(filtroPauta(opts.minhasDoUsuario));
+  }
+  const intervalo = opts.mes ? intervaloMes(opts.mes) : null;
+  if (intervalo) {
+    and.push({ OR: [{ prazoPostagem: intervalo }, { prazoPostagem: null, prazo: intervalo }] });
   }
   if (opts.q) {
     and.push({ OR: [

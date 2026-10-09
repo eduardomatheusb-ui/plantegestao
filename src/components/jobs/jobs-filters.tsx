@@ -33,6 +33,20 @@ export function JobsFilters({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
+  // Do mês atual até 12 meses atrás, mais os 3 próximos (postagens já planejadas).
+  const meses = React.useMemo(() => {
+    const hoje = new Date();
+    const fmt = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
+    const lista: { valor: string; rotulo: string }[] = [];
+    for (let i = 3; i >= -12; i--) {
+      const d = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth() + i, 1));
+      const valor = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+      const rotulo = fmt.format(d);
+      lista.push({ valor, rotulo: rotulo.charAt(0).toUpperCase() + rotulo.slice(1) });
+    }
+    return lista;
+  }, []);
+
   const sel = "h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
@@ -68,9 +82,16 @@ export function JobsFilters({
         {clientes.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
       </select>
 
+      <label htmlFor="f-mes" className="sr-only">Mês</label>
+      <select id="f-mes" className={sel} defaultValue={searchParams.get("mes") ?? ""} onChange={(e) => setParam("mes", e.target.value)}>
+        <option value="">Todos os meses</option>
+        {meses.map((m) => (<option key={m.valor} value={m.valor}>{m.rotulo}</option>))}
+      </select>
+
       <label htmlFor="f-concl" className="sr-only">Conclusão</label>
       <select id="f-concl" className={sel} defaultValue={searchParams.get("conclusao") ?? ""} onChange={(e) => setParam("conclusao", e.target.value)}>
-        <option value="">Conclusão: todas</option>
+        <option value="">Sem concluídos</option>
+        <option value="todos">Mostrar concluídos</option>
         <option value="com-prazo">Concluídos (com prazo)</option>
         <option value="no-prazo">Concluídos no prazo</option>
         <option value="fora-prazo">Concluídos fora do prazo</option>
