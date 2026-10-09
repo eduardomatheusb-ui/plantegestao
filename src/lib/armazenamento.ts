@@ -21,6 +21,9 @@ async function s3() {
   clienteS3 ??= new S3Client({
     region: env("S3_REGION") || "auto",
     endpoint: env("S3_ENDPOINT"),
+    // O R2 não aceita os checksums que o SDK v3 passou a mandar por padrão.
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    responseChecksumValidation: "WHEN_REQUIRED",
     credentials: {
       accessKeyId: env("S3_ACCESS_KEY_ID")!,
       secretAccessKey: env("S3_SECRET_ACCESS_KEY")!,
